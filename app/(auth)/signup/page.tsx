@@ -1,23 +1,68 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Eye, EyeOff, Mail, Lock, User } from "lucide-react"
+import { createUserWithEmailAndPassword, updateProfile, GoogleAuthProvider, signInWithPopup } from "firebase/auth"
+import { auth } from "@/lib/firebase"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { useAuth } from "@/lib/auth-context"
 
 export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [fullName, setFullName] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [error, setError] = useState("")
+  const [loading, setLoading] = useState(false)
   const router = useRouter()
+  const { user } = useAuth()
 
-  const handleSignup = (e: React.FormEvent) => {
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user) {
+      router.push("/dashboard")
+    }
+  }, [user, router])
+
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault()
-    router.push("/preferences")
+    setError("")
+    setLoading(true)
+    
+    try {
+      // Create user
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password)
+      
+      // Update profile with full name
+      await updateProfile(userCredential.user, {
+        displayName: fullName,
+      })
+      
+      router.push("/dashboard")
+    } catch (err: any) {
+      setError(err.message || "Failed to create account")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleGoogleSignup = async () => {
+    setError("")
+    setLoading(true)
+    
+    try {
+      const provider = new GoogleAuthProvider()
+      await signInWithPopup(auth, provider)
+      router.push("/dashboard")
+    } catch (err: any) {
+      setError(err.message || "Failed to sign up with Google")
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -30,6 +75,11 @@ export default function SignupPage() {
       </div>
 
       <form onSubmit={handleSignup} className="space-y-5">
+        {error && (
+          <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+            {error}
+          </div>
+        )}
         <div className="space-y-2">
           <Label htmlFor="fullName" className="text-foreground">Full Name</Label>
           <div className="relative">
@@ -84,8 +134,12 @@ export default function SignupPage() {
           <p className="text-xs text-muted-foreground">Must be at least 8 characters</p>
         </div>
 
-        <Button type="submit" className="h-11 w-full rounded-xl bg-primary text-primary-foreground hover:bg-primary/90">
-          Create Account
+        <Button 
+          type="submit"
+          disabled={loading}
+          className="h-11 w-full rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+        >
+          {loading ? "Creating Account..." : "Create Account"}
         </Button>
 
         <div className="relative flex items-center justify-center">
@@ -96,7 +150,13 @@ export default function SignupPage() {
         </div>
 
         <div className="grid grid-cols-2 gap-3">
-          <Button type="button" variant="outline" className="h-11 rounded-xl border-border text-foreground">
+          <Button 
+            type="button" 
+            variant="outline" 
+            onClick={handleGoogleSignup}
+            disabled={loading}
+            className="h-11 rounded-xl border-border text-foreground disabled:opacity-50"
+          >
             <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
               <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4" />
               <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
@@ -105,7 +165,7 @@ export default function SignupPage() {
             </svg>
             Google
           </Button>
-          <Button type="button" variant="outline" className="h-11 rounded-xl border-border text-foreground">
+          <Button type="button" variant="outline" className="h-11 rounded-xl border-border text-foreground" disabled>
             <svg className="mr-2 h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
               <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
             </svg>
