@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { MapPin, Home, Languages, CalendarDays, BookmarkCheck, Map, Utensils, Building2, LogOut, User } from "lucide-react"
@@ -29,7 +30,7 @@ const dashNavLinks = [
 function UserMenu() {
   const { user } = useAuth()
   const router = useRouter()
-  const [isLoading, setIsLoading] = React.useState(false)
+  const [isLoading, setIsLoading] = useState(false)
 
   const handleLogout = async () => {
     try {
