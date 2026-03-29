@@ -18,14 +18,14 @@ export default function LoginPage() {
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
   const router = useRouter()
-  const { user } = useAuth()
+  const { user, loading: authLoading } = useAuth()
 
-  // Redirect if already logged in
+  // Redirect if already logged in (only after auth check is complete)
   useEffect(() => {
-    if (user) {
+    if (!authLoading && user) {
       router.push("/dashboard")
     }
-  }, [user, router])
+  }, [user, authLoading, router])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
