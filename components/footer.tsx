@@ -1,9 +1,15 @@
-import Link from "next/link"
-import { MapPin } from "lucide-react"
+'use client';
+import React, { useState } from "react";
+import Link from "next/link";
+import { MapPin } from "lucide-react";
+import { AboutUsModal } from "./about-us-modal";
 
 export function Footer() {
+  const [aboutOpen, setAboutOpen] = useState(false);
+
   return (
     <footer className="border-t border-border bg-secondary">
+      <AboutUsModal open={aboutOpen} onClose={() => setAboutOpen(false)} />
       <div className="mx-auto max-w-[1200px] px-4 py-12 lg:px-6">
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
           <div className="flex flex-col gap-4">
@@ -30,7 +36,7 @@ export function Footer() {
           <div className="flex flex-col gap-3">
             <h4 className="text-sm font-semibold text-foreground">Company</h4>
             <nav className="flex flex-col gap-2" aria-label="Company links">
-              <Link href="#" className="text-sm text-muted-foreground transition-colors hover:text-primary">About Us</Link>
+              <button type="button" onClick={() => setAboutOpen(true)} className="text-left text-sm text-muted-foreground transition-colors hover:text-primary">About Us</button>
               <Link href="#" className="text-sm text-muted-foreground transition-colors hover:text-primary">Contact</Link>
               <Link href="#" className="text-sm text-muted-foreground transition-colors hover:text-primary">Privacy Policy</Link>
               <Link href="#" className="text-sm text-muted-foreground transition-colors hover:text-primary">Terms of Service</Link>

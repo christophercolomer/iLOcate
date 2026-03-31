@@ -27,7 +27,7 @@ const plans = [
   },
   {
     name: "Premium",
-    price: "199",
+    price: "499",
     period: "/month",
     description: "For the ultimate Iloilo explorer",
     features: [
