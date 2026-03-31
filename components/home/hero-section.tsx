@@ -181,7 +181,7 @@ export function HeroSection() {
           style={{ transform: `translateY(${scrollY * 0.3}px)` }}
         >
           <Image
-            src="/images/hero-iloilo.jpg"
+            src="/images/hero-iloilo(1).svg"
             alt="Stunning view of Iloilo City, Philippines"
             fill
             className="object-cover"
@@ -191,10 +191,10 @@ export function HeroSection() {
           />
         </div>
 
-        <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/50 to-black/30" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30" />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/30 via-black/50 to-black/5" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-black/5" />
 
-        <div className="relative z-10 mx-auto flex h-full max-w-[1200px] items-center px-4 pt-[72px] lg:px-6">
+        <div className="relative z-10 mx-auto flex h-full max-w-[1200px] items-center px-4 pt-[12px] lg:px-6">
           <div className="flex w-full flex-col gap-8 lg:flex-row lg:items-center lg:justify-between lg:gap-12">
             <div className="flex max-w-xl flex-1 flex-col">
               {/* Navigation Tool Badge */}
@@ -204,9 +204,9 @@ export function HeroSection() {
               </div>
 
               {/* Main Heading - Emphasize iLOcate */}
-              <div className="space-y-3">
+              <div className="space-y-1">
                 <h1 className="text-6xl font-bold leading-[0.95] tracking-tight text-white sm:text-7xl md:text-8xl">
-                  <span className="block bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                  <span className="block bg-primary bg-clip-text text-transparent">
                     iLOcate
                   </span>
                 </h1>
