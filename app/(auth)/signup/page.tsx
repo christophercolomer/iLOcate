@@ -1,11 +1,17 @@
-"use client"
+﻿"use client"
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Eye, EyeOff, Mail, Lock, User, Loader2 } from "lucide-react"
-import { createUserWithEmailAndPassword, updateProfile, GoogleAuthProvider, FacebookAuthProvider, signInWithPopup } from "firebase/auth"
 import { auth } from "@/lib/firebase"
+import {
+  createUserWithEmailAndPassword,
+  updateProfile,
+  GoogleAuthProvider,
+  FacebookAuthProvider,
+  signInWithPopup,
+} from "firebase/auth"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -22,7 +28,6 @@ export default function SignupPage() {
   const router = useRouter()
   const { user } = useAuth()
 
-  // Redirect if already logged in
   useEffect(() => {
     if (user) {
       router.push("/dashboard")
@@ -117,6 +122,7 @@ export default function SignupPage() {
             {errors.general}
           </div>
         )}
+
         <div className="space-y-2">
           <Label htmlFor="fullName" className="text-foreground">Full Name</Label>
           <div className="relative">

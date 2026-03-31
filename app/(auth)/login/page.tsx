@@ -1,18 +1,15 @@
-"use client"
+﻿"use client"
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Eye, EyeOff, Mail, Lock } from "lucide-react"
-import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth"
+import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, sendPasswordResetEmail } from "firebase/auth"
 import { auth } from "@/lib/firebase"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useAuth } from "@/lib/auth-context"
-import {
-  sendPasswordResetEmail,
-} from "firebase/auth"
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
@@ -20,33 +17,42 @@ export default function LoginPage() {
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
-  const router = useRouter()
-  const { user } = useAuth()
   const [errors, setErrors] = useState<{ email?: string; password?: string; general?: string }>({})
   const [socialLoading, setSocialLoading] = useState<"google" | "facebook" | null>(null)
   const [forgotSent, setForgotSent] = useState(false)
+  const router = useRouter()
+  const { user } = useAuth()
 
-  const validate = () => {
-    const newErrors: { email?: string; password?: string } = {}
-    if (!email) newErrors.email = "Email is required."
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) newErrors.email = "Please enter a valid email address."
-    if (!password) newErrors.password = "Password is required."
-    else if (password.length < 8) newErrors.password = "Password must be at least 8 characters."
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
-
-  // Redirect if already logged in
   useEffect(() => {
     if (user) {
       router.push("/dashboard")
     }
   }, [user, router])
 
+  const validate = () => {
+    const newErrors: { email?: string; password?: string } = {}
+
+    if (!email) {
+      newErrors.email = "Email is required."
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      newErrors.email = "Please enter a valid email address."
+    }
+
+    if (!password) {
+      newErrors.password = "Password is required."
+    } else if (password.length < 8) {
+      newErrors.password = "Password must be at least 8 characters."
+    }
+
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
     setErrors({})
+    setForgotSent(false)
 
     if (!validate()) return
 
@@ -114,6 +120,7 @@ export default function LoginPage() {
             {forgotSent ? "Password reset email sent. Check your inbox." : error || errors.general}
           </div>
         )}
+
         <div className="space-y-2">
           <Label htmlFor="email" className="text-foreground">Email</Label>
           <div className="relative">
@@ -159,8 +166,8 @@ export default function LoginPage() {
           {errors.password && <p className="mt-1 text-xs text-red-600">{errors.password}</p>}
         </div>
 
-        <Button 
-          type="submit" 
+        <Button
+          type="submit"
           disabled={loading}
           className="h-11 w-full rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
         >
@@ -175,9 +182,9 @@ export default function LoginPage() {
         </div>
 
         <div className="grid grid-cols-2 gap-3">
-          <Button 
-            type="button" 
-            variant="outline" 
+          <Button
+            type="button"
+            variant="outline"
             onClick={handleGoogleLogin}
             disabled={loading || socialLoading === "google"}
             className="h-11 rounded-xl border-border text-foreground disabled:opacity-50"
@@ -203,6 +210,6 @@ export default function LoginPage() {
           <Link href="/signup" className="font-medium text-primary hover:underline">Sign up</Link>
         </p>
       </form>
-    </div>  
+    </div>
   )
 }
