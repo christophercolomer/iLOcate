@@ -1,14 +1,9 @@
-"use client"
+﻿"use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Eye, EyeOff, Mail, Lock, User, Loader2 } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-
-// Firebase imports
 import { auth } from "@/lib/firebase"
 import {
   createUserWithEmailAndPassword,
@@ -17,6 +12,10 @@ import {
   FacebookAuthProvider,
   signInWithPopup,
 } from "firebase/auth"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { useAuth } from "@/lib/auth-context"
 
 export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false)
@@ -27,8 +26,14 @@ export default function SignupPage() {
   const [loading, setLoading] = useState(false)
   const [socialLoading, setSocialLoading] = useState<"google" | "facebook" | null>(null)
   const router = useRouter()
+  const { user } = useAuth()
 
-  // --- Validation ---
+  useEffect(() => {
+    if (user) {
+      router.push("/dashboard")
+    }
+  }, [user, router])
+
   const validate = () => {
     const newErrors: { fullName?: string; email?: string; password?: string } = {}
     if (!fullName.trim()) {
@@ -48,7 +53,6 @@ export default function SignupPage() {
     return Object.keys(newErrors).length === 0
   }
 
-  // --- Email/Password Signup ---
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault()
     setErrors({})
@@ -75,7 +79,6 @@ export default function SignupPage() {
     }
   }
 
-  // --- Google Signup ---
   const handleGoogleSignup = async () => {
     setErrors({})
     setSocialLoading("google")
@@ -90,7 +93,6 @@ export default function SignupPage() {
     }
   }
 
-  // --- Facebook Signup ---
   const handleFacebookSignup = async () => {
     setErrors({})
     setSocialLoading("facebook")
@@ -114,16 +116,13 @@ export default function SignupPage() {
         </p>
       </div>
 
-      {/* General Error */}
-      {errors.general && (
-        <div className="mb-4 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
-          {errors.general}
-        </div>
-      )}
-
       <form onSubmit={handleSignup} className="space-y-5" noValidate>
+        {errors.general && (
+          <div className="rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+            {errors.general}
+          </div>
+        )}
 
-        {/* Full Name */}
         <div className="space-y-2">
           <Label htmlFor="fullName" className="text-foreground">Full Name</Label>
           <div className="relative">
@@ -141,7 +140,6 @@ export default function SignupPage() {
           {errors.fullName && <p className="text-xs text-destructive">{errors.fullName}</p>}
         </div>
 
-        {/* Email */}
         <div className="space-y-2">
           <Label htmlFor="email" className="text-foreground">Email</Label>
           <div className="relative">
@@ -159,7 +157,6 @@ export default function SignupPage() {
           {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
         </div>
 
-        {/* Password */}
         <div className="space-y-2">
           <Label htmlFor="password" className="text-foreground">Password</Label>
           <div className="relative">
@@ -188,7 +185,6 @@ export default function SignupPage() {
           }
         </div>
 
-        {/* Submit */}
         <Button
           type="submit"
           className="h-11 w-full rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
@@ -204,7 +200,6 @@ export default function SignupPage() {
           )}
         </Button>
 
-        {/* Divider */}
         <div className="relative flex items-center justify-center">
           <div className="absolute inset-0 flex items-center">
             <span className="w-full border-t border-border" />
@@ -212,7 +207,6 @@ export default function SignupPage() {
           <span className="relative bg-background px-3 text-xs text-muted-foreground">or sign up with</span>
         </div>
 
-        {/* Social Buttons */}
         <div className="grid grid-cols-2 gap-3">
           <Button
             type="button"
