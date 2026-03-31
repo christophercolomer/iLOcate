@@ -10,6 +10,9 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useAuth } from "@/lib/auth-context"
+import {
+  sendPasswordResetEmail,
+} from "firebase/auth"
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
@@ -19,6 +22,19 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const router = useRouter()
   const { user } = useAuth()
+  const [errors, setErrors] = useState<{ email?: string; password?: string; general?: string }>({})
+  const [socialLoading, setSocialLoading] = useState<"google" | "facebook" | null>(null)
+  const [forgotSent, setForgotSent] = useState(false)
+
+  const validate = () => {
+    const newErrors: { email?: string; password?: string } = {}
+    if (!email) newErrors.email = "Email is required."
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) newErrors.email = "Please enter a valid email address."
+    if (!password) newErrors.password = "Password is required."
+    else if (password.length < 8) newErrors.password = "Password must be at least 8 characters."
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
 
   // Redirect if already logged in
   useEffect(() => {
@@ -30,8 +46,11 @@ export default function LoginPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
+    setErrors({})
+
+    if (!validate()) return
+
     setLoading(true)
-    
     try {
       await signInWithEmailAndPassword(auth, email, password)
       router.push("/dashboard")
@@ -44,8 +63,8 @@ export default function LoginPage() {
 
   const handleGoogleLogin = async () => {
     setError("")
-    setLoading(true)
-    
+    setSocialLoading("google")
+
     try {
       const provider = new GoogleAuthProvider()
       await signInWithPopup(auth, provider)
@@ -53,7 +72,30 @@ export default function LoginPage() {
     } catch (err: any) {
       setError(err.message || "Failed to log in with Google")
     } finally {
-      setLoading(false)
+      setSocialLoading(null)
+    }
+  }
+
+  const handleForgotPassword = async () => {
+    setError("")
+    setErrors({})
+    setForgotSent(false)
+
+    if (!email) {
+      setErrors({ email: "Enter your email above first to reset your password." })
+      return
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setErrors({ email: "Please enter a valid email address." })
+      return
+    }
+
+    try {
+      await sendPasswordResetEmail(auth, email)
+      setForgotSent(true)
+    } catch {
+      setErrors({ general: "Could not send reset email. Please check your email address." })
     }
   }
 
@@ -67,9 +109,9 @@ export default function LoginPage() {
       </div>
 
       <form onSubmit={handleLogin} className="space-y-5">
-        {error && (
-          <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-            {error}
+        {(error || errors.general || forgotSent) && (
+          <div className={`rounded-lg border p-3 text-sm ${error || errors.general ? "border-red-200 bg-red-50 text-red-700" : "border-green-200 bg-green-50 text-green-700"}`}>
+            {forgotSent ? "Password reset email sent. Check your inbox." : error || errors.general}
           </div>
         )}
         <div className="space-y-2">
@@ -85,12 +127,15 @@ export default function LoginPage() {
               className="rounded-xl border-border pl-10"
             />
           </div>
+          {errors.email && <p className="mt-1 text-xs text-red-600">{errors.email}</p>}
         </div>
 
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <Label htmlFor="password" className="text-foreground">Password</Label>
-            <Link href="#" className="text-xs text-primary hover:underline">Forgot password?</Link>
+            <button type="button" onClick={handleForgotPassword} className="text-xs text-primary hover:underline">
+              Forgot password?
+            </button>
           </div>
           <div className="relative">
             <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -111,6 +156,7 @@ export default function LoginPage() {
               {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
           </div>
+          {errors.password && <p className="mt-1 text-xs text-red-600">{errors.password}</p>}
         </div>
 
         <Button 
@@ -133,7 +179,7 @@ export default function LoginPage() {
             type="button" 
             variant="outline" 
             onClick={handleGoogleLogin}
-            disabled={loading}
+            disabled={loading || socialLoading === "google"}
             className="h-11 rounded-xl border-border text-foreground disabled:opacity-50"
           >
             <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
