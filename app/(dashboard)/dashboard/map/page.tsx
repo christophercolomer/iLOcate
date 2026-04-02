@@ -15,6 +15,7 @@ import {
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import dynamic from "next/dynamic"
+import { landmarks } from "@/lib/landmarks"
 
 const MapComponent = dynamic(() => import("@/components/map-leaflet"), {
   ssr: false,
@@ -54,15 +55,6 @@ const routes = [
     fare: "PHP 10",
     time: "~22 min",
   },
-]
-
-const landmarks = [
-  { name: "Miag-ao Church", type: "Heritage" },
-  { name: "SM City Iloilo", type: "Shopping" },
-  { name: "Iloilo River Esplanade", type: "Urban" },
-  { name: "La Paz Market", type: "Food" },
-  { name: "Molo Church", type: "Heritage" },
-  { name: "Jaro Cathedral", type: "Heritage" },
 ]
 
 export default function FullScreenMapPage() {
