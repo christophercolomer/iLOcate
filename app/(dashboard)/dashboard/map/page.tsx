@@ -10,9 +10,16 @@ import {
   ChevronRight,
   Info,
   ArrowLeft,
+  Locate,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
+import dynamic from "next/dynamic"
+
+const MapComponent = dynamic(() => import("@/components/map-leaflet"), {
+  ssr: false,
+  loading: () => <div className="flex h-full w-full items-center justify-center bg-secondary">Loading map...</div>,
+})
 
 const routes = [
   {
@@ -178,11 +185,12 @@ export default function FullScreenMapPage() {
 
       {/* Map */}
       <div className="relative flex-1">
-        <iframe
-          src="https://www.openstreetmap.org/export/embed.html?bbox=122.4800%2C10.6200%2C122.6500%2C10.7600&layer=mapnik&marker=10.6969%2C122.5644"
-          className="h-full w-full border-0"
-          title="Full screen map of Iloilo City"
-          loading="lazy"
+        <MapComponent
+          center={[10.6969, 122.5644]}
+          zoom={13}
+          routes={routes}
+          landmarks={landmarks}
+          selectedRoute={selectedRoute}
         />
         {showRoutes && (
           <div className="absolute bottom-4 right-4 max-w-xs rounded-xl bg-card/95 p-4 shadow-lg backdrop-blur-sm">
