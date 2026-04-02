@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react"
 import L from "leaflet"
 import "leaflet/dist/leaflet.css"
+import { Landmark } from "@/lib/landmarks"
 
 interface MapComponentProps {
   center: [number, number]
@@ -15,10 +16,7 @@ interface MapComponentProps {
     fare: string
     time: string
   }>
-  landmarks: Array<{
-    name: string
-    type: string
-  }>
+  landmarks: Landmark[]
   selectedRoute: number | null
 }
 
@@ -47,15 +45,6 @@ const routeCoordinates: Record<number, [number, number][]> = {
     [10.6900, 122.5600],
     [10.7000, 122.5650],
   ],
-}
-
-const landmarkCoordinates: Record<string, [number, number]> = {
-  "Miag-ao Church": [10.6980, 122.5430],
-  "SM City Iloilo": [10.7050, 122.5750],
-  "Iloilo River Esplanade": [10.6900, 122.5650],
-  "La Paz Market": [10.6850, 122.5700],
-  "Molo Church": [10.6800, 122.5500],
-  "Jaro Cathedral": [10.6900, 122.5400],
 }
 
 export default function MapLeaflet({
@@ -120,9 +109,8 @@ export default function MapLeaflet({
 
     // Add landmark markers
     landmarks.forEach((landmark) => {
-      const coords = landmarkCoordinates[landmark.name]
-      if (coords && map.current) {
-        const marker = L.marker(coords, {
+      if (map.current) {
+        const marker = L.marker(landmark.coordinates, {
           icon: L.icon({
             iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png",
             shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png",
