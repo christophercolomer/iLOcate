@@ -1,5 +1,6 @@
 "use client"
 
+import Image from "next/image"
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -38,9 +39,15 @@ export function Navbar() {
       }`}
     >
       <div className="mx-auto flex h-[72px] max-w-[1200px] items-center justify-between px-4 lg:px-6">
-        <Link href="/" className="flex items-center gap-2">
-          <MapPin className={`h-7 w-7 ${isTransparent ? "text-white" : "text-primary"}`} />
-          <span className={`text-xl font-bold tracking-tight ${isTransparent ? "text-white" : "text-foreground"}`}>
+        <Link href="/" className="flex items-center gap-0">
+          <Image
+            src="/Ilocate No BG.svg"
+            alt="iLOcate logo"
+            width={45}
+            height={70}
+            className="object-contain"
+          />
+          <span className={`text-2xl md:text-3xl font-bold tracking-tight ${isTransparent ? "text-white" : "text-foreground"}`}>
             iLO<span className={isTransparent ? "text-primary" : "text-primary"}>cate</span>
           </span>
         </Link>

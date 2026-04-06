@@ -8,22 +8,28 @@ export default function AuthLayout({
   children: React.ReactNode
 }) {
   return (
-    <div className="flex min-h-screen">
+    <div className="flex h-screen overflow-hidden">
       {/* Left: Image */}
-      <div className="relative hidden w-1/2 lg:block">
+      <div className="relative hidden h-full w-1/2 overflow-hidden lg:block">
         <Image
-          src="/images/hero-iloilo.jpg"
+          src="/images/hero-iloilo.svg"
           alt="Beautiful Iloilo scenery"
           fill
-          className="object-cover"
+          className="object-cover scale-150"
           priority
           sizes="50vw"
         />
         <div className="absolute inset-0 bg-gradient-to-br from-primary/60 via-primary/30 to-black/50" />
         <div className="absolute inset-0 flex flex-col justify-between p-10">
-          <Link href="/" className="flex items-center gap-2">
-            <MapPin className="h-7 w-7 text-white" />
-            <span className="text-xl font-bold text-white">
+          <Link href="/" className="flex items-center gap-0">
+            <Image
+                        src="/Ilocate No BG.svg"
+                        alt="iLOcate logo"
+                        width={80}
+                        height={70}
+                        className="object-contain"
+            />
+            <span className={`-ml-1 text-2xl md:text-3xl font-bold tracking-tight text-white`}>
               iLO<span className="text-primary-foreground">cate</span>
             </span>
           </Link>

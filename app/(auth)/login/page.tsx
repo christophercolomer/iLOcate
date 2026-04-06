@@ -1,6 +1,7 @@
 ﻿"use client"
 
 import { useState, useEffect } from "react"
+import Image from "next/image"  
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Eye, EyeOff, Mail, Lock } from "lucide-react"
@@ -107,6 +108,11 @@ export default function LoginPage() {
 
   return (
     <div className="w-full max-w-sm">
+      <div className="mb-4">
+        <Link href="/" className="text-sm text-primary hover:underline">
+          ← Back to home
+        </Link>
+      </div>
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-foreground">Welcome back</h1>
         <p className="mt-2 text-sm text-muted-foreground">
