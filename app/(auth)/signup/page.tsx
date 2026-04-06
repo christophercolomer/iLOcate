@@ -1,4 +1,4 @@
-﻿"use client"
+"use client"
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
@@ -109,6 +109,11 @@ export default function SignupPage() {
 
   return (
     <div className="w-full max-w-sm">
+      <div className="mb-4">
+        <Link href="/" className="text-sm text-primary hover:underline">
+          ← Back to home
+        </Link>
+      </div>
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-foreground">Create your account</h1>
         <p className="mt-2 text-sm text-muted-foreground">

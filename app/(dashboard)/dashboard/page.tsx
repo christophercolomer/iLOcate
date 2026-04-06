@@ -132,7 +132,10 @@ function PlaceCard({ name, image, category, rating }: { name: string; image: str
 
 export default function DashboardPage() {
   return (
-    <div>
+    <div className="relative min-h-screen">
+      <div className="absolute inset-0 -z-20 bg-[url('/images/hero-iloilo(1).svg')] bg-cover bg-center opacity-40" />
+      <div className="absolute inset-0 -z-10 bg-white/20 backdrop-blur-md" />
+      <div className="relative min-h-screen">
       {/* Map Section */}
       <div className="relative">
         <div className="relative h-[45vh] min-h-[320px] overflow-hidden">
@@ -155,7 +158,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Infinite Scroll Categories */}
-      <div className="mx-auto max-w-[1400px] px-4 py-8 lg:px-6">
+      <div className="mx-auto max-w-[2400px] px-4 py-8 lg:px-6">
         <div className="mb-6 flex items-center justify-between">
           <div>
             <h2 className="text-xl font-bold text-foreground">Recommended For You</h2>
@@ -168,11 +171,11 @@ export default function DashboardPage() {
 
         {/* Horizontal infinite scroll */}
         <div className="relative overflow-hidden">
-          <div className="absolute inset-y-0 left-0 z-10 w-12 bg-gradient-to-r from-secondary to-transparent" />
-          <div className="absolute inset-y-0 right-0 z-10 w-12 bg-gradient-to-l from-secondary to-transparent" />
+          <div className="absolute inset-y-0 left-0 z-10 w-10 bg-gradient-to-r from-secondary to-transparent" />
+          <div className="absolute inset-y-0 right-0 z-10 w-10 bg-gradient-to-l from-secondary to-transparent" />
           <div className="animate-infinite-scroll-x flex gap-4">
             {scrollPlaces.map((place, i) => (
-              <div key={`scroll-${i}`} className="w-[200px] flex-shrink-0 sm:w-[220px]">
+              <div key={`scroll-${i}`} className="w-[400px] flex-shrink-0 sm:w-[100px]">
                 <PlaceCard {...place} />
               </div>
             ))}
@@ -188,6 +191,7 @@ export default function DashboardPage() {
             ))}
           </div>
         </div>
+      </div>
       </div>
     </div>
   )
