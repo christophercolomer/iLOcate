@@ -6,30 +6,24 @@ import Link from "next/link"
 import { ArrowRight, Star, Bookmark, MapPin, X, Map } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { landmarks } from "@/lib/landmarks"
+import { useAuth } from "@/lib/auth-context"
 
-// Group landmarks by type dynamically
-const groupedLandmarks = landmarks.reduce((acc, l) => {
-  if (!acc[l.type]) acc[l.type] = []
-  acc[l.type].push(l)
-  return acc
-}, {} as Record<string, typeof landmarks>)
-
-// Get all unique types for section rendering
-const landmarkTypes = Object.keys(groupedLandmarks)
+// Group landmarks by type
+const churches = landmarks.filter(l => l.type === "Church")
+const foodPlaces = landmarks.filter(l => l.type === "Food")
+const cafes = landmarks.filter(l => l.type === "Cafe")
+const heritages = landmarks.filter(l => l.type === "Heritage")
 
 function getImage(type: string) {
-  // You can expand this mapping as needed
   if (type === "Food" || type === "Cafe") return "/images/iloilo-food.jpg"
   if (type === "Heritage" || type === "Church") return "/images/miagao-church.jpg"
   if (type === "Urban") return "/images/esplanade.jpg"
-  if (type === "Beach") return "/images/placeholder.jpg" // Add a beach image if available
   return "/images/placeholder.jpg"
 }
 function getRating(type: string) {
   if (type === "Food" || type === "Cafe") return 4.5
   if (type === "Heritage" || type === "Church") return 4.7
   if (type === "Urban") return 4.6
-  if (type === "Beach") return 4.3
   return 4.0
 }
 
@@ -96,6 +90,21 @@ function DestinationCard({
 export function HeroSection() {
   const [scrollY, setScrollY] = useState(0)
   const [showMapModal, setShowMapModal] = useState(false)
+  const { user } = useAuth()
+
+  // For guests, show a mix of suggestions from all categories (limit to 8, round-robin)
+  const guestSuggestions = []
+  const maxSuggestions = 8
+  let i = 0
+  while (guestSuggestions.length < maxSuggestions) {
+    if (churches[i]) guestSuggestions.push(churches[i])
+    if (foodPlaces[i]) guestSuggestions.push(foodPlaces[i])
+    if (cafes[i]) guestSuggestions.push(cafes[i])
+    if (heritages[i]) guestSuggestions.push(heritages[i])
+    i++
+    if (!churches[i] && !foodPlaces[i] && !cafes[i] && !heritages[i]) break
+  }
+  const guestSuggestionsLimited = guestSuggestions.slice(0, maxSuggestions)
 
   const handleScroll = useCallback(() => {
     setScrollY(window.scrollY)
@@ -254,9 +263,9 @@ export function HeroSection() {
                 <div className="absolute inset-x-0 top-0 z-10 h-16 bg-gradient-to-b from-black/40 to-transparent" />
                 <div className="absolute inset-x-0 bottom-0 z-10 h-16 bg-gradient-to-t from-black/40 to-transparent" />
                 <div className="animate-scroll-up flex flex-col gap-4">
-                  {landmarks.map((dest, i) => (
+                  {(user ? landmarks : guestSuggestionsLimited).map((dest, i) => (
                     <DestinationCard
-                      key={`col1-${i}`}
+                      key={`col1-${dest.name}-${dest.type}-${i}`}
                       name={dest.name}
                       location="Iloilo"
                       image={getImage(dest.type)}
@@ -271,9 +280,9 @@ export function HeroSection() {
                 <div className="absolute inset-x-0 top-0 z-10 h-16 bg-gradient-to-b from-black/40 to-transparent" />
                 <div className="absolute inset-x-0 bottom-0 z-10 h-16 bg-gradient-to-t from-black/40 to-transparent" />
                 <div className="animate-scroll-down flex flex-col gap-4">
-                  {[...landmarks].reverse().map((dest, i) => (
+                  {(user ? [...landmarks].reverse() : [...guestSuggestionsLimited].reverse()).map((dest, i) => (
                     <DestinationCard
-                      key={`col2-${i}`}
+                      key={`col2-${dest.name}-${dest.type}-${i}`}
                       name={dest.name}
                       location="Iloilo"
                       image={getImage(dest.type)}
@@ -286,9 +295,9 @@ export function HeroSection() {
             </div>
 
             <div className="flex gap-3 overflow-x-auto pb-4 lg:hidden">
-              {landmarks.slice(0, 8).map((dest) => (
+              {(user ? landmarks.slice(0, 8) : guestSuggestionsLimited).map((dest, i) => (
                 <DestinationCard
-                  key={dest.name}
+                  key={`mobile-${dest.name}-${dest.type}-${i}`}
                   name={dest.name}
                   location="Iloilo"
                   image={getImage(dest.type)}
@@ -361,26 +370,60 @@ export function HeroSection() {
       )}
 
       {/* Destinations Section */}
-      <section className="py-12 bg-background">
-        <div className="max-w-6xl mx-auto px-4">
-          {landmarkTypes.map((type) => (
-            <div key={type} className="mb-8">
-              <h2 className="text-2xl font-bold mb-4 text-primary">{type}{type === "Heritage" ? " Sites" : type === "Cafe" ? "s" : type === "Food" ? " Spots" : type === "Church" ? "es" : ""}</h2>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {groupedLandmarks[type].map((l) => (
-                  <DestinationCard
-                    key={l.name}
-                    name={l.name}
-                    location="Iloilo"
-                    image={getImage(l.type)}
-                    rating={getRating(l.type)}
-                  />
-                ))}
-              </div>
+      {user && (
+        <section className="py-12 bg-background">
+          <div className="max-w-6xl mx-auto px-4">
+            <h2 className="text-2xl font-bold mb-4 text-primary">Churches</h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+              {churches.map((l, i) => (
+                <DestinationCard
+                  key={`${l.name}-${l.type}-${i}`}
+                  name={l.name}
+                  location="Iloilo"
+                  image={getImage(l.type)}
+                  rating={getRating(l.type)}
+                />
+              ))}
             </div>
-          ))}
-        </div>
-      </section>
+            <h2 className="text-2xl font-bold mb-4 text-primary">Food</h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+              {foodPlaces.map((l, i) => (
+                <DestinationCard
+                  key={`${l.name}-${l.type}-${i}`}
+                  name={l.name}
+                  location="Iloilo"
+                  image={getImage(l.type)}
+                  rating={getRating(l.type)}
+                />
+              ))}
+            </div>
+            <h2 className="text-2xl font-bold mb-4 text-primary">Cafes</h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+              {cafes.map((l, i) => (
+                <DestinationCard
+                  key={`${l.name}-${l.type}-${i}`}
+                  name={l.name}
+                  location="Iloilo"
+                  image={getImage(l.type)}
+                  rating={getRating(l.type)}
+                />
+              ))}
+            </div>
+            <h2 className="text-2xl font-bold mb-4 text-primary">Heritage Sites</h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+              {heritages.map((l, i) => (
+                <DestinationCard
+                  key={`${l.name}-${l.type}-${i}`}
+                  name={l.name}
+                  location="Iloilo"
+                  image={getImage(l.type)}
+                  rating={getRating(l.type)}
+                />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
     </>
   )
 }
