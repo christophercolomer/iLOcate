@@ -7,6 +7,20 @@ import { Maximize2, Star, MapPin, ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { landmarks } from "@/lib/landmarks"
 
+// Helper: assign placeholder images and ratings
+const getImage = (name: string, type: string) => {
+  if (type === "Food" || type === "Cafe") return "/images/iloilo-food.jpg"
+  if (type === "Heritage" || type === "Church") return "/images/miagao-church.jpg"
+  if (type === "Urban") return "/images/esplanade.jpg"
+  return "/images/placeholder.jpg"
+}
+const getRating = (type: string) => {
+  if (type === "Food" || type === "Cafe") return 4.5
+  if (type === "Heritage" || type === "Church") return 4.7
+  if (type === "Urban") return 4.6
+  return 4.0
+}
+
 const categoryPlaces = landmarks.slice(0, 12).map((l) => ({
   name: l.name,
   image: getImage(l.name, l.type),
@@ -188,18 +202,4 @@ export default function DashboardPage() {
       </div>
     </div>
   )
-}
-
-// Helper: assign placeholder images and ratings
-const getImage = (name: string, type: string) => {
-  if (type === "Food" || type === "Cafe") return "/images/iloilo-food.jpg"
-  if (type === "Heritage" || type === "Church") return "/images/miagao-church.jpg"
-  if (type === "Urban") return "/images/esplanade.jpg"
-  return "/images/placeholder.jpg"
-}
-const getRating = (type: string) => {
-  if (type === "Food" || type === "Cafe") return 4.5
-  if (type === "Heritage" || type === "Church") return 4.7
-  if (type === "Urban") return 4.6
-  return 4.0
 }

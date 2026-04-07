@@ -7,26 +7,31 @@ import { ArrowRight, Star, Bookmark, MapPin, X, Map } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { landmarks } from "@/lib/landmarks"
 
-const destinations = landmarks.slice(0, 12).map((l) => ({
-  name: l.name,
-  location: "Iloilo",
-  image:
-    l.type === "Food" || l.type === "Cafe"
-      ? "/images/iloilo-food.jpg"
-      : l.type === "Heritage" || l.type === "Church"
-      ? "/images/miagao-church.jpg"
-      : l.type === "Urban"
-      ? "/images/esplanade.jpg"
-      : "/images/placeholder.jpg",
-  rating:
-    l.type === "Food" || l.type === "Cafe"
-      ? 4.5
-      : l.type === "Heritage" || l.type === "Church"
-      ? 4.7
-      : l.type === "Urban"
-      ? 4.6
-      : 4.0,
-}))
+// Group landmarks by type dynamically
+const groupedLandmarks = landmarks.reduce((acc, l) => {
+  if (!acc[l.type]) acc[l.type] = []
+  acc[l.type].push(l)
+  return acc
+}, {} as Record<string, typeof landmarks>)
+
+// Get all unique types for section rendering
+const landmarkTypes = Object.keys(groupedLandmarks)
+
+function getImage(type: string) {
+  // You can expand this mapping as needed
+  if (type === "Food" || type === "Cafe") return "/images/iloilo-food.jpg"
+  if (type === "Heritage" || type === "Church") return "/images/miagao-church.jpg"
+  if (type === "Urban") return "/images/esplanade.jpg"
+  if (type === "Beach") return "/images/placeholder.jpg" // Add a beach image if available
+  return "/images/placeholder.jpg"
+}
+function getRating(type: string) {
+  if (type === "Food" || type === "Cafe") return 4.5
+  if (type === "Heritage" || type === "Church") return 4.7
+  if (type === "Urban") return 4.6
+  if (type === "Beach") return 4.3
+  return 4.0
+}
 
 const pujRoutes = [
   { name: "Molo Route", fare: "₱8-10", stops: "City - Molo Church" },
@@ -100,8 +105,6 @@ export function HeroSection() {
     window.addEventListener("scroll", handleScroll, { passive: true })
     return () => window.removeEventListener("scroll", handleScroll)
   }, [handleScroll])
-
-  const scrollItems = [...destinations, ...destinations]
 
   return (
     <>
@@ -251,8 +254,15 @@ export function HeroSection() {
                 <div className="absolute inset-x-0 top-0 z-10 h-16 bg-gradient-to-b from-black/40 to-transparent" />
                 <div className="absolute inset-x-0 bottom-0 z-10 h-16 bg-gradient-to-t from-black/40 to-transparent" />
                 <div className="animate-scroll-up flex flex-col gap-4">
-                  {scrollItems.map((dest, i) => (
-                    <DestinationCard key={`col1-${i}`} {...dest} size="large" />
+                  {landmarks.map((dest, i) => (
+                    <DestinationCard
+                      key={`col1-${i}`}
+                      name={dest.name}
+                      location="Iloilo"
+                      image={getImage(dest.type)}
+                      rating={getRating(dest.type)}
+                      size="large"
+                    />
                   ))}
                 </div>
               </div>
@@ -261,16 +271,30 @@ export function HeroSection() {
                 <div className="absolute inset-x-0 top-0 z-10 h-16 bg-gradient-to-b from-black/40 to-transparent" />
                 <div className="absolute inset-x-0 bottom-0 z-10 h-16 bg-gradient-to-t from-black/40 to-transparent" />
                 <div className="animate-scroll-down flex flex-col gap-4">
-                  {[...scrollItems].reverse().map((dest, i) => (
-                    <DestinationCard key={`col2-${i}`} {...dest} size="default" />
+                  {[...landmarks].reverse().map((dest, i) => (
+                    <DestinationCard
+                      key={`col2-${i}`}
+                      name={dest.name}
+                      location="Iloilo"
+                      image={getImage(dest.type)}
+                      rating={getRating(dest.type)}
+                      size="default"
+                    />
                   ))}
                 </div>
               </div>
             </div>
 
             <div className="flex gap-3 overflow-x-auto pb-4 lg:hidden">
-              {destinations.slice(0, 4).map((dest) => (
-                <DestinationCard key={dest.name} {...dest} size="default" />
+              {landmarks.slice(0, 8).map((dest) => (
+                <DestinationCard
+                  key={dest.name}
+                  name={dest.name}
+                  location="Iloilo"
+                  image={getImage(dest.type)}
+                  rating={getRating(dest.type)}
+                  size="default"
+                />
               ))}
             </div>
           </div>
@@ -335,6 +359,28 @@ export function HeroSection() {
           </div>
         </div>
       )}
+
+      {/* Destinations Section */}
+      <section className="py-12 bg-background">
+        <div className="max-w-6xl mx-auto px-4">
+          {landmarkTypes.map((type) => (
+            <div key={type} className="mb-8">
+              <h2 className="text-2xl font-bold mb-4 text-primary">{type}{type === "Heritage" ? " Sites" : type === "Cafe" ? "s" : type === "Food" ? " Spots" : type === "Church" ? "es" : ""}</h2>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {groupedLandmarks[type].map((l) => (
+                  <DestinationCard
+                    key={l.name}
+                    name={l.name}
+                    location="Iloilo"
+                    image={getImage(l.type)}
+                    rating={getRating(l.type)}
+                  />
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
     </>
   )
 }
