@@ -7,26 +7,24 @@ import { ArrowRight, Star, Bookmark, MapPin, X, Map } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { landmarks } from "@/lib/landmarks"
 
-const destinations = landmarks.slice(0, 12).map((l) => ({
-  name: l.name,
-  location: "Iloilo",
-  image:
-    l.type === "Food" || l.type === "Cafe"
-      ? "/images/iloilo-food.jpg"
-      : l.type === "Heritage" || l.type === "Church"
-      ? "/images/miagao-church.jpg"
-      : l.type === "Urban"
-      ? "/images/esplanade.jpg"
-      : "/images/placeholder.jpg",
-  rating:
-    l.type === "Food" || l.type === "Cafe"
-      ? 4.5
-      : l.type === "Heritage" || l.type === "Church"
-      ? 4.7
-      : l.type === "Urban"
-      ? 4.6
-      : 4.0,
-}))
+// Group landmarks by type
+const churches = landmarks.filter(l => l.type === "Church")
+const foodPlaces = landmarks.filter(l => l.type === "Food")
+const cafes = landmarks.filter(l => l.type === "Cafe")
+const heritages = landmarks.filter(l => l.type === "Heritage")
+
+function getImage(type: string) {
+  if (type === "Food" || type === "Cafe") return "/images/iloilo-food.jpg"
+  if (type === "Heritage" || type === "Church") return "/images/miagao-church.jpg"
+  if (type === "Urban") return "/images/esplanade.jpg"
+  return "/images/placeholder.jpg"
+}
+function getRating(type: string) {
+  if (type === "Food" || type === "Cafe") return 4.5
+  if (type === "Heritage" || type === "Church") return 4.7
+  if (type === "Urban") return 4.6
+  return 4.0
+}
 
 const pujRoutes = [
   { name: "Molo Route", fare: "₱8-10", stops: "City - Molo Church" },
@@ -100,8 +98,6 @@ export function HeroSection() {
     window.addEventListener("scroll", handleScroll, { passive: true })
     return () => window.removeEventListener("scroll", handleScroll)
   }, [handleScroll])
-
-  const scrollItems = [...destinations, ...destinations]
 
   return (
     <>
@@ -251,7 +247,7 @@ export function HeroSection() {
                 <div className="absolute inset-x-0 top-0 z-10 h-16 bg-gradient-to-b from-black/40 to-transparent" />
                 <div className="absolute inset-x-0 bottom-0 z-10 h-16 bg-gradient-to-t from-black/40 to-transparent" />
                 <div className="animate-scroll-up flex flex-col gap-4">
-                  {scrollItems.map((dest, i) => (
+                  {churches.map((dest, i) => (
                     <DestinationCard key={`col1-${i}`} {...dest} size="large" />
                   ))}
                 </div>
@@ -261,7 +257,7 @@ export function HeroSection() {
                 <div className="absolute inset-x-0 top-0 z-10 h-16 bg-gradient-to-b from-black/40 to-transparent" />
                 <div className="absolute inset-x-0 bottom-0 z-10 h-16 bg-gradient-to-t from-black/40 to-transparent" />
                 <div className="animate-scroll-down flex flex-col gap-4">
-                  {[...scrollItems].reverse().map((dest, i) => (
+                  {[...churches].reverse().map((dest, i) => (
                     <DestinationCard key={`col2-${i}`} {...dest} size="default" />
                   ))}
                 </div>
@@ -269,7 +265,7 @@ export function HeroSection() {
             </div>
 
             <div className="flex gap-3 overflow-x-auto pb-4 lg:hidden">
-              {destinations.slice(0, 4).map((dest) => (
+              {churches.slice(0, 4).map((dest) => (
                 <DestinationCard key={dest.name} {...dest} size="default" />
               ))}
             </div>
@@ -335,6 +331,60 @@ export function HeroSection() {
           </div>
         </div>
       )}
+
+      {/* Destinations Section */}
+      <section className="py-12 bg-background">
+        <div className="max-w-6xl mx-auto px-4">
+          <h2 className="text-2xl font-bold mb-4 text-primary">Churches</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            {churches.map((l) => (
+              <DestinationCard
+                key={l.name}
+                name={l.name}
+                location="Iloilo"
+                image={getImage(l.type)}
+                rating={getRating(l.type)}
+              />
+            ))}
+          </div>
+          <h2 className="text-2xl font-bold mb-4 text-primary">Food</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            {foodPlaces.map((l) => (
+              <DestinationCard
+                key={l.name}
+                name={l.name}
+                location="Iloilo"
+                image={getImage(l.type)}
+                rating={getRating(l.type)}
+              />
+            ))}
+          </div>
+          <h2 className="text-2xl font-bold mb-4 text-primary">Cafes</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            {cafes.map((l) => (
+              <DestinationCard
+                key={l.name}
+                name={l.name}
+                location="Iloilo"
+                image={getImage(l.type)}
+                rating={getRating(l.type)}
+              />
+            ))}
+          </div>
+          <h2 className="text-2xl font-bold mb-4 text-primary">Heritage Sites</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            {heritages.map((l) => (
+              <DestinationCard
+                key={l.name}
+                name={l.name}
+                location="Iloilo"
+                image={getImage(l.type)}
+                rating={getRating(l.type)}
+              />
+            ))}
+          </div>
+        </div>
+      </section>
     </>
   )
 }
