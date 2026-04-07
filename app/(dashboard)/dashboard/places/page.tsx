@@ -4,19 +4,36 @@ import { useState } from "react"
 import Image from "next/image"
 import { Search, Star, MapPin, ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { landmarks } from "@/lib/landmarks"
 
-const allPlaces = [
-  { id: 1, name: "Miag-ao Church", image: "/images/miagao-church.jpg", category: "Heritage", rating: 4.9, location: "Miag-ao" },
-  { id: 2, name: "Islas de Gigantes", image: "/images/gigantes-island.jpg", category: "Beach", rating: 4.8, location: "Carles" },
-  { id: 3, name: "Garin Farm", image: "/images/garin-farm.jpg", category: "Nature", rating: 4.7, location: "San Joaquin" },
-  { id: 4, name: "Iloilo Esplanade", image: "/images/esplanade.jpg", category: "Urban", rating: 4.6, location: "Iloilo City" },
-  { id: 5, name: "Jaro Cathedral", image: "/images/miagao-church.jpg", category: "Heritage", rating: 4.5, location: "Jaro" },
-  { id: 6, name: "Molo Church", image: "/images/miagao-church.jpg", category: "Heritage", rating: 4.5, location: "Molo" },
-  { id: 7, name: "Dinagyang Festival", image: "/images/dinagyang-festival.jpg", category: "Events", rating: 5.0, location: "Iloilo City" },
-  { id: 8, name: "Paraw Regatta", image: "/images/paraw-regatta.jpg", category: "Events", rating: 4.7, location: "Iloilo Strait" },
-]
+const allPlaces = landmarks.slice(0, 40).map((l, i) => ({
+  id: i + 1,
+  name: l.name,
+  image: getImage(l.name, l.type),
+  category: l.type,
+  rating: getRating(l.type),
+  location: getLocation(l.name),
+}))
 
-const categories = ["All", "Heritage", "Beach", "Nature", "Urban", "Events"]
+// Helper: assign placeholder images, ratings, and locations
+function getImage(name: string, type: string) {
+  if (type === "Food" || type === "Cafe") return "/images/iloilo-food.jpg"
+  if (type === "Heritage" || type === "Church") return "/images/miagao-church.jpg"
+  if (type === "Urban") return "/images/esplanade.jpg"
+  return "/images/placeholder.jpg"
+}
+function getRating(type: string) {
+  if (type === "Food" || type === "Cafe") return 4.5
+  if (type === "Heritage" || type === "Church") return 4.7
+  if (type === "Urban") return 4.6
+  return 4.0
+}
+function getLocation(name: string) {
+  // Optionally parse location from name or set a default
+  return "Iloilo"
+}
+
+const categories = ["All", "Heritage", "Beach", "Nature", "Urban", "Events", "Church", "Food", "Cafe"]
 
 export default function PlacesPage() {
   const [activeCategory, setActiveCategory] = useState("All")

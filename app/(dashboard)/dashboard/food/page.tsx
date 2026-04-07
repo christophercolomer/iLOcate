@@ -4,17 +4,33 @@ import { useState } from "react"
 import Image from "next/image"
 import { Search, Star, MapPin, ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { landmarks } from "@/lib/landmarks"
 
-const allFood = [
-  { id: 1, name: "Ted's Oldtimer La Paz Batchoy", image: "/images/iloilo-food.jpg", category: "Local Food", rating: 4.9, location: "La Paz" },
-  { id: 2, name: "Cafe Panay", image: "/images/cafe.jpg", category: "Cafes", rating: 4.6, location: "Iloilo City" },
-  { id: 3, name: "Breakthrough Restaurant", image: "/images/restaurant.jpg", category: "Restaurants", rating: 4.7, location: "Mandurriao" },
-  { id: 4, name: "Iloilo Night Market", image: "/images/street-food.jpg", category: "Street Food", rating: 4.5, location: "Iloilo City" },
-  { id: 5, name: "Deco's La Paz Batchoy", image: "/images/iloilo-food.jpg", category: "Local Food", rating: 4.8, location: "La Paz" },
-  { id: 6, name: "Madge Cafe", image: "/images/cafe.jpg", category: "Cafes", rating: 4.4, location: "Molo" },
-  { id: 7, name: "Tatoy's Manokan", image: "/images/restaurant.jpg", category: "Restaurants", rating: 4.7, location: "Villa Arevalo" },
-  { id: 8, name: "Pancit Molo Stall", image: "/images/food-festival.jpg", category: "Street Food", rating: 4.6, location: "Molo" },
-]
+const allFood = landmarks.filter(l => l.type === "Food" || l.type === "Cafe").map((l, i) => ({
+  id: i + 1,
+  name: l.name,
+  image: getImage(l.name, l.type),
+  category: l.type === "Food" ? "Local Food" : "Cafes",
+  rating: getRating(l.type),
+  location: getLocation(l.name),
+}))
+
+// Helper: assign placeholder images, ratings, and locations
+const getImage = (name: string, type: string) => {
+  if (type === "Food" || type === "Cafe") return "/images/iloilo-food.jpg"
+  if (type === "Heritage" || type === "Church") return "/images/miagao-church.jpg"
+  if (type === "Urban") return "/images/esplanade.jpg"
+  return "/images/placeholder.jpg"
+}
+const getRating = (type: string) => {
+  if (type === "Food" || type === "Cafe") return 4.5
+  if (type === "Heritage" || type === "Church") return 4.7
+  if (type === "Urban") return 4.6
+  return 4.0
+}
+const getLocation = (name: string) => {
+  return "Iloilo"
+}
 
 const categories = ["All", "Local Food", "Cafes", "Restaurants", "Street Food"]
 

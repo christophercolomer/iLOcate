@@ -5,45 +5,28 @@ import Image from "next/image"
 import Link from "next/link"
 import { ArrowRight, Star, Bookmark, MapPin, X, Map } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { landmarks } from "@/lib/landmarks"
 
-const destinations = [
-  {
-    name: "Miag-ao Church",
-    location: "Miag-ao, Iloilo",
-    image: "/images/miagao-church.jpg",
-    rating: 4.9,
-  },
-  {
-    name: "Islas de Gigantes",
-    location: "Carles, Iloilo",
-    image: "/images/gigantes-island.jpg",
-    rating: 4.8,
-  },
-  {
-    name: "Garin Farm",
-    location: "San Joaquin, Iloilo",
-    image: "/images/garin-farm.jpg",
-    rating: 4.7,
-  },
-  {
-    name: "Iloilo Esplanade",
-    location: "Iloilo City",
-    image: "/images/esplanade.jpg",
-    rating: 4.6,
-  },
-  {
-    name: "Dinagyang Festival",
-    location: "Iloilo City",
-    image: "/images/dinagyang-festival.jpg",
-    rating: 5.0,
-  },
-  {
-    name: "La Paz Batchoy",
-    location: "La Paz, Iloilo City",
-    image: "/images/iloilo-food.jpg",
-    rating: 4.8,
-  },
-]
+const destinations = landmarks.slice(0, 12).map((l) => ({
+  name: l.name,
+  location: "Iloilo",
+  image:
+    l.type === "Food" || l.type === "Cafe"
+      ? "/images/iloilo-food.jpg"
+      : l.type === "Heritage" || l.type === "Church"
+      ? "/images/miagao-church.jpg"
+      : l.type === "Urban"
+      ? "/images/esplanade.jpg"
+      : "/images/placeholder.jpg",
+  rating:
+    l.type === "Food" || l.type === "Cafe"
+      ? 4.5
+      : l.type === "Heritage" || l.type === "Church"
+      ? 4.7
+      : l.type === "Urban"
+      ? 4.6
+      : 4.0,
+}))
 
 const pujRoutes = [
   { name: "Molo Route", fare: "₱8-10", stops: "City - Molo Church" },
