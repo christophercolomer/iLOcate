@@ -248,7 +248,14 @@ export function HeroSection() {
                 <div className="absolute inset-x-0 bottom-0 z-10 h-16 bg-gradient-to-t from-black/40 to-transparent" />
                 <div className="animate-scroll-up flex flex-col gap-4">
                   {churches.map((dest, i) => (
-                    <DestinationCard key={`col1-${i}`} {...dest} size="large" />
+                    <DestinationCard
+                      key={`col1-${i}`}
+                      name={dest.name}
+                      location="Iloilo"
+                      image={getImage(dest.type)}
+                      rating={getRating(dest.type)}
+                      size="large"
+                    />
                   ))}
                 </div>
               </div>
@@ -258,7 +265,14 @@ export function HeroSection() {
                 <div className="absolute inset-x-0 bottom-0 z-10 h-16 bg-gradient-to-t from-black/40 to-transparent" />
                 <div className="animate-scroll-down flex flex-col gap-4">
                   {[...churches].reverse().map((dest, i) => (
-                    <DestinationCard key={`col2-${i}`} {...dest} size="default" />
+                    <DestinationCard
+                      key={`col2-${i}`}
+                      name={dest.name}
+                      location="Iloilo"
+                      image={getImage(dest.type)}
+                      rating={getRating(dest.type)}
+                      size="default"
+                    />
                   ))}
                 </div>
               </div>
@@ -266,7 +280,14 @@ export function HeroSection() {
 
             <div className="flex gap-3 overflow-x-auto pb-4 lg:hidden">
               {churches.slice(0, 4).map((dest) => (
-                <DestinationCard key={dest.name} {...dest} size="default" />
+                <DestinationCard
+                  key={dest.name}
+                  name={dest.name}
+                  location="Iloilo"
+                  image={getImage(dest.type)}
+                  rating={getRating(dest.type)}
+                  size="default"
+                />
               ))}
             </div>
           </div>
