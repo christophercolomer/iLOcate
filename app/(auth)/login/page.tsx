@@ -6,7 +6,8 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Eye, EyeOff, Mail, Lock } from "lucide-react"
 import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, sendPasswordResetEmail } from "firebase/auth"
-import { auth } from "@/lib/firebase"
+import { auth, db } from "@/lib/firebase"
+import { doc, getDoc } from "firebase/firestore"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -59,8 +60,18 @@ export default function LoginPage() {
 
     setLoading(true)
     try {
-      await signInWithEmailAndPassword(auth, email, password)
-      router.push("/dashboard")
+      const userCredential = await signInWithEmailAndPassword(auth, email, password)
+      
+      // Check if user has set preferences
+      const userDoc = await getDoc(doc(db, "users", userCredential.user.uid))
+      const userData = userDoc.data()
+      
+      // If preferences not set, redirect to preferences page
+      if (userData && !userData.preferencesSet) {
+        router.push("/preferences")
+      } else {
+        router.push("/dashboard")
+      }
     } catch (err: any) {
       setError(err.message || "Failed to log in")
     } finally {
@@ -74,8 +85,18 @@ export default function LoginPage() {
 
     try {
       const provider = new GoogleAuthProvider()
-      await signInWithPopup(auth, provider)
-      router.push("/dashboard")
+      const result = await signInWithPopup(auth, provider)
+      
+      // Check if user document exists and if preferences are set
+      const userDoc = await getDoc(doc(db, "users", result.user.uid))
+      const userData = userDoc.data()
+      
+      // If preferences not set, redirect to preferences page
+      if (userData && !userData.preferencesSet) {
+        router.push("/preferences")
+      } else {
+        router.push("/dashboard")
+      }
     } catch (err: any) {
       setError(err.message || "Failed to log in with Google")
     } finally {

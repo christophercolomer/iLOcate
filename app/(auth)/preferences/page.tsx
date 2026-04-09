@@ -36,12 +36,11 @@ export default function PreferencesPage() {
 
     setLoading(true)
     try {
-      const db = getFirestore()
       // Save preferences to Firestore under the user's ID
-      await setDoc(doc(db, "users", user.uid), {
+      await setDoc(doc(getFirestore(), "users", user.uid), {
         preferences: selected,
         preferencesSet: true,
-        updatedAt: new Date().toISOString(),
+        preferencesUpdatedAt: new Date().toISOString(),
       }, { merge: true })
 
       router.push("/dashboard")

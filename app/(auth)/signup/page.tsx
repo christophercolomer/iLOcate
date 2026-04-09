@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Eye, EyeOff, Mail, Lock, User, Loader2 } from "lucide-react"
-import { auth } from "@/lib/firebase"
+import { auth, db } from "@/lib/firebase"
 import {
   createUserWithEmailAndPassword,
   updateProfile,
@@ -12,6 +12,7 @@ import {
   FacebookAuthProvider,
   signInWithPopup,
 } from "firebase/auth"
+import { setDoc, doc } from "firebase/firestore"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -62,6 +63,17 @@ export default function SignupPage() {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password)
       await updateProfile(userCredential.user, { displayName: fullName })
+      
+      // Save user information to Firestore
+      await setDoc(doc(db, "users", userCredential.user.uid), {
+        fullName: fullName,
+        email: email,
+        uid: userCredential.user.uid,
+        createdAt: new Date().toISOString(),
+        preferences: [],
+        preferencesSet: false,
+      })
+      
       router.push("/preferences")
     } catch (err: unknown) {
       const code = (err as { code?: string }).code
@@ -84,7 +96,18 @@ export default function SignupPage() {
     setSocialLoading("google")
     try {
       const provider = new GoogleAuthProvider()
-      await signInWithPopup(auth, provider)
+      const result = await signInWithPopup(auth, provider)
+      
+      // Save user information to Firestore
+      await setDoc(doc(db, "users", result.user.uid), {
+        fullName: result.user.displayName || "",
+        email: result.user.email || "",
+        uid: result.user.uid,
+        createdAt: new Date().toISOString(),
+        preferences: [],
+        preferencesSet: false,
+      }, { merge: true })
+      
       router.push("/preferences")
     } catch {
       setErrors({ general: "Google sign-up failed. Please try again." })
@@ -98,7 +121,18 @@ export default function SignupPage() {
     setSocialLoading("facebook")
     try {
       const provider = new FacebookAuthProvider()
-      await signInWithPopup(auth, provider)
+      const result = await signInWithPopup(auth, provider)
+      
+      // Save user information to Firestore
+      await setDoc(doc(db, "users", result.user.uid), {
+        fullName: result.user.displayName || "",
+        email: result.user.email || "",
+        uid: result.user.uid,
+        createdAt: new Date().toISOString(),
+        preferences: [],
+        preferencesSet: false,
+      }, { merge: true })
+      
       router.push("/preferences")
     } catch {
       setErrors({ general: "Facebook sign-up failed. Please try again." })
