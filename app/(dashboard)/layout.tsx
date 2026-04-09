@@ -104,12 +104,12 @@ export default function DashboardLayout({
     <div className="flex min-h-screen flex-col bg-secondary">
       <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-[1400px] items-center justify-between px-4 lg:px-6">
-          <Link href="/dashboard" className="flex items-center gap-2">
+          <Link href="/dashboard" className="flex items-center gap-0">
             <Image
-                        src="/Ilocate No BG.svg"
+                        src="/logo black line.svg"
                         alt="iLOcate logo"
                         width={45}
-                        height={70}
+                        height={80}
                         className="object-contain"
             />
             <span className="text-lg font-bold text-foreground">
