@@ -14,10 +14,17 @@ const foodPlaces = landmarks.filter(l => l.type === "Food")
 const cafes = landmarks.filter(l => l.type === "Cafe")
 const heritages = landmarks.filter(l => l.type === "Heritage")
 
-function getImage(type: string) {
-  if (type === "Food" || type === "Cafe") return "/images/iloilo-food.jpg"
-  if (type === "Heritage" || type === "Church") return "/images/miagao-church.jpg"
-  if (type === "Urban") return "/images/esplanade.jpg"
+function getImage(name: string, type: string, imageUrl?: string) {
+  if (imageUrl && imageUrl !== "/images/placeholder.jpg") return imageUrl
+  if (type === "Food") return "/images/iloilo-food.jpg"
+  if (type === "Cafe") return "/images/cafe.jpg"
+  if (type === "Church" || type === "Museum") {
+    const slug = name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "")
+    return `/images/${slug}.jpg`
+  }
   return "/images/placeholder.jpg"
 }
 function getRating(type: string) {
@@ -268,7 +275,7 @@ export function HeroSection() {
                       key={`col1-${dest.name}-${dest.type}-${i}`}
                       name={dest.name}
                       location="Iloilo"
-                      image={getImage(dest.type)}
+                      image={getImage(dest.name, dest.type, dest.imageUrl)}
                       rating={getRating(dest.type)}
                       size="large"
                     />
@@ -285,7 +292,7 @@ export function HeroSection() {
                       key={`col2-${dest.name}-${dest.type}-${i}`}
                       name={dest.name}
                       location="Iloilo"
-                      image={getImage(dest.type)}
+                      image={getImage(dest.name, dest.type, dest.imageUrl)}
                       rating={getRating(dest.type)}
                       size="default"
                     />
@@ -300,7 +307,7 @@ export function HeroSection() {
                   key={`mobile-${dest.name}-${dest.type}-${i}`}
                   name={dest.name}
                   location="Iloilo"
-                  image={getImage(dest.type)}
+                  image={getImage(dest.name, dest.type, dest.imageUrl)}
                   rating={getRating(dest.type)}
                   size="default"
                 />
@@ -380,7 +387,7 @@ export function HeroSection() {
                   key={`${l.name}-${l.type}-${i}`}
                   name={l.name}
                   location="Iloilo"
-                  image={getImage(l.type)}
+                  image={getImage(l.name, l.type, l.imageUrl)}
                   rating={getRating(l.type)}
                 />
               ))}
@@ -392,7 +399,7 @@ export function HeroSection() {
                   key={`${l.name}-${l.type}-${i}`}
                   name={l.name}
                   location="Iloilo"
-                  image={getImage(l.type)}
+                  image={getImage(l.name, l.type, l.imageUrl)}
                   rating={getRating(l.type)}
                 />
               ))}
@@ -404,7 +411,7 @@ export function HeroSection() {
                   key={`${l.name}-${l.type}-${i}`}
                   name={l.name}
                   location="Iloilo"
-                  image={getImage(l.type)}
+                  image={getImage(l.name, l.type, l.imageUrl)}
                   rating={getRating(l.type)}
                 />
               ))}
@@ -416,7 +423,7 @@ export function HeroSection() {
                   key={`${l.name}-${l.type}-${i}`}
                   name={l.name}
                   location="Iloilo"
-                  image={getImage(l.type)}
+                  image={getImage(l.name, l.type, l.imageUrl)}
                   rating={getRating(l.type)}
                 />
               ))}

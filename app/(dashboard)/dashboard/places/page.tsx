@@ -6,22 +6,30 @@ import { Search, Star, MapPin, ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { landmarks } from "@/lib/landmarks"
 
-const allPlaces = landmarks.slice(0, 40).map((l, i) => ({
+function getImage(name: string, type: string, imageUrl?: string) {
+  if (imageUrl && imageUrl !== "/images/placeholder.jpg") return imageUrl;
+  if (type === "Food") return "/images/iloilo-food.jpg";
+  if (type === "Cafe") return "/images/cafe.jpg";
+  if (type === "Church" || type === "Museum") {
+    const slug = name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "");
+    return `/images/${slug}.jpg`;
+  }
+  return "/images/placeholder.jpg";
+}
+
+const allPlaces = landmarks.map((l, i) => ({
   id: i + 1,
   name: l.name,
-  image: getImage(l.name, l.type),
+  image: getImage(l.name, l.type, l.imageUrl),
   category: l.type,
   rating: getRating(l.type),
   location: getLocation(l.name),
 }))
 
 // Helper: assign placeholder images, ratings, and locations
-function getImage(name: string, type: string) {
-  if (type === "Food" || type === "Cafe") return "/images/iloilo-food.jpg"
-  if (type === "Heritage" || type === "Church") return "/images/miagao-church.jpg"
-  if (type === "Urban") return "/images/esplanade.jpg"
-  return "/images/placeholder.jpg"
-}
 function getRating(type: string) {
   if (type === "Food" || type === "Cafe") return 4.5
   if (type === "Heritage" || type === "Church") return 4.7
@@ -33,7 +41,7 @@ function getLocation(name: string) {
   return "Iloilo"
 }
 
-const categories = ["All", "Heritage", "Beach", "Nature", "Urban", "Events", "Church", "Food", "Cafe"]
+const categories = ["All", "Cafe", "Church", "Food", "Museum"]
 
 export default function PlacesPage() {
   const [activeCategory, setActiveCategory] = useState("All")
@@ -41,9 +49,12 @@ export default function PlacesPage() {
   const [showRouteModal, setShowRouteModal] = useState<{ name: string; image: string } | null>(null)
 
   const filtered = allPlaces.filter((p) => {
-    const matchesCategory = activeCategory === "All" || p.category === activeCategory
-    const matchesSearch = p.name.toLowerCase().includes(search.toLowerCase())
-    return matchesCategory && matchesSearch
+    const normalizedCategory = p.category.toLowerCase().trim();
+    const normalizedActive = activeCategory.toLowerCase().trim();
+    const matchesCategory =
+      normalizedActive === "all" || normalizedCategory === normalizedActive;
+    const matchesSearch = p.name.toLowerCase().includes(search.toLowerCase());
+    return matchesCategory && matchesSearch;
   })
 
   return (

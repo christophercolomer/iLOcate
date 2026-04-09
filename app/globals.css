@@ -108,11 +108,11 @@
 }
 
 .animate-scroll-up {
-  animation: scroll-up 240s linear infinite;
+  animation: scroll-up 100s linear infinite;
 }
 
 .animate-scroll-down {
-  animation: scroll-down 240s linear infinite;
+  animation: scroll-down 100s linear infinite;
 }
 
 .animate-scroll-up:hover,
