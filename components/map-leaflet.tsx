@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 import L from "leaflet"
 import "leaflet/dist/leaflet.css"
 import { Landmark } from "@/lib/landmarks"
@@ -58,6 +58,61 @@ export default function MapLeaflet({
   const map = useRef<L.Map | null>(null)
   const markersRef = useRef<L.Marker[]>([])
   const polylineRef = useRef<L.Polyline | null>(null)
+  const currentLocationMarkerRef = useRef<L.Marker | null>(null)
+  const [currentLocation, setCurrentLocation] = useState<[number, number] | null>(null)
+  const [locationError, setLocationError] = useState<string | null>(null)
+
+  const getCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      setLocationError("Geolocation is not supported by this browser.")
+      return
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords
+        const coords: [number, number] = [latitude, longitude]
+        setCurrentLocation(coords)
+        setLocationError(null)
+
+        // Add current location marker
+        if (map.current && !currentLocationMarkerRef.current) {
+          currentLocationMarkerRef.current = L.marker(coords, {
+            icon: L.icon({
+              iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png",
+              shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png",
+              iconSize: [25, 41],
+              iconAnchor: [12, 41],
+              popupAnchor: [1, -34],
+              shadowSize: [41, 41],
+            }),
+          })
+            .bindPopup("You are here")
+            .addTo(map.current)
+        }
+      },
+      (error) => {
+        let errorMessage = "Unable to retrieve your location."
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            errorMessage = "Location access denied by user."
+            break
+          case error.POSITION_UNAVAILABLE:
+            errorMessage = "Location information is unavailable."
+            break
+          case error.TIMEOUT:
+            errorMessage = "Location request timed out."
+            break
+        }
+        setLocationError(errorMessage)
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 300000, // 5 minutes
+      }
+    )
+  }
 
   useEffect(() => {
     if (!mapContainer.current || map.current) return
@@ -86,10 +141,46 @@ export default function MapLeaflet({
       .bindPopup("Iloilo City Center")
       .addTo(map.current)
 
+    // Get current location
+    getCurrentLocation()
+
+    // Add locate control button
+    const LocateControl = L.Control.extend({
+      options: {
+        position: 'topright'
+      },
+
+      onAdd: function(map: L.Map) {
+        const container = L.DomUtil.create('div', 'leaflet-control-locate leaflet-bar leaflet-control')
+        const button = L.DomUtil.create('a', 'leaflet-control-locate-button', container)
+        button.href = '#'
+        button.title = 'Show my location'
+        button.innerHTML = '📍'
+
+        L.DomEvent.on(button, 'click', function(e) {
+          L.DomEvent.stopPropagation(e)
+          L.DomEvent.preventDefault(e)
+          getCurrentLocation()
+          if (currentLocation) {
+            map.setView(currentLocation, 15)
+          }
+        })
+
+        return container
+      }
+    })
+
+    if (map.current) {
+      map.current.addControl(new LocateControl())
+    }
+
     return () => {
       if (map.current) {
         map.current.remove()
         map.current = null
+      }
+      if (currentLocationMarkerRef.current) {
+        currentLocationMarkerRef.current = null
       }
     }
   }, [center, zoom])
@@ -173,6 +264,30 @@ export default function MapLeaflet({
       map.current?.fitBounds(bounds, { padding: [50, 50] })
     }
   }, [selectedRoute, landmarks, routes])
+
+  // Handle current location marker updates
+  useEffect(() => {
+    if (!map.current || !currentLocation) return
+
+    // Remove existing current location marker
+    if (currentLocationMarkerRef.current) {
+      map.current.removeLayer(currentLocationMarkerRef.current)
+    }
+
+    // Add new current location marker
+    currentLocationMarkerRef.current = L.marker(currentLocation, {
+      icon: L.icon({
+        iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png",
+        shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png",
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41],
+      }),
+    })
+      .bindPopup("You are here")
+      .addTo(map.current)
+  }, [currentLocation])
 
   return <div ref={mapContainer} className="h-full w-full" />
 }
