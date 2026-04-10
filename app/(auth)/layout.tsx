@@ -54,7 +54,7 @@ export default function AuthLayout({
             </span>
           </Link>
         </div>
-        <main className="flex flex-1 items-center justify-center px-6 py-8">
+        <main className="flex flex-1 items-center justify-center px-6 py-8 overflow-auto">
           {children}
         </main>
       </div>
