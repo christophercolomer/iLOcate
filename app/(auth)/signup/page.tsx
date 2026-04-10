@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Eye, EyeOff, Mail, Lock, User, Loader2 } from "lucide-react"
@@ -26,14 +26,16 @@ export default function SignupPage() {
   const [errors, setErrors] = useState<{ fullName?: string; email?: string; password?: string; general?: string }>({})
   const [loading, setLoading] = useState(false)
   const [socialLoading, setSocialLoading] = useState<"google" | "facebook" | null>(null)
+  const [authing, setAuthing] = useState(false)
+  const redirectRef = useRef<string | null>(null)
   const router = useRouter()
   const { user } = useAuth()
 
   useEffect(() => {
-    if (user) {
+    if (user && !authing && !redirectRef.current) {
       router.push("/dashboard")
     }
-  }, [user, router])
+  }, [user, router, authing])
 
   const validate = () => {
     const newErrors: { fullName?: string; email?: string; password?: string } = {}
@@ -60,6 +62,7 @@ export default function SignupPage() {
     if (!validate()) return
 
     setLoading(true)
+    setAuthing(true)
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password)
       await updateProfile(userCredential.user, { displayName: fullName })
@@ -74,6 +77,7 @@ export default function SignupPage() {
         preferencesSet: false,
       })
       
+      redirectRef.current = "/preferences"
       router.push("/preferences")
     } catch (err: unknown) {
       const code = (err as { code?: string }).code
@@ -88,12 +92,14 @@ export default function SignupPage() {
       }
     } finally {
       setLoading(false)
+      setAuthing(false)
     }
   }
 
   const handleGoogleSignup = async () => {
     setErrors({})
     setSocialLoading("google")
+    setAuthing(true)
     try {
       const provider = new GoogleAuthProvider()
       const result = await signInWithPopup(auth, provider)
@@ -108,17 +114,20 @@ export default function SignupPage() {
         preferencesSet: false,
       }, { merge: true })
       
+      redirectRef.current = "/preferences"
       router.push("/preferences")
     } catch {
       setErrors({ general: "Google sign-up failed. Please try again." })
     } finally {
       setSocialLoading(null)
+      setAuthing(false)
     }
   }
 
   const handleFacebookSignup = async () => {
     setErrors({})
     setSocialLoading("facebook")
+    setAuthing(true)
     try {
       const provider = new FacebookAuthProvider()
       const result = await signInWithPopup(auth, provider)
@@ -133,11 +142,13 @@ export default function SignupPage() {
         preferencesSet: false,
       }, { merge: true })
       
+      redirectRef.current = "/preferences"
       router.push("/preferences")
     } catch {
       setErrors({ general: "Facebook sign-up failed. Please try again." })
     } finally {
       setSocialLoading(null)
+      setAuthing(false)
     }
   }
 

@@ -1,13 +1,13 @@
 ﻿"use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import Image from "next/image"  
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Eye, EyeOff, Mail, Lock } from "lucide-react"
 import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, sendPasswordResetEmail } from "firebase/auth"
 import { auth, db } from "@/lib/firebase"
-import { doc, getDoc } from "firebase/firestore"
+import { doc, getDoc, setDoc } from "firebase/firestore"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -22,14 +22,16 @@ export default function LoginPage() {
   const [errors, setErrors] = useState<{ email?: string; password?: string; general?: string }>({})
   const [socialLoading, setSocialLoading] = useState<"google" | "facebook" | null>(null)
   const [forgotSent, setForgotSent] = useState(false)
+  const [authing, setAuthing] = useState(false)
+  const redirectRef = useRef<string | null>(null)
   const router = useRouter()
   const { user } = useAuth()
 
   useEffect(() => {
-    if (user) {
+    if (user && !authing && !redirectRef.current) {
       router.push("/dashboard")
     }
-  }, [user, router])
+  }, [user, router, authing])
 
   const validate = () => {
     const newErrors: { email?: string; password?: string } = {}
@@ -59,48 +61,77 @@ export default function LoginPage() {
     if (!validate()) return
 
     setLoading(true)
+    setAuthing(true)
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password)
       
       // Check if user has set preferences
       const userDoc = await getDoc(doc(db, "users", userCredential.user.uid))
       const userData = userDoc.data()
+
+      if (!userData) {
+        // New user record missing, create a baseline before onboarding
+        await setDoc(doc(db, "users", userCredential.user.uid), {
+          fullName: userCredential.user.displayName || "",
+          email: userCredential.user.email || email,
+          uid: userCredential.user.uid,
+          createdAt: new Date().toISOString(),
+          preferences: [],
+          preferencesSet: false,
+        }, { merge: true })
+      }
       
-      // If preferences not set, redirect to preferences page
-      if (userData && !userData.preferencesSet) {
+      // Send new or preference-less users to preferences page first
+      if (!userData || !userData.preferencesSet) {
+        redirectRef.current = "/preferences"
         router.push("/preferences")
       } else {
+        redirectRef.current = "/dashboard"
         router.push("/dashboard")
       }
     } catch (err: any) {
       setError(err.message || "Failed to log in")
     } finally {
       setLoading(false)
+      setAuthing(false)
     }
   }
 
   const handleGoogleLogin = async () => {
     setError("")
     setSocialLoading("google")
+    setAuthing(true)
 
     try {
       const provider = new GoogleAuthProvider()
       const result = await signInWithPopup(auth, provider)
       
-      // Check if user document exists and if preferences are set
+      // Check if user document exists
       const userDoc = await getDoc(doc(db, "users", result.user.uid))
       const userData = userDoc.data()
       
-      // If preferences not set, redirect to preferences page
-      if (userData && !userData.preferencesSet) {
+      // If user doesn't exist or preferences not set, create/update user doc and go to preferences
+      if (!userData || !userData.preferencesSet) {
+        await setDoc(doc(db, "users", result.user.uid), {
+          fullName: result.user.displayName || "",
+          email: result.user.email || "",
+          uid: result.user.uid,
+          createdAt: userData?.createdAt || new Date().toISOString(),
+          preferences: userData?.preferences || [],
+          preferencesSet: false,
+        }, { merge: true })
+        
+        redirectRef.current = "/preferences"
         router.push("/preferences")
       } else {
+        redirectRef.current = "/dashboard"
         router.push("/dashboard")
       }
     } catch (err: any) {
       setError(err.message || "Failed to log in with Google")
     } finally {
       setSocialLoading(null)
+      setAuthing(false)
     }
   }
 
