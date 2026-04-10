@@ -10,28 +10,28 @@ const events = [
     name: "Dinagyang Festival",
     date: "January 26, 2026",
     description: "One of the grandest and most colorful festivals in the Philippines celebrating the Santo Nino.",
-    image: "/images/dinagyang-festival.jpg",
+    image: "/images/events/dinagyang-festival.jpg",
   },
   {
     id: 2,
     name: "Paraw Regatta",
     date: "February 15, 2026",
     description: "A traditional sailboat race showcasing Iloilo's rich maritime heritage and culture.",
-    image: "/images/paraw-regatta.jpg",
+    image: "/images/events/paraw-regatta.jpg",
   },
   {
     id: 3,
     name: "Iloilo Food Festival",
     date: "March 20, 2026",
     description: "A celebration of Ilonggo cuisine featuring local delicacies and culinary talents.",
-    image: "/images/food-festival.jpg",
+    image: "/images/food/food-festival.jpg",
   },
   {
     id: 4,
     name: "Heritage Walk",
     date: "April 10, 2026",
     description: "A guided walking tour through Iloilo's historic Calle Real district and colonial buildings.",
-    image: "/images/esplanade.jpg",
+    image: "/images/places/esplanade.jpg",
   },
 ]
 
