@@ -1,10 +1,53 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Image from "next/image"
-import { Search, Star, MapPin, ArrowRight } from "lucide-react"
+import { useRouter, useSearchParams } from "next/navigation"
+import { Search, Star, MapPin, ArrowRight, Heart } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { landmarks } from "@/lib/landmarks"
+
+type LikedItem = {
+  id: string
+  name: string
+  category: "Place" | "Food"
+  image: string
+  rating?: number
+  label?: string
+}
+
+const LIKES_STORAGE_KEY = "ilocate-liked-items"
+const LIKES_UPDATED_EVENT = "ilocate-likes-updated"
+
+function toLandmarkSlug(value: string) {
+  return value.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")
+}
+
+function parseLikedItems(raw: string | null): LikedItem[] {
+  if (!raw) return []
+
+  try {
+    const parsed = JSON.parse(raw)
+    if (!Array.isArray(parsed)) return []
+
+    return parsed.filter((item): item is LikedItem => {
+      return Boolean(
+        item &&
+          typeof item === "object" &&
+          typeof item.id === "string" &&
+          typeof item.name === "string" &&
+          typeof item.image === "string"
+      )
+    })
+  } catch {
+    return []
+  }
+}
+
+function readLikedItems() {
+  if (typeof window === "undefined") return []
+  return parseLikedItems(window.localStorage.getItem(LIKES_STORAGE_KEY))
+}
 
 // Helper: assign placeholder images, ratings, and locations
 const getImage = (name: string, type: string) => {
@@ -52,19 +95,82 @@ const getFoodCategory = (name: string, type: string) => {
 
 const allFood = landmarks.filter((l) => l.type === "Food" || l.type === "Cafe").map((l, i) => ({
   id: i + 1,
+  likeId: `food-${i + 1}-${l.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
   name: l.name,
   image: getFoodImage(l.imageUrl, l.name, l.type),
   category: getFoodCategory(l.name, l.type),
   rating: getRating(l.type),
+  label: getFoodCategory(l.name, l.type),
   location: getLocation(l.name),
 }))
 
 const categories = ["All", "Local Food", "Cafes", "Restaurants", "Street Food"]
 
 export default function FoodPage() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
   const [activeCategory, setActiveCategory] = useState("All")
   const [search, setSearch] = useState("")
   const [showRouteModal, setShowRouteModal] = useState<{ name: string; image: string } | null>(null)
+  const [likedItems, setLikedItems] = useState<LikedItem[]>([])
+
+  useEffect(() => {
+    setLikedItems(readLikedItems())
+
+    const syncLikes = () => setLikedItems(readLikedItems())
+    window.addEventListener("storage", syncLikes)
+    window.addEventListener(LIKES_UPDATED_EVENT, syncLikes)
+
+    return () => {
+      window.removeEventListener("storage", syncLikes)
+      window.removeEventListener(LIKES_UPDATED_EVENT, syncLikes)
+    }
+  }, [])
+
+  useEffect(() => {
+    const category = searchParams.get("category")?.toLowerCase().trim()
+    if (!category) {
+      return
+    }
+
+    const categoryFromQuery: Record<string, string> = {
+      "local-food": "Local Food",
+      cafes: "Cafes",
+      restaurant: "Restaurants",
+      restaurants: "Restaurants",
+      "street-food": "Street Food",
+    }
+
+    const resolvedCategory = categoryFromQuery[category]
+    if (resolvedCategory) {
+      setActiveCategory(resolvedCategory)
+    }
+  }, [searchParams])
+
+  const likedIds = new Set(likedItems.map((item) => item.id))
+
+  const toggleLike = (food: (typeof allFood)[number], event: React.MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation()
+
+    const isAlreadyLiked = likedIds.has(food.likeId)
+    const nextItems = isAlreadyLiked
+      ? likedItems.filter((item) => item.id !== food.likeId)
+      : [
+          ...likedItems,
+          {
+            id: food.likeId,
+            name: food.name,
+            category: "Food",
+            image: food.image,
+            rating: food.rating,
+            label: food.label,
+          },
+        ]
+
+    setLikedItems(nextItems)
+    window.localStorage.setItem(LIKES_STORAGE_KEY, JSON.stringify(nextItems))
+    window.dispatchEvent(new Event(LIKES_UPDATED_EVENT))
+  }
 
   const filtered = allFood.filter((f) => {
     const matchesCategory = activeCategory === "All" || f.category === activeCategory
@@ -109,14 +215,30 @@ export default function FoodPage() {
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {filtered.map((food) => (
-          <button
+          <article
             key={food.id}
             onClick={() => setShowRouteModal({ name: food.name, image: food.image })}
-            className="group overflow-hidden rounded-2xl bg-card text-left shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg"
+            onKeyDown={(event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault()
+                setShowRouteModal({ name: food.name, image: food.image })
+              }
+            }}
+            role="button"
+            tabIndex={0}
+            className="group relative cursor-pointer overflow-hidden rounded-2xl bg-card text-left shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg"
           >
             <div className="relative h-44 w-full overflow-hidden">
               <Image src={food.image} alt={food.name} fill className="object-cover transition-transform duration-500 group-hover:scale-105" sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw" />
               <div className="absolute left-2 top-2 rounded-full bg-accent/90 px-2.5 py-0.5 text-[10px] font-semibold text-accent-foreground">{food.category}</div>
+              <button
+                type="button"
+                onClick={(event) => toggleLike(food, event)}
+                className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-black/45 text-white backdrop-blur-sm transition-colors hover:bg-black/65"
+                aria-label={likedIds.has(food.likeId) ? `Unlike ${food.name}` : `Like ${food.name}`}
+              >
+                <Heart className={`h-4 w-4 ${likedIds.has(food.likeId) ? "fill-red-500 text-red-500" : "text-white"}`} />
+              </button>
             </div>
             <div className="p-4">
               <h3 className="text-sm font-semibold text-foreground">{food.name}</h3>
@@ -131,7 +253,7 @@ export default function FoodPage() {
                 </div>
               </div>
             </div>
-          </button>
+          </article>
         ))}
       </div>
 
@@ -168,11 +290,26 @@ export default function FoodPage() {
                 <span>{showRouteModal.name}</span>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <Button className="h-12 rounded-xl bg-primary text-sm font-semibold text-primary-foreground hover:bg-primary/90" onClick={() => setShowRouteModal(null)}>Palihog Bayad</Button>
-              <Button variant="outline" className="h-12 rounded-xl border-primary text-sm font-semibold text-primary hover:bg-primary/5" onClick={() => setShowRouteModal(null)}>Sa Lugar</Button>
+            <div className="mt-4 grid grid-cols-2 gap-3">
+              <Button
+                className="h-11 rounded-xl bg-primary text-sm font-semibold text-primary-foreground hover:bg-primary/90"
+                onClick={() => {
+                  const target = showRouteModal?.name
+                  if (!target) return
+                  setShowRouteModal(null)
+                  router.push(`/dashboard/map?landmark=${toLandmarkSlug(target)}`)
+                }}
+              >
+                Go to this place
+              </Button>
+              <Button
+                variant="outline"
+                className="h-11 rounded-xl border-border text-sm font-medium text-muted-foreground hover:text-foreground"
+                onClick={() => setShowRouteModal(null)}
+              >
+                Cancel
+              </Button>
             </div>
-            <button onClick={() => setShowRouteModal(null)} className="mt-4 w-full text-center text-sm text-muted-foreground hover:text-foreground">Cancel</button>
           </div>
         </div>
       )}

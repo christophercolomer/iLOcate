@@ -1,10 +1,11 @@
 "use client"
 
 import { useState } from "react"
+import Image from "next/image"
+import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { MapPin, Coffee, UtensilsCrossed, Waves, Landmark, Church, ShoppingBag, Music, Palette, Loader2 } from "lucide-react"
+import { ArrowLeft, MapPin, Coffee, UtensilsCrossed, Waves, Landmark, Church, ShoppingBag, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-
 import { auth } from "@/lib/firebase"
 import { getFirestore, doc, setDoc } from "firebase/firestore"
 
@@ -12,11 +13,11 @@ const categories = [
   { id: "coffee-shops", label: "Coffee Shops", icon: Coffee },
   { id: "restaurants", label: "Restaurants", icon: UtensilsCrossed },
   { id: "beaches", label: "Beaches", icon: Waves },
-  { id: "heritage", label: "Heritage Sites", icon: Landmark },
   { id: "churches", label: "Churches", icon: Church },
-  { id: "shopping", label: "Shopping", icon: ShoppingBag },
-  { id: "nightlife", label: "Nightlife & Events", icon: Music },
-  { id: "arts", label: "Arts & Culture", icon: Palette },
+  { id: "malls", label: "Malls", icon: ShoppingBag },
+  { id: "city-landmarks", label: "City Landmarks & Attractions", icon: Landmark },
+  { id: "museums", label: "Museums", icon: Landmark },
+  
 ]
 
 export default function PreferencesPage() {
@@ -58,15 +59,31 @@ export default function PreferencesPage() {
 
   return (
     <div className="w-full max-w-md">
-      <div className="mb-2 flex items-center gap-2">
-        <MapPin className="h-5 w-5 text-primary" />
-        <span className="text-sm font-semibold text-primary">iLOcate</span>
+      <div className="mb-2">
+        <Link href="/dashboard" className="flex items-center gap-0">
+          <Image
+            src="/logo black line.svg"
+            alt="iLOcate logo"
+            width={50}
+            height={50}
+            className="h-6 w-6 object-contain"
+          />
+          <span className="text-sm font-semibold text-primary">iLOcate</span>
+        </Link>
       </div>
 
       <h1 className="mt-4 text-2xl font-bold text-foreground">What are your likings?</h1>
       <p className="mt-2 text-sm text-muted-foreground">
         Select the categories that interest you. We will personalize your experience based on your preferences.
       </p>
+
+      <Link
+        href="/"
+        className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-primary transition-colors hover:text-primary/80"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        Back to home
+      </Link>
 
       <div className="mt-8 flex flex-col gap-3">
         {categories.map((cat) => {

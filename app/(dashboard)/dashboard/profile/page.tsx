@@ -1,73 +1,168 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { Coffee, UtensilsCrossed, Waves, Landmark, Church, ShoppingBag, Music, Palette, Loader2, ArrowLeft } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { useEffect, useMemo, useState } from "react"
+import Image from "next/image"
+import {
+  Award,
+  CalendarCheck2,
+  Church,
+  Coffee,
+  Heart,
+  HeartOff,
+  Landmark,
+  Loader2,
+  MapPin,
+  Pencil,
+  ShoppingBag,
+  Sparkles,
+  Star,
+  Utensils,
+  UtensilsCrossed,
+  Waves,
+} from "lucide-react"
+import { getDoc, getFirestore, doc, setDoc } from "firebase/firestore"
 import { auth } from "@/lib/firebase"
-import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore"
 import { useAuth } from "@/lib/auth-context"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
 
-const categories = [
+type LikedItem = {
+  id: string
+  name: string
+  category: "Place" | "Food"
+  image: string
+  rating?: number
+  label?: string
+}
+
+const STORAGE_KEYS = ["ilocate-liked-items", "likedItems", "favorites"]
+const LIKES_STORAGE_KEY = "ilocate-liked-items"
+const LIKES_UPDATED_EVENT = "ilocate-likes-updated"
+const PREFERENCE_CATEGORIES = [
   { id: "coffee-shops", label: "Coffee Shops", icon: Coffee },
   { id: "restaurants", label: "Restaurants", icon: UtensilsCrossed },
   { id: "beaches", label: "Beaches", icon: Waves },
-  { id: "heritage", label: "Heritage Sites", icon: Landmark },
   { id: "churches", label: "Churches", icon: Church },
-  { id: "shopping", label: "Shopping", icon: ShoppingBag },
-  { id: "nightlife", label: "Nightlife & Events", icon: Music },
-  { id: "arts", label: "Arts & Culture", icon: Palette },
-]
+  { id: "malls", label: "Malls", icon: ShoppingBag },
+  { id: "city-landmarks", label: "City Landmarks & Attractions", icon: Landmark },
+  { id: "museums", label: "Museums", icon: Landmark },
+] as const
+
+function normalizeItem(input: unknown, idx: number): LikedItem | null {
+  if (!input || typeof input !== "object") return null
+
+  const source = input as Record<string, unknown>
+  const name = typeof source.name === "string" ? source.name.trim() : ""
+  if (!name) return null
+
+  const rawCategory =
+    typeof source.category === "string"
+      ? source.category.toLowerCase()
+      : typeof source.type === "string"
+        ? source.type.toLowerCase()
+        : ""
+
+  const category: LikedItem["category"] =
+    rawCategory === "food" || rawCategory === "cafe" ? "Food" : "Place"
+
+  const image =
+    typeof source.image === "string"
+      ? source.image
+      : typeof source.imageUrl === "string"
+        ? source.imageUrl
+        : category === "Food"
+          ? "/images/food/iloilo-food.jpg"
+          : "/images/places/miagao-church.jpg"
+
+  const rating =
+    typeof source.rating === "number" && Number.isFinite(source.rating)
+      ? source.rating
+      : undefined
+
+  const label = typeof source.label === "string" ? source.label : undefined
+  const id =
+    typeof source.id === "string" && source.id.length > 0
+      ? source.id
+      : `liked-${idx}-${name.toLowerCase().replace(/\s+/g, "-")}`
+
+  return {
+    id,
+    name,
+    category,
+    image,
+    rating,
+    label,
+  }
+}
+
+function parseLikedItems(raw: string | null): LikedItem[] {
+  if (!raw) return []
+
+  try {
+    const parsed = JSON.parse(raw)
+    if (!Array.isArray(parsed)) return []
+
+    return parsed
+      .map((item, idx) => normalizeItem(item, idx))
+      .filter((item): item is LikedItem => Boolean(item))
+  } catch {
+    return []
+  }
+}
+
+function loadLikedItemsFromStorage(): LikedItem[] {
+  if (typeof window === "undefined") return []
+
+  for (const key of STORAGE_KEYS) {
+    const items = parseLikedItems(window.localStorage.getItem(key))
+    if (items.length > 0) return items
+  }
+
+  return []
+}
 
 export default function ProfilePage() {
-  const [selected, setSelected] = useState<string[]>([])
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
-  const router = useRouter()
   const { user } = useAuth()
+  const [likedItems, setLikedItems] = useState<LikedItem[]>([])
+  const [selectedPreferences, setSelectedPreferences] = useState<string[]>([])
+  const [loadingPreferences, setLoadingPreferences] = useState(true)
+  const [savingPreferences, setSavingPreferences] = useState(false)
 
-  useEffect(() => {
-    const fetchPreferences = async () => {
-      const currentUser = auth.currentUser
-      if (!currentUser) {
-        router.push("/login")
-        return
+  const handleUnlike = (id: string) => {
+    setLikedItems((prev) => {
+      const nextItems = prev.filter((item) => item.id !== id)
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem(LIKES_STORAGE_KEY, JSON.stringify(nextItems))
+        window.dispatchEvent(new Event(LIKES_UPDATED_EVENT))
       }
+      return nextItems
+    })
+  }
 
-      try {
-        const userDoc = await getDoc(doc(getFirestore(), "users", currentUser.uid))
-        if (userDoc.exists() && userDoc.data().preferences) {
-          setSelected(userDoc.data().preferences)
-        }
-      } catch (error) {
-        console.error("Error fetching preferences:", error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchPreferences()
-  }, [router])
-
-  const toggleCategory = (id: string) => {
-    setSelected((prev) =>
-      prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id]
+  const togglePreference = (id: string) => {
+    setSelectedPreferences((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
     )
   }
 
   const handleSavePreferences = async () => {
     const currentUser = auth.currentUser
-    if (!currentUser) {
-      router.push("/login")
-      return
-    }
+    if (!currentUser) return
 
-    setSaving(true)
+    setSavingPreferences(true)
     try {
       await setDoc(
         doc(getFirestore(), "users", currentUser.uid),
         {
-          preferences: selected,
+          preferences: selectedPreferences,
           preferencesUpdatedAt: new Date().toISOString(),
         },
         { merge: true }
@@ -75,117 +170,296 @@ export default function ProfilePage() {
     } catch (error) {
       console.error("Error saving preferences:", error)
     } finally {
-      setSaving(false)
+      setSavingPreferences(false)
     }
   }
 
-  if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <p className="text-sm text-muted-foreground">Loading profile...</p>
-        </div>
-      </div>
-    )
-  }
+  useEffect(() => {
+    const storedItems = loadLikedItemsFromStorage()
+    setLikedItems(storedItems)
+
+    const syncLikes = () => {
+      const nextItems = loadLikedItemsFromStorage()
+      setLikedItems(nextItems)
+    }
+
+    window.addEventListener("storage", syncLikes)
+    window.addEventListener(LIKES_UPDATED_EVENT, syncLikes)
+
+    return () => {
+      window.removeEventListener("storage", syncLikes)
+      window.removeEventListener(LIKES_UPDATED_EVENT, syncLikes)
+    }
+  }, [])
+
+  useEffect(() => {
+    const fetchPreferences = async () => {
+      const currentUser = auth.currentUser
+      if (!currentUser) {
+        setLoadingPreferences(false)
+        return
+      }
+
+      try {
+        const userDoc = await getDoc(doc(getFirestore(), "users", currentUser.uid))
+        const preferences = userDoc.data()?.preferences
+        if (Array.isArray(preferences)) {
+          setSelectedPreferences(
+            preferences.filter((value): value is string => typeof value === "string")
+          )
+        }
+      } catch (error) {
+        console.error("Error fetching preferences:", error)
+      } finally {
+        setLoadingPreferences(false)
+      }
+    }
+
+    fetchPreferences()
+  }, [])
+
+  const userName = useMemo(() => {
+    if (user?.displayName && user.displayName.trim().length > 0) {
+      return user.displayName
+    }
+    if (user?.email) {
+      return user.email.split("@")[0]
+    }
+    return "ILocate Explorer"
+  }, [user?.displayName, user?.email])
+
+  const userEmail = user?.email || "explorer@ilocate.app"
+
+  const userInitial = useMemo(() => {
+    return userName.charAt(0).toUpperCase()
+  }, [userName])
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-8 lg:px-6">
-      {/* Header */}
-      <div className="mb-8">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => router.back()}
-          className="mb-4 gap-2 text-muted-foreground hover:text-foreground"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back
-        </Button>
-        
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Profile</h1>
-          <p className="mt-2 text-muted-foreground">
-            Manage your account information and preferences
-          </p>
-        </div>
-      </div>
+    <div className="mx-auto w-full max-w-[1400px] px-4 py-8 lg:px-6">
+      <div className="space-y-6">
+        <Card className="border-border/80 bg-card/95 shadow-sm">
+          <CardContent className="p-4 md:p-6">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-center gap-4">
+                <Avatar className="h-16 w-16 border border-border">
+                  <AvatarImage src={user?.photoURL || undefined} alt={userName} />
+                  <AvatarFallback className="bg-primary/15 text-lg font-semibold text-primary">
+                    {userInitial}
+                  </AvatarFallback>
+                </Avatar>
 
-      {/* User Info Card */}
-      <div className="mb-8 rounded-xl border border-border bg-background p-6">
-        <h2 className="mb-4 text-lg font-semibold text-foreground">Account Information</h2>
-        <div className="space-y-3">
-          <div>
-            <p className="text-sm text-muted-foreground">Name</p>
-            <p className="font-medium text-foreground">{user?.displayName || "Not set"}</p>
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">Email</p>
-            <p className="font-medium text-foreground">{user?.email}</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Preferences Card */}
-      <div className="rounded-xl border border-border bg-background p-6">
-        <h2 className="mb-4 text-lg font-semibold text-foreground">Your Preferences</h2>
-        <p className="mb-6 text-sm text-muted-foreground">
-          Select the categories that interest you. We will personalize your experience based on your preferences.
-        </p>
-
-        <div className="flex flex-col gap-3">
-          {categories.map((cat) => {
-            const isSelected = selected.includes(cat.id)
-            const Icon = cat.icon
-            return (
-              <button
-                key={cat.id}
-                onClick={() => toggleCategory(cat.id)}
-                className={`flex items-center gap-4 rounded-xl border-2 px-5 py-4 text-left transition-all ${
-                  isSelected ? "border-primary bg-primary/5" : "border-border bg-background hover:border-primary/40"
-                }`}
-              >
-                <div
-                  className={`flex h-5 w-5 shrink-0 items-center justify-center rounded border-2 transition-colors ${
-                    isSelected ? "border-primary bg-primary" : "border-muted-foreground/40 bg-background"
-                  }`}
-                >
-                  {isSelected && (
-                    <svg
-                      className="h-3 w-3 text-primary-foreground"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      strokeWidth={3}
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                    </svg>
-                  )}
+                <div>
+                  <h1 className="text-xl font-semibold text-foreground md:text-2xl">
+                    {userName}
+                  </h1>
+                  <p className="text-sm text-muted-foreground">{userEmail}</p>
                 </div>
-                <Icon className={`h-5 w-5 ${isSelected ? "text-primary" : "text-muted-foreground"}`} />
-                <span className={`text-sm font-medium ${isSelected ? "text-foreground" : "text-muted-foreground"}`}>
-                  {cat.label}
-                </span>
-              </button>
-            )
-          })}
-        </div>
+              </div>
 
-        <Button
-          onClick={handleSavePreferences}
-          disabled={saving}
-          className="mt-6 h-12 w-full rounded-xl bg-primary text-base font-semibold text-primary-foreground hover:bg-primary/90"
-        >
-          {saving ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Saving...
-            </>
-          ) : (
-            "Save Preferences"
-          )}
-        </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="h-10 rounded-xl border-border/70 bg-background/60 px-4"
+              >
+                <Pencil className="h-4 w-4" />
+                Edit Profile
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-border/80 bg-card/95 shadow-sm">
+          <CardHeader className="pb-2">
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-primary" />
+              <CardTitle>Your Preferences</CardTitle>
+            </div>
+            <CardDescription>
+              Update what you like so recommendations stay relevant.
+            </CardDescription>
+          </CardHeader>
+
+          <CardContent className="space-y-4">
+            {loadingPreferences ? (
+              <div className="flex items-center gap-2 rounded-xl border border-border/70 bg-background/40 p-4 text-sm text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Loading your saved preferences...
+              </div>
+            ) : (
+              <>
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                  {PREFERENCE_CATEGORIES.map((category) => {
+                    const Icon = category.icon
+                    const isSelected = selectedPreferences.includes(category.id)
+
+                    return (
+                      <button
+                        key={category.id}
+                        type="button"
+                        onClick={() => togglePreference(category.id)}
+                        className={`flex items-center gap-4 rounded-xl border px-4 py-3 text-left transition-colors ${
+                          isSelected
+                            ? "border-primary bg-primary/10 text-foreground"
+                            : "border-border/70 bg-background/50 text-muted-foreground hover:border-primary/40 hover:text-foreground"
+                        }`}
+                      >
+                        <div
+                          className={`flex h-10 w-10 items-center justify-center rounded-lg ${
+                            isSelected ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                          }`}
+                        >
+                          <Icon className="h-4 w-4" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="text-sm font-medium">{category.label}</div>
+                        </div>
+                      </button>
+                    )
+                  })}
+                </div>
+
+                <div className="flex justify-end">
+                  <Button
+                    type="button"
+                    onClick={handleSavePreferences}
+                    disabled={savingPreferences || !user}
+                    className="rounded-xl px-5"
+                  >
+                    {savingPreferences ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Saving...
+                      </>
+                    ) : (
+                      "Save Preferences"
+                    )}
+                  </Button>
+                </div>
+              </>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="border-border/80 bg-card/95 shadow-sm">
+          <CardHeader className="pb-2">
+            <div className="flex items-center gap-2">
+              <Heart className="h-4 w-4 text-primary" />
+              <CardTitle>Liked Places & Food</CardTitle>
+            </div>
+            <CardDescription>
+              Your saved favorites across destinations and food spots.
+            </CardDescription>
+          </CardHeader>
+
+          <CardContent>
+            {likedItems.length === 0 ? (
+              <div className="rounded-xl border border-dashed border-border/80 bg-background/40 p-8 text-center">
+                <Heart className="mx-auto mb-3 h-8 w-8 text-muted-foreground/60" />
+                <p className="text-sm text-muted-foreground">No liked items yet</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {likedItems.map((item) => (
+                  <article
+                    key={item.id}
+                    className="group overflow-hidden rounded-xl border border-border/70 bg-background/50 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+                  >
+                    <div className="relative h-40 w-full overflow-hidden">
+                      <Image
+                        src={item.image}
+                        alt={item.name}
+                        fill
+                        className="object-cover transition-transform duration-300 group-hover:scale-105"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      />
+                      <div className="absolute left-2 top-2">
+                        <Badge
+                          variant={item.category === "Food" ? "secondary" : "default"}
+                          className="rounded-full"
+                        >
+                          {item.category === "Food" ? (
+                            <Utensils className="h-3 w-3" />
+                          ) : (
+                            <MapPin className="h-3 w-3" />
+                          )}
+                          {item.category}
+                        </Badge>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2 p-4">
+                      <h3 className="line-clamp-1 text-sm font-semibold text-foreground">
+                        {item.name}
+                      </h3>
+
+                      <div className="flex items-center justify-between text-xs text-muted-foreground">
+                        <span>{item.label || "Saved favorite"}</span>
+                        {typeof item.rating === "number" ? (
+                          <span className="flex items-center gap-1">
+                            <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                            {item.rating.toFixed(1)}
+                          </span>
+                        ) : null}
+                      </div>
+
+                      <div className="pt-1">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 rounded-lg px-2 text-xs text-muted-foreground hover:text-foreground"
+                          onClick={() => handleUnlike(item.id)}
+                        >
+                          <HeartOff className="h-3.5 w-3.5" />
+                          Unlike
+                        </Button>
+                      </div>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="border-border/80 bg-card/95 shadow-sm">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <CalendarCheck2 className="h-4 w-4 text-primary" />
+              <CardTitle>Travel History</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="rounded-xl border border-border/70 bg-background/40 p-4 text-sm text-muted-foreground">
+              Coming soon - This feature will show your visited places and trips.
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-border/80 bg-card/95 shadow-sm">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Award className="h-4 w-4 text-primary" />
+              <CardTitle>Achievements</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex flex-wrap gap-2">
+              <Badge className="rounded-full px-3 py-1">Explorer</Badge>
+              <Badge className="rounded-full px-3 py-1" variant="secondary">
+                Foodie
+              </Badge>
+              <Badge className="rounded-full px-3 py-1" variant="outline">
+                <Sparkles className="h-3 w-3" />
+                First Trip
+              </Badge>
+            </div>
+
+            <p className="text-sm text-muted-foreground">
+              Achievements will be unlocked based on your activity (coming soon)
+            </p>
+          </CardContent>
+        </Card>
       </div>
     </div>
   )

@@ -18,6 +18,8 @@ interface MapComponentProps {
   }>
   landmarks: Landmark[]
   selectedRoute: number | null
+  selectedLandmarkName?: string | null
+  focusedLandmarkNames?: string[]
 }
 
 const routeCoordinates: Record<number, [number, number][]> = {
@@ -47,16 +49,25 @@ const routeCoordinates: Record<number, [number, number][]> = {
   ],
 }
 
+function isValidCoordinatePair(coords: [number, number] | undefined | null): coords is [number, number] {
+  if (!coords || coords.length !== 2) return false
+  const [lat, lng] = coords
+  return Number.isFinite(lat) && Number.isFinite(lng)
+}
+
 export default function MapLeaflet({
   center,
   zoom,
   routes,
   landmarks,
   selectedRoute,
+  selectedLandmarkName,
+  focusedLandmarkNames = [],
 }: MapComponentProps) {
   const mapContainer = useRef<HTMLDivElement>(null)
   const map = useRef<L.Map | null>(null)
   const markersRef = useRef<L.Marker[]>([])
+  const landmarkMarkersRef = useRef<Map<string, L.Marker>>(new Map())
   const polylineRef = useRef<L.Polyline | null>(null)
   const currentLocationMarkerRef = useRef<L.Marker | null>(null)
   const [currentLocation, setCurrentLocation] = useState<[number, number] | null>(null)
@@ -120,11 +131,12 @@ export default function MapLeaflet({
     // Initialize map
     map.current = L.map(mapContainer.current).setView(center, zoom)
 
-    // Add OpenStreetMap tiles
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    // Add CartoDB Voyager tiles
+    L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
       attribution:
-        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-      maxZoom: 19,
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+      subdomains: "abcd",
+      maxZoom: 20,
     }).addTo(map.current)
 
     // Center marker
@@ -187,40 +199,64 @@ export default function MapLeaflet({
 
   useEffect(() => {
     if (!map.current) return
+    const mapInstance = map.current
+
+    const removeMarkerSafely = (marker: L.Marker) => {
+      try {
+        marker.closePopup()
+      } catch {
+        // noop
+      }
+
+      if (mapInstance.hasLayer(marker)) {
+        mapInstance.removeLayer(marker)
+      }
+    }
 
     // Clear existing markers
-    markersRef.current.forEach((marker) => map.current?.removeLayer(marker))
+    markersRef.current.forEach(removeMarkerSafely)
     markersRef.current = []
+    landmarkMarkersRef.current.clear()
 
     // Clear existing polyline
     if (polylineRef.current) {
-      map.current.removeLayer(polylineRef.current)
+      if (mapInstance.hasLayer(polylineRef.current)) {
+        mapInstance.removeLayer(polylineRef.current)
+      }
       polylineRef.current = null
     }
 
     // Add landmark markers
     landmarks.forEach((landmark) => {
-      if (map.current) {
-        const marker = L.marker(landmark.coordinates, {
-          icon: L.icon({
-            iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png",
-            shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png",
-            iconSize: [25, 41],
-            iconAnchor: [12, 41],
-            popupAnchor: [1, -34],
-            shadowSize: [41, 41],
-          }),
-        })
-          .bindPopup(`<strong>${landmark.name}</strong><br/>${landmark.type}`)
-          .addTo(map.current)
+      if (!isValidCoordinatePair(landmark.coordinates)) return
 
-        markersRef.current.push(marker)
-      }
+      const isFocused = focusedLandmarkNames.includes(landmark.name)
+      const isSelected = selectedLandmarkName === landmark.name
+      const marker = L.marker(landmark.coordinates, {
+        icon: L.icon({
+          iconUrl: isSelected
+            ? "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png"
+            : isFocused
+              ? "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png"
+            : "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png",
+          shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png",
+          iconSize: [25, 41],
+          iconAnchor: [12, 41],
+          popupAnchor: [1, -34],
+          shadowSize: [41, 41],
+        }),
+      })
+        .bindPopup(`<strong>${landmark.name}</strong><br/>${landmark.type}`)
+        .addTo(mapInstance)
+
+      markersRef.current.push(marker)
+      landmarkMarkersRef.current.set(landmark.name, marker)
     })
 
     // Add selected route polyline
     if (selectedRoute !== null && routeCoordinates[selectedRoute]) {
-      const routeCoords = routeCoordinates[selectedRoute]
+      const routeCoords = routeCoordinates[selectedRoute].filter((coords) => isValidCoordinatePair(coords))
+      if (routeCoords.length < 2) return
       const selectedRouteName = routes.find((r) => r.id === selectedRoute)?.name
 
       polylineRef.current = L.polyline(routeCoords, {
@@ -230,14 +266,14 @@ export default function MapLeaflet({
         dashArray: "5, 5",
       })
         .bindPopup(`<strong>${selectedRouteName}</strong>`)
-        .addTo(map.current)
+        .addTo(mapInstance)
 
       // Add stop markers for selected route
       const selectedRouteData = routes.find((r) => r.id === selectedRoute)
       if (selectedRouteData) {
         selectedRouteData.stops.forEach((stop, index) => {
           const coords = routeCoords[index]
-          if (coords && map.current) {
+          if (isValidCoordinatePair(coords)) {
             const marker = L.marker(coords, {
               icon: L.icon({
                 iconUrl:
@@ -252,7 +288,7 @@ export default function MapLeaflet({
               }),
             })
               .bindPopup(`<strong>Stop: ${stop}</strong>`)
-              .addTo(map.current)
+              .addTo(mapInstance)
 
             markersRef.current.push(marker)
           }
@@ -261,17 +297,58 @@ export default function MapLeaflet({
 
       // Fit bounds to show route
       const bounds = L.latLngBounds(routeCoords)
-      map.current?.fitBounds(bounds, { padding: [50, 50] })
+      mapInstance.fitBounds(bounds, { padding: [50, 50] })
     }
-  }, [selectedRoute, landmarks, routes])
+  }, [selectedRoute, selectedLandmarkName, focusedLandmarkNames, landmarks, routes])
+
+  useEffect(() => {
+    if (!map.current || !selectedLandmarkName) return
+
+    const marker = landmarkMarkersRef.current.get(selectedLandmarkName)
+    if (!marker) return
+
+    if (!map.current.hasLayer(marker)) return
+
+    const latLng = marker.getLatLng()
+    map.current.setView(latLng, Math.max(map.current.getZoom(), 15), { animate: true })
+  }, [selectedLandmarkName])
+
+  useEffect(() => {
+    if (!map.current || selectedLandmarkName || focusedLandmarkNames.length === 0) return
+
+    const focusedMarkers = focusedLandmarkNames
+      .map((name) => landmarkMarkersRef.current.get(name))
+      .filter((marker): marker is L.Marker => Boolean(marker))
+
+    if (focusedMarkers.length === 0) return
+
+    if (focusedMarkers.length === 1) {
+      const only = focusedMarkers[0]
+      if (!map.current.hasLayer(only)) return
+      map.current.setView(only.getLatLng(), Math.max(map.current.getZoom(), 15), { animate: true })
+      return
+    }
+
+    const bounds = L.latLngBounds(focusedMarkers.map((marker) => marker.getLatLng()))
+    map.current.fitBounds(bounds, { padding: [50, 50] })
+  }, [focusedLandmarkNames, selectedLandmarkName])
 
   // Handle current location marker updates
   useEffect(() => {
     if (!map.current || !currentLocation) return
+    const mapInstance = map.current
 
     // Remove existing current location marker
     if (currentLocationMarkerRef.current) {
-      map.current.removeLayer(currentLocationMarkerRef.current)
+      try {
+        currentLocationMarkerRef.current.closePopup()
+      } catch {
+        // noop
+      }
+
+      if (mapInstance.hasLayer(currentLocationMarkerRef.current)) {
+        mapInstance.removeLayer(currentLocationMarkerRef.current)
+      }
     }
 
     // Add new current location marker
@@ -286,7 +363,7 @@ export default function MapLeaflet({
       }),
     })
       .bindPopup("You are here")
-      .addTo(map.current)
+      .addTo(mapInstance)
   }, [currentLocation])
 
   return <div ref={mapContainer} className="h-full w-full" />
