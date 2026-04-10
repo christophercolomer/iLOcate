@@ -12,7 +12,7 @@ export default function AuthLayout({
       {/* Left: Image */}
       <div className="relative hidden h-full w-1/2 overflow-hidden lg:block">
         <Image
-          src="/images/hero-iloilo.svg"
+          src="/images/banners/hero-iloilo.svg"
           alt="Beautiful Iloilo scenery"
           fill
           className="object-cover scale-150"
@@ -54,7 +54,7 @@ export default function AuthLayout({
             </span>
           </Link>
         </div>
-        <main className="flex flex-1 items-center justify-center px-6 py-8">
+        <main className="flex flex-1 items-center justify-center px-6 py-8 overflow-auto">
           {children}
         </main>
       </div>

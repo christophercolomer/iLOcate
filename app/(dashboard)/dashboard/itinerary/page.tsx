@@ -6,12 +6,12 @@ import { CalendarDays, DollarSign, Plus, Trash2, MapPin, Star, ArrowRight } from
 import { Button } from "@/components/ui/button"
 
 const popularPlaces = [
-  { id: 1, name: "Miag-ao Church", image: "/images/miagao-church.jpg", category: "Heritage", rating: 4.9, cost: "Free" },
-  { id: 2, name: "Islas de Gigantes", image: "/images/gigantes-island.jpg", category: "Beach", rating: 4.8, cost: "PHP 500" },
-  { id: 3, name: "Garin Farm", image: "/images/garin-farm.jpg", category: "Nature", rating: 4.7, cost: "PHP 150" },
-  { id: 4, name: "Iloilo Esplanade", image: "/images/esplanade.jpg", category: "Urban", rating: 4.6, cost: "Free" },
-  { id: 5, name: "Molo Church", image: "/images/miagao-church.jpg", category: "Heritage", rating: 4.5, cost: "Free" },
-  { id: 6, name: "La Paz Market", image: "/images/iloilo-food.jpg", category: "Food", rating: 4.8, cost: "PHP 50-200" },
+  { id: 1, name: "Miag-ao Church", image: "/images/places/miagao-church.jpg", category: "Heritage", rating: 4.9, cost: "Free" },
+  { id: 2, name: "Islas de Gigantes", image: "/images/places/gigantes-island.jpg", category: "Beach", rating: 4.8, cost: "PHP 500" },
+  { id: 3, name: "Garin Farm", image: "/images/places/garin-farm.jpg", category: "Nature", rating: 4.7, cost: "PHP 150" },
+  { id: 4, name: "Iloilo Esplanade", image: "/images/places/esplanade.jpg", category: "Urban", rating: 4.6, cost: "Free" },
+  { id: 5, name: "Molo Church", image: "/images/places/miagao-church.jpg", category: "Heritage", rating: 4.5, cost: "Free" },
+  { id: 6, name: "La Paz Market", image: "/images/food/iloilo-food.jpg", category: "Food", rating: 4.8, cost: "PHP 50-200" },
 ]
 
 const suggestedActivities = [

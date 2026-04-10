@@ -6,21 +6,18 @@ import { Search, Star, MapPin, ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { landmarks } from "@/lib/landmarks"
 
-const allFood = landmarks.filter(l => l.type === "Food" || l.type === "Cafe").map((l, i) => ({
-  id: i + 1,
-  name: l.name,
-  image: getImage(l.name, l.type),
-  category: l.type === "Food" ? "Local Food" : "Cafes",
-  rating: getRating(l.type),
-  location: getLocation(l.name),
-}))
-
 // Helper: assign placeholder images, ratings, and locations
 const getImage = (name: string, type: string) => {
-  if (type === "Food" || type === "Cafe") return "/images/iloilo-food.jpg"
-  if (type === "Heritage" || type === "Church") return "/images/miagao-church.jpg"
-  if (type === "Urban") return "/images/esplanade.jpg"
-  return "/images/placeholder.jpg"
+  if (type === "Food" || type === "Cafe") return "/images/food/iloilo-food.jpg"
+  if (type === "Heritage" || type === "Church") return "/images/places/miagao-church.jpg"
+  if (type === "Urban") return "/images/places/esplanade.jpg"
+  return "/images/icons/placeholder.jpg"
+}
+const getFoodImage = (imageUrl: string | undefined, name: string, type: string) => {
+  if (imageUrl && imageUrl !== "/images/icons/placeholder.jpg") {
+    return imageUrl
+  }
+  return getImage(name, type)
 }
 const getRating = (type: string) => {
   if (type === "Food" || type === "Cafe") return 4.5
@@ -31,6 +28,36 @@ const getRating = (type: string) => {
 const getLocation = (name: string) => {
   return "Iloilo"
 }
+
+const getFoodCategory = (name: string, type: string) => {
+  const normalizedName = name.toLowerCase()
+  const isCafe = type === "Cafe" || /cafe|coffee|coff|latt[eé]|book latté|café/.test(normalizedName)
+  const isRestaurant = /restaurant|resto|grill|grill and|seafood|kitchen|house|diner|canteen|eatery|branch|batchoy|kansi|talabahan/.test(normalizedName)
+  const isStreetFood = /sari-sari|street|street food|pulutan|tinapay|kakanin|tempura|puso|barbecue|bihon|batchoy/i.test(normalizedName)
+
+  if (type === "Cafe" || (type === "Food" && isCafe && !/restaurant|resto|grill|kitchen|house|branch/.test(normalizedName))) {
+    return "Cafes"
+  }
+
+  if (type === "Food" && isRestaurant) {
+    return "Restaurants"
+  }
+
+  if (type === "Food" && isStreetFood) {
+    return "Street Food"
+  }
+
+  return "Local Food"
+}
+
+const allFood = landmarks.filter((l) => l.type === "Food" || l.type === "Cafe").map((l, i) => ({
+  id: i + 1,
+  name: l.name,
+  image: getFoodImage(l.imageUrl, l.name, l.type),
+  category: getFoodCategory(l.name, l.type),
+  rating: getRating(l.type),
+  location: getLocation(l.name),
+}))
 
 const categories = ["All", "Local Food", "Cafes", "Restaurants", "Street Food"]
 

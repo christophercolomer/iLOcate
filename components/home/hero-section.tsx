@@ -15,17 +15,17 @@ const cafes = landmarks.filter(l => l.type === "Cafe")
 const heritages = landmarks.filter(l => l.type === "Heritage")
 
 function getImage(name: string, type: string, imageUrl?: string) {
-  if (imageUrl && imageUrl !== "/images/placeholder.jpg") return imageUrl
-  if (type === "Food") return "/images/iloilo-food.jpg"
-  if (type === "Cafe") return "/images/cafe.jpg"
+  if (imageUrl && imageUrl !== "/images/icons/placeholder.jpg") return imageUrl
+  if (type === "Food") return "/images/food/iloilo-food.jpg"
+  if (type === "Cafe") return "/images/food/cafe.jpg"
   if (type === "Church" || type === "Museum") {
     const slug = name
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/(^-|-$)/g, "")
-    return `/images/${slug}.jpg`
+    return `/images/places/${slug}.jpg`
   }
-  return "/images/placeholder.jpg"
+  return "/images/icons/placeholder.jpg"
 }
 function getRating(type: string) {
   if (type === "Food" || type === "Cafe") return 4.5
@@ -183,7 +183,7 @@ export function HeroSection() {
           style={{ transform: `translateY(${scrollY * 0.3}px)` }}
         >
           <Image
-            src="/images/hero-iloilo(1).svg"
+            src="/images/banners/hero-iloilo(1).svg"
             alt="Stunning view of Iloilo City, Philippines"
             fill
             className="object-cover"

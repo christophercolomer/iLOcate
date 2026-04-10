@@ -9,10 +9,10 @@ import { landmarks } from "@/lib/landmarks"
 
 // Helper: assign placeholder images and ratings
 const getImage = (name: string, type: string) => {
-  if (type === "Food" || type === "Cafe") return "/images/iloilo-food.jpg"
-  if (type === "Heritage" || type === "Church") return "/images/miagao-church.jpg"
-  if (type === "Urban") return "/images/esplanade.jpg"
-  return "/images/placeholder.jpg"
+  if (type === "Food" || type === "Cafe") return "/images/food/iloilo-food.jpg"
+  if (type === "Heritage" || type === "Church") return "/images/places/miagao-church.jpg"
+  if (type === "Urban") return "/images/places/esplanade.jpg"
+  return "/images/icons/placeholder.jpg"
 }
 const getRating = (type: string) => {
   if (type === "Food" || type === "Cafe") return 4.5
@@ -140,7 +140,7 @@ function PlaceCard({ name, image, category, rating }: { name: string; image: str
 export default function DashboardPage() {
   return (
     <div className="relative min-h-screen">
-      <div className="absolute inset-0 -z-20 bg-[url('/images/hero-iloilo(1).svg')] bg-cover bg-center opacity-40" />
+      <div className="absolute inset-0 -z-20 bg-[url('/images/banners/hero-iloilo(1).svg')] bg-cover bg-center opacity-40" />
       <div className="absolute inset-0 -z-10 bg-white/20 backdrop-blur-md" />
       <div className="relative min-h-screen">
       {/* Map Section */}
