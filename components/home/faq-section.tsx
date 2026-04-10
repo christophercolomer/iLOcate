@@ -24,16 +24,6 @@ const faqs = [
       "Use our interactive Map tab to find PUJ (Public Utility Jeepney) routes, commute directions, and nearby points of interest. You can search routes from one location to another.",
   },
   {
-    question: "Can I contribute to iLOcate?",
-    answer:
-      "Absolutely! Registered users can submit reviews, rate places, and suggest new listings. We love community contributions to keep our platform up to date.",
-  },
-  {
-    question: "What kind of food can I find on the platform?",
-    answer:
-      "We feature a wide range of Ilonggo cuisine including local dishes like La Paz Batchoy and Pancit Molo, cozy cafes, fine dining restaurants, and popular street food spots.",
-  },
-  {
     question: "Is the map feature available offline?",
     answer:
       "Offline maps are available for Premium users. Free users can access the interactive map with an internet connection.",

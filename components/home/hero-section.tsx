@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { ArrowRight, Star, Bookmark, MapPin, X, Map } from "lucide-react"
+import { ArrowRight, Star, Bookmark, X, Map } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { landmarks } from "@/lib/landmarks"
 import { useAuth } from "@/lib/auth-context"
@@ -196,14 +196,22 @@ export function HeroSection() {
         <div className="absolute inset-0 bg-gradient-to-r from-black/30 via-black/50 to-black/5" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-black/5" />
         
-        <div className="relative z-10 mx-auto flex h-full max-w-[1200px] items-center px-4 pt-[12px] lg:px-6">
+        <div className="relative z-10 mx-auto flex h-full w-full max-w-[1300px] items-center px-4 pt-[12px] lg:px-8 xl:px-10">
           <div className="flex w-full flex-col gap-8 lg:flex-row lg:items-center lg:justify-between lg:gap-12">
-            <div className="flex max-w-xl flex-1 flex-col">
-              {/* Navigation Tool Badge */}
-              <div className="mb-4 inline-flex w-fit items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 backdrop-blur-sm">
-                <MapPin className="h-4 w-4 text-primary" />
+            <div className="flex max-w-lg flex-1 flex-col rounded-3xl border border-white/15 bg-white/[0.06] p-5 shadow-[0_8px_30px_rgba(0,0,0,0.28)] backdrop-blur-sm md:p-7">
+              <Link
+                href="/dashboard"
+                className="mb-4 inline-flex w-fit items-center gap-0 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 backdrop-blur-sm transition-colors hover:bg-white/15"
+              >
+                <Image
+                  src="/ilocate No BG.svg"
+                  alt="iLOcate logo"
+                  width={50}
+                  height={50}
+                  className="h-6 w-6 object-contain"
+                />
                 <span className="text-xs font-medium text-white/90">Navigation Tool for Iloilo</span>
-              </div>
+              </Link>
 
               {/* Main Heading - Emphasize iLOcate */}
               <div className="space-y-1">
@@ -376,61 +384,6 @@ export function HeroSection() {
         </div>
       )}
 
-      {/* Destinations Section */}
-      {user && (
-        <section className="py-12 bg-background">
-          <div className="max-w-6xl mx-auto px-4">
-            <h2 className="text-2xl font-bold mb-4 text-primary">Churches</h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-              {churches.map((l, i) => (
-                <DestinationCard
-                  key={`${l.name}-${l.type}-${i}`}
-                  name={l.name}
-                  location="Iloilo"
-                  image={getImage(l.name, l.type, l.imageUrl)}
-                  rating={getRating(l.type)}
-                />
-              ))}
-            </div>
-            <h2 className="text-2xl font-bold mb-4 text-primary">Food</h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-              {foodPlaces.map((l, i) => (
-                <DestinationCard
-                  key={`${l.name}-${l.type}-${i}`}
-                  name={l.name}
-                  location="Iloilo"
-                  image={getImage(l.name, l.type, l.imageUrl)}
-                  rating={getRating(l.type)}
-                />
-              ))}
-            </div>
-            <h2 className="text-2xl font-bold mb-4 text-primary">Cafes</h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-              {cafes.map((l, i) => (
-                <DestinationCard
-                  key={`${l.name}-${l.type}-${i}`}
-                  name={l.name}
-                  location="Iloilo"
-                  image={getImage(l.name, l.type, l.imageUrl)}
-                  rating={getRating(l.type)}
-                />
-              ))}
-            </div>
-            <h2 className="text-2xl font-bold mb-4 text-primary">Heritage Sites</h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-              {heritages.map((l, i) => (
-                <DestinationCard
-                  key={`${l.name}-${l.type}-${i}`}
-                  name={l.name}
-                  location="Iloilo"
-                  image={getImage(l.name, l.type, l.imageUrl)}
-                  rating={getRating(l.type)}
-                />
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
     </>
   )
 }
