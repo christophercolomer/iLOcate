@@ -53,6 +53,10 @@ export default function PreferencesPage() {
     }
   }
 
+  const handleSkip = () => {
+    router.push("/dashboard")
+  }
+
   return (
     <div className="w-full max-w-md">
       <div className="mb-2">
@@ -111,16 +115,27 @@ export default function PreferencesPage() {
         })}
       </div>
 
-      <Button
-        onClick={handleContinue}
-        disabled={selected.length === 0 || loading}
-        className="mt-8 h-12 w-full rounded-xl bg-primary text-base font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
-      >
-        {loading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Saving...</> : "Continue"}
-      </Button>
+      <div className="mt-8 flex flex-col gap-3">
+        {selected.length > 0 && (
+          <Button
+            onClick={handleContinue}
+            disabled={loading}
+            className="h-12 rounded-xl bg-primary text-base font-semibold text-primary-foreground hover:bg-primary/90"
+          >
+            {loading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Saving...</> : "Continue"}
+          </Button>
+        )}
+        <Button
+          onClick={handleSkip}
+          variant="outline"
+          className="h-12 rounded-xl border-2 border-border text-base font-semibold text-foreground hover:bg-muted"
+        >
+          Skip
+        </Button>
+      </div>
 
       <p className="mt-4 text-center text-xs text-muted-foreground">
-        You can always change your preferences later in settings.
+        You can always change your preferences later in your profile.
       </p>
     </div>
   )

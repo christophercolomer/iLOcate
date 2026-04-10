@@ -5,14 +5,23 @@ import Image from "next/image"
 import {
   Award,
   CalendarCheck2,
+  Church,
+  Coffee,
   Heart,
   HeartOff,
+  Landmark,
+  Loader2,
   MapPin,
   Pencil,
+  ShoppingBag,
   Sparkles,
   Star,
   Utensils,
+  UtensilsCrossed,
+  Waves,
 } from "lucide-react"
+import { getDoc, getFirestore, doc, setDoc } from "firebase/firestore"
+import { auth } from "@/lib/firebase"
 import { useAuth } from "@/lib/auth-context"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
@@ -37,6 +46,15 @@ type LikedItem = {
 const STORAGE_KEYS = ["ilocate-liked-items", "likedItems", "favorites"]
 const LIKES_STORAGE_KEY = "ilocate-liked-items"
 const LIKES_UPDATED_EVENT = "ilocate-likes-updated"
+const PREFERENCE_CATEGORIES = [
+  { id: "coffee-shops", label: "Coffee Shops", icon: Coffee },
+  { id: "restaurants", label: "Restaurants", icon: UtensilsCrossed },
+  { id: "beaches", label: "Beaches", icon: Waves },
+  { id: "churches", label: "Churches", icon: Church },
+  { id: "malls", label: "Malls", icon: ShoppingBag },
+  { id: "city-landmarks", label: "City Landmarks & Attractions", icon: Landmark },
+  { id: "museums", label: "Museums", icon: Landmark },
+] as const
 
 function normalizeItem(input: unknown, idx: number): LikedItem | null {
   if (!input || typeof input !== "object") return null
@@ -114,6 +132,9 @@ function loadLikedItemsFromStorage(): LikedItem[] {
 export default function ProfilePage() {
   const { user } = useAuth()
   const [likedItems, setLikedItems] = useState<LikedItem[]>([])
+  const [selectedPreferences, setSelectedPreferences] = useState<string[]>([])
+  const [loadingPreferences, setLoadingPreferences] = useState(true)
+  const [savingPreferences, setSavingPreferences] = useState(false)
 
   const handleUnlike = (id: string) => {
     setLikedItems((prev) => {
@@ -126,6 +147,33 @@ export default function ProfilePage() {
     })
   }
 
+  const togglePreference = (id: string) => {
+    setSelectedPreferences((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+    )
+  }
+
+  const handleSavePreferences = async () => {
+    const currentUser = auth.currentUser
+    if (!currentUser) return
+
+    setSavingPreferences(true)
+    try {
+      await setDoc(
+        doc(getFirestore(), "users", currentUser.uid),
+        {
+          preferences: selectedPreferences,
+          preferencesUpdatedAt: new Date().toISOString(),
+        },
+        { merge: true }
+      )
+    } catch (error) {
+      console.error("Error saving preferences:", error)
+    } finally {
+      setSavingPreferences(false)
+    }
+  }
+
   useEffect(() => {
     const storedItems = loadLikedItemsFromStorage()
     setLikedItems(storedItems)
@@ -136,12 +184,38 @@ export default function ProfilePage() {
     }
 
     window.addEventListener("storage", syncLikes)
-    window.addEventListener("ilocate-likes-updated", syncLikes)
+    window.addEventListener(LIKES_UPDATED_EVENT, syncLikes)
 
     return () => {
       window.removeEventListener("storage", syncLikes)
-      window.removeEventListener("ilocate-likes-updated", syncLikes)
+      window.removeEventListener(LIKES_UPDATED_EVENT, syncLikes)
     }
+  }, [])
+
+  useEffect(() => {
+    const fetchPreferences = async () => {
+      const currentUser = auth.currentUser
+      if (!currentUser) {
+        setLoadingPreferences(false)
+        return
+      }
+
+      try {
+        const userDoc = await getDoc(doc(getFirestore(), "users", currentUser.uid))
+        const preferences = userDoc.data()?.preferences
+        if (Array.isArray(preferences)) {
+          setSelectedPreferences(
+            preferences.filter((value): value is string => typeof value === "string")
+          )
+        }
+      } catch (error) {
+        console.error("Error fetching preferences:", error)
+      } finally {
+        setLoadingPreferences(false)
+      }
+    }
+
+    fetchPreferences()
   }, [])
 
   const userName = useMemo(() => {
@@ -183,6 +257,7 @@ export default function ProfilePage() {
               </div>
 
               <Button
+                type="button"
                 variant="outline"
                 className="h-10 rounded-xl border-border/70 bg-background/60 px-4"
               >
@@ -190,6 +265,78 @@ export default function ProfilePage() {
                 Edit Profile
               </Button>
             </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-border/80 bg-card/95 shadow-sm">
+          <CardHeader className="pb-2">
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-primary" />
+              <CardTitle>Your Preferences</CardTitle>
+            </div>
+            <CardDescription>
+              Update what you like so recommendations stay relevant.
+            </CardDescription>
+          </CardHeader>
+
+          <CardContent className="space-y-4">
+            {loadingPreferences ? (
+              <div className="flex items-center gap-2 rounded-xl border border-border/70 bg-background/40 p-4 text-sm text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Loading your saved preferences...
+              </div>
+            ) : (
+              <>
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                  {PREFERENCE_CATEGORIES.map((category) => {
+                    const Icon = category.icon
+                    const isSelected = selectedPreferences.includes(category.id)
+
+                    return (
+                      <button
+                        key={category.id}
+                        type="button"
+                        onClick={() => togglePreference(category.id)}
+                        className={`flex items-center gap-4 rounded-xl border px-4 py-3 text-left transition-colors ${
+                          isSelected
+                            ? "border-primary bg-primary/10 text-foreground"
+                            : "border-border/70 bg-background/50 text-muted-foreground hover:border-primary/40 hover:text-foreground"
+                        }`}
+                      >
+                        <div
+                          className={`flex h-10 w-10 items-center justify-center rounded-lg ${
+                            isSelected ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                          }`}
+                        >
+                          <Icon className="h-4 w-4" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="text-sm font-medium">{category.label}</div>
+                        </div>
+                      </button>
+                    )
+                  })}
+                </div>
+
+                <div className="flex justify-end">
+                  <Button
+                    type="button"
+                    onClick={handleSavePreferences}
+                    disabled={savingPreferences || !user}
+                    className="rounded-xl px-5"
+                  >
+                    {savingPreferences ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Saving...
+                      </>
+                    ) : (
+                      "Save Preferences"
+                    )}
+                  </Button>
+                </div>
+              </>
+            )}
           </CardContent>
         </Card>
 
