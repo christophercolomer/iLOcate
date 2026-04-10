@@ -21,7 +21,7 @@ export const AboutUsModal: React.FC<AboutUsModalProps> = ({ open, onClose }) => 
         <div className="flex flex-wrap justify-center gap-8 w-full mb-8">
           <div className="flex flex-col items-center w-40">
             <img
-              src="/images/Christoper.jpg"
+              src="/images/people/Christoper.jpg"
               alt="Christopher Colomer"
               className="w-50 h-40 rounded-lg object-cover mb-2 border border-gray-200"
             />
@@ -30,7 +30,7 @@ export const AboutUsModal: React.FC<AboutUsModalProps> = ({ open, onClose }) => 
           </div>
           <div className="flex flex-col items-center w-40">
             <img
-              src="/images/Nikko.jpg"
+              src="/images/people/Nikko.jpg"
               alt="Nikko Delos santos"
               className="w-50 h-40 rounded-lg object-cover mb-2 border border-gray-200"
             />
@@ -39,7 +39,7 @@ export const AboutUsModal: React.FC<AboutUsModalProps> = ({ open, onClose }) => 
           </div>
           <div className="flex flex-col items-center w-40">
             <img
-              src="/images/reinwel.jpg"
+              src="/images/people/reinwel.jpg"
               alt="Reinwel Tingson"
               className="w-50 h-40 rounded-lg object-cover mb-2 border border-gray-200"
             />
@@ -48,7 +48,7 @@ export const AboutUsModal: React.FC<AboutUsModalProps> = ({ open, onClose }) => 
           </div>
           <div className="flex flex-col items-center w-40">
             <img
-              src="/images/trisha.jpg"
+              src="/images/people/trisha.jpg"
               alt="Trisha Jambaro"
               className="w-50 h-40 rounded-lg object-cover mb-2 border border-gray-200"
             />

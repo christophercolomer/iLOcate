@@ -7,17 +7,17 @@ import { Button } from "@/components/ui/button"
 import { landmarks } from "@/lib/landmarks"
 
 function getImage(name: string, type: string, imageUrl?: string) {
-  if (imageUrl && imageUrl !== "/images/placeholder.jpg") return imageUrl;
-  if (type === "Food") return "/images/iloilo-food.jpg";
-  if (type === "Cafe") return "/images/cafe.jpg";
+  if (imageUrl && imageUrl !== "/images/icons/placeholder.jpg") return imageUrl;
+  if (type === "Food") return "/images/food/iloilo-food.jpg";
+  if (type === "Cafe") return "/images/food/cafe.jpg";
   if (type === "Church" || type === "Museum") {
     const slug = name
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/(^-|-$)/g, "");
-    return `/images/${slug}.jpg`;
+    return `/images/places/${slug}.jpg`;
   }
-  return "/images/placeholder.jpg";
+  return "/images/icons/placeholder.jpg";
 }
 
 const allPlaces = landmarks.map((l, i) => ({
@@ -41,7 +41,9 @@ function getLocation(name: string) {
   return "Iloilo"
 }
 
-const categories = ["All", "Cafe", "Church", "Food", "Museum"]
+const categories = ["All", "Malls", "Churches", "Museum", "City Landmark & Attraction"]
+
+const mallKeywords = ["mall", "sm ", "robinsons", "gaisano", "festive", "megaworld", "ayala", "central", "city mall", "mall of", "shangri-la"]
 
 export default function PlacesPage() {
   const [activeCategory, setActiveCategory] = useState("All")
@@ -49,12 +51,21 @@ export default function PlacesPage() {
   const [showRouteModal, setShowRouteModal] = useState<{ name: string; image: string } | null>(null)
 
   const filtered = allPlaces.filter((p) => {
-    const normalizedCategory = p.category.toLowerCase().trim();
-    const normalizedActive = activeCategory.toLowerCase().trim();
+    if (p.category === "Food" || p.category === "Cafe") return false
+
+    const normalizedCategory = p.category.toLowerCase().trim()
+    const normalizedActive = activeCategory.toLowerCase().trim()
+
     const matchesCategory =
-      normalizedActive === "all" || normalizedCategory === normalizedActive;
-    const matchesSearch = p.name.toLowerCase().includes(search.toLowerCase());
-    return matchesCategory && matchesSearch;
+      normalizedActive === "all" ||
+      (normalizedActive === "churches" && normalizedCategory === "church") ||
+      (normalizedActive === "museum" && normalizedCategory === "museum") ||
+      (normalizedActive === "city landmark & attraction" &&
+        (normalizedCategory === "church" || normalizedCategory === "museum")) ||
+      (normalizedActive === "malls" && mallKeywords.some((keyword) => p.name.toLowerCase().includes(keyword)))
+
+    const matchesSearch = p.name.toLowerCase().includes(search.toLowerCase())
+    return matchesCategory && matchesSearch
   })
 
   return (
