@@ -19,6 +19,7 @@ import dynamic from "next/dynamic"
 import { landmarks } from "@/lib/landmarks"
 import { useAuth } from "@/lib/auth-context"
 import { doc, getDoc, getFirestore } from "firebase/firestore"
+import { loadAndDecodeRoutes, type DecodedRoute } from "@/lib/route-decoder"
 
 const MapComponent = dynamic(() => import("@/components/map-leaflet"), {
   ssr: false,
@@ -27,41 +28,6 @@ const MapComponent = dynamic(() => import("@/components/map-leaflet"), {
 
 const MAP_CENTER: [number, number] = [10.6969, 122.5644]
 const MAP_ZOOM = 13
-
-const routes = [
-  {
-    id: 1,
-    name: "CPU - SM City Iloilo",
-    code: "Jaro Route",
-    stops: ["CPU", "Jaro Plaza", "Tagbak Terminal", "SM City Iloilo"],
-    fare: "PHP 12",
-    time: "~20 min",
-  },
-  {
-    id: 2,
-    name: "Molo - La Paz",
-    code: "Molo Route",
-    stops: ["Molo Church", "Iznart St", "JM Basa", "La Paz Market"],
-    fare: "PHP 10",
-    time: "~15 min",
-  },
-  {
-    id: 3,
-    name: "City Proper - Mandurriao",
-    code: "Mandurriao Route",
-    stops: ["Plazoleta Gay", "Ledesma St", "Diversion Rd", "SM Starmall"],
-    fare: "PHP 11",
-    time: "~18 min",
-  },
-  {
-    id: 4,
-    name: "Arevalo - City Proper",
-    code: "Arevalo Route",
-    stops: ["Villa Arevalo", "Molo", "General Luna St", "City Proper"],
-    fare: "PHP 10",
-    time: "~22 min",
-  },
-]
 
 const categoryOrder = [
   "Malls",
@@ -119,12 +85,32 @@ export default function FullScreenMapPage() {
   const [to, setTo] = useState("")
   const [routeMode, setRouteMode] = useState<"Palihog Bayad" | "Sa Lugar">("Palihog Bayad")
   const [showRoutes, setShowRoutes] = useState(false)
-  const [selectedRoute, setSelectedRoute] = useState<number | null>(null)
+  const [selectedRoute, setSelectedRoute] = useState<string | null>(null)
   const [selectedLandmarkSection, setSelectedLandmarkSection] = useState<string | null>(null)
   const [selectedLandmarkName, setSelectedLandmarkName] = useState<string | null>(null)
   const [focusedLandmarkNames, setFocusedLandmarkNames] = useState<string[]>([])
   const [userPreferences, setUserPreferences] = useState<string[]>([])
+  const [routes, setRoutes] = useState<DecodedRoute[]>([])
+  const [loadingRoutes, setLoadingRoutes] = useState(true)
   const { user } = useAuth()
+
+  useEffect(() => {
+    const fetchRoutes = async () => {
+      setLoadingRoutes(true)
+      try {
+        const decodedRoutes = await loadAndDecodeRoutes()
+        console.log("[v0] Routes loaded:", decodedRoutes.length, decodedRoutes)
+        setRoutes(decodedRoutes)
+      } catch (error) {
+        console.error("Error loading routes:", error)
+        setRoutes([])
+      } finally {
+        setLoadingRoutes(false)
+      }
+    }
+
+    fetchRoutes()
+  }, [])
 
   useEffect(() => {
     let isMounted = true
@@ -311,39 +297,45 @@ export default function FullScreenMapPage() {
             <Bus className="h-4 w-4 text-primary" />
           </div>
           <div className="flex flex-col gap-2">
-            {routes.map((route) => (
-              <button
-                key={route.id}
-                onClick={() => setSelectedRoute(selectedRoute === route.id ? null : route.id)}
-                className={`w-full rounded-xl border p-3 text-left transition-all ${
-                  selectedRoute === route.id ? "border-primary bg-primary/5" : "border-border bg-background hover:border-primary/40"
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-foreground">{route.name}</p>
-                    <p className="text-xs text-muted-foreground">{route.code} - {route.time}</p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-semibold text-primary">{route.fare}</span>
+            {loadingRoutes ? (
+              <p className="text-xs text-muted-foreground">Loading routes...</p>
+            ) : routes.length === 0 ? (
+              <p className="text-xs text-muted-foreground">No routes available</p>
+            ) : (
+              routes.map((route) => (
+                <button
+                  key={route.id}
+                  onClick={() => setSelectedRoute(selectedRoute === route.id ? null : route.id)}
+                  className={`w-full rounded-xl border p-3 text-left transition-all ${
+                    selectedRoute === route.id ? "border-primary bg-primary/5" : "border-border bg-background hover:border-primary/40"
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-foreground">{route.routeNumber} - {route.routeName}</p>
+                      <p className="text-xs text-muted-foreground">{route.vehicleTypeName}</p>
+                    </div>
                     <ChevronRight className={`h-4 w-4 text-muted-foreground transition-transform ${selectedRoute === route.id ? "rotate-90" : ""}`} />
                   </div>
-                </div>
-                {selectedRoute === route.id && (
-                  <div className="mt-3 border-t border-border pt-3">
-                    <p className="mb-2 text-xs font-medium text-muted-foreground">Stops:</p>
-                    <div className="flex flex-col gap-1.5">
-                      {route.stops.map((stop, i) => (
-                        <div key={`${route.id}-${stop}-${i}`} className="flex items-center gap-2">
-                          <div className={`h-2 w-2 rounded-full ${i === 0 ? "bg-primary" : i === route.stops.length - 1 ? "bg-accent" : "bg-border"}`} />
-                          <span className="text-xs text-foreground">{stop}</span>
-                        </div>
-                      ))}
+                  {selectedRoute === route.id && (
+                    <div className="mt-3 border-t border-border pt-3">
+                      <p className="mb-2 text-xs font-medium text-muted-foreground">Stops ({route.stops.length}):</p>
+                      <div className="max-h-40 flex flex-col gap-1.5 overflow-y-auto pr-2">
+                        {route.stops.slice(0, 10).map((stop, i) => (
+                          <div key={`${route.id}-${stop.id}`} className="flex items-center gap-2">
+                            <div className={`h-2 w-2 rounded-full flex-shrink-0 ${i === 0 ? "bg-primary" : i === Math.min(9, route.stops.length - 1) ? "bg-accent" : "bg-border"}`} />
+                            <span className="text-xs text-foreground truncate">{stop.address}</span>
+                          </div>
+                        ))}
+                        {route.stops.length > 10 && (
+                          <p className="text-xs text-muted-foreground">+{route.stops.length - 10} more stops</p>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                )}
-              </button>
-            ))}
+                  )}
+                </button>
+              ))
+            )}
           </div>
         </div>
 
@@ -531,11 +523,19 @@ export default function FullScreenMapPage() {
         <MapComponent
           center={MAP_CENTER}
           zoom={MAP_ZOOM}
-          routes={routes}
+          routes={routes.map((route) => ({
+            id: route.id,
+            name: `${route.routeNumber} - ${route.routeName}`,
+            code: route.vehicleTypeName,
+            stops: route.stops.map((s) => s.address),
+            fare: "",
+            time: "",
+          }))}
           landmarks={visibleLandmarks}
           selectedRoute={selectedRoute}
           selectedLandmarkName={selectedLandmarkName}
           focusedLandmarkNames={focusedLandmarkNames}
+          decodedRoutes={routes}
         />
         {showRoutes && (
           <div className="absolute bottom-4 right-4 max-w-xs rounded-xl bg-card/95 p-4 shadow-lg backdrop-blur-sm">
