@@ -4,7 +4,7 @@ import Image from "next/image"
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Menu, X, MapPin } from "lucide-react"
+import { Menu, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 const navLinks = [
@@ -17,6 +17,7 @@ const navLinks = [
 export function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [activeHash, setActiveHash] = useState("")
   const pathname = usePathname()
   const isHome = pathname === "/"
 
@@ -28,7 +29,19 @@ export function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
 
+  useEffect(() => {
+    const syncHash = () => setActiveHash(window.location.hash)
+    syncHash()
+    window.addEventListener("hashchange", syncHash)
+    return () => window.removeEventListener("hashchange", syncHash)
+  }, [pathname])
+
   const isTransparent = isHome && !isScrolled
+  const isLinkActive = (href: string) => {
+    if (href === "/") return pathname === "/" && (activeHash === "" || activeHash === "#")
+    if (href.startsWith("/#")) return pathname === "/" && activeHash === href.slice(1)
+    return pathname === href
+  }
 
   return (
     <header
@@ -41,7 +54,7 @@ export function Navbar() {
       <div className="mx-auto flex h-[72px] max-w-[1200px] items-center justify-between px-4 lg:px-6">
         <Link href="/" className="flex items-center gap-0">
           <Image
-            src="/Ilocate No BG.svg"
+            src={isTransparent ? "/ilocate No BG.svg" : "/logo black line.svg"}
             alt="iLOcate logo"
             width={45}
             height={70}
@@ -54,11 +67,15 @@ export function Navbar() {
 
         <nav className="hidden items-center gap-1 md:flex" role="navigation" aria-label="Main navigation">
           {navLinks.map((link) => {
-            const isActive = pathname === link.href
+            const isActive = isLinkActive(link.href)
             return (
               <Link
                 key={link.href}
                 href={link.href}
+                onClick={() => {
+                  if (link.href.startsWith("/#")) setActiveHash(link.href.slice(1))
+                  if (link.href === "/") setActiveHash("")
+                }}
                 className={`relative px-4 py-2 text-sm font-medium transition-colors ${
                   isTransparent
                     ? isActive
@@ -108,12 +125,16 @@ export function Navbar() {
         <div className="border-t border-border bg-background px-4 pb-6 pt-4 md:hidden">
           <nav className="flex flex-col gap-2" role="navigation" aria-label="Mobile navigation">
             {navLinks.map((link) => {
-              const isActive = pathname === link.href
+              const isActive = isLinkActive(link.href)
               return (
                 <Link
                   key={link.href}
                   href={link.href}
-                  onClick={() => setIsMobileMenuOpen(false)}
+                  onClick={() => {
+                    if (link.href.startsWith("/#")) setActiveHash(link.href.slice(1))
+                    if (link.href === "/") setActiveHash("")
+                    setIsMobileMenuOpen(false)
+                  }}
                   className={`rounded-xl px-4 py-3 text-sm font-medium transition-colors ${
                     isActive
                       ? "bg-primary/10 text-primary"

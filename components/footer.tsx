@@ -1,7 +1,7 @@
 'use client';
 import React, { useState } from "react";
 import Link from "next/link";
-import { MapPin } from "lucide-react";
+import Image from "next/image";
 import { AboutUsModal } from "./about-us-modal";
 
 export function Footer() {
@@ -13,11 +13,15 @@ export function Footer() {
       <div className="mx-auto max-w-[1200px] px-4 py-12 lg:px-6">
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
           <div className="flex flex-col gap-4">
-            <Link href="/" className="flex items-center gap-2">
-              <MapPin className="h-6 w-6 text-primary" />
-              <span className="text-lg font-bold text-foreground">
-                iLO<span className="text-primary">cate</span>
-              </span>
+            <Link href="/dashboard" className="flex items-center gap-0">
+              <Image
+                src="/logo black line.svg"
+                alt="iLOcate logo"
+                width={50}
+                height={50}
+                className="h-6 w-6 object-contain"
+              />
+              <span className="text-sm font-semibold text-primary">iLOcate</span>
             </Link>
             <p className="text-sm leading-relaxed text-muted-foreground">
               Your ultimate tourism discovery platform for Iloilo City, Philippines. Explore places, food, events, and more.
