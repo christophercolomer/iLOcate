@@ -4,12 +4,56 @@ import { useEffect, useRef, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { Maximize2, Star, MapPin, ArrowRight } from "lucide-react"
+import { Maximize2, Star, MapPin, ArrowRight, Compass } from "lucide-react"
+import dynamic from "next/dynamic"
 import { onAuthStateChanged } from "firebase/auth"
 import { doc, getDoc } from "firebase/firestore"
 import { Button } from "@/components/ui/button"
 import { landmarks } from "@/lib/landmarks"
 import { auth, db } from "@/lib/firebase"
+
+const MapComponent = dynamic(() => import("@/components/map-leaflet"), {
+  ssr: false,
+  loading: () => <div className="flex h-full w-full items-center justify-center bg-secondary">Loading map...</div>,
+})
+
+const MAP_CENTER: [number, number] = [10.6969, 122.5644]
+const MAP_ZOOM = 13
+
+const HOME_PREVIEW_ROUTES = [
+  {
+    id: 1,
+    name: "CPU - SM City Iloilo",
+    code: "Jaro Route",
+    stops: ["CPU", "Jaro Plaza", "Tagbak Terminal", "SM City Iloilo"],
+    fare: "PHP 12",
+    time: "~20 min",
+  },
+  {
+    id: 2,
+    name: "Molo - La Paz",
+    code: "Molo Route",
+    stops: ["Molo Church", "Iznart St", "JM Basa", "La Paz Market"],
+    fare: "PHP 10",
+    time: "~15 min",
+  },
+  {
+    id: 3,
+    name: "City Proper - Mandurriao",
+    code: "Mandurriao Route",
+    stops: ["Plazoleta Gay", "Ledesma St", "Diversion Rd", "SM Starmall"],
+    fare: "PHP 11",
+    time: "~18 min",
+  },
+  {
+    id: 4,
+    name: "Arevalo - City Proper",
+    code: "Arevalo Route",
+    stops: ["Villa Arevalo", "Molo", "General Luna St", "City Proper"],
+    fare: "PHP 10",
+    time: "~22 min",
+  },
+]
 
 // Helper: assign placeholder images and ratings
 const getImage = (name: string, type: string) => {
@@ -248,6 +292,8 @@ export default function DashboardPage() {
     selectedTypes.size > 0 ? landmarks.filter((landmark) => selectedTypes.has(landmark.type)) : landmarks
 
   const recommendedLandmarks = sourceLandmarks.length > 0 ? sourceLandmarks : landmarks
+  const foodHotspots = landmarks.filter((landmark) => landmark.type === "Food" || landmark.type === "Cafe").length
+  const culturalSpots = landmarks.filter((landmark) => ["Church", "Museum", "Heritage"].includes(landmark.type)).length
 
   const categoryPlaces = recommendedLandmarks.slice(0, 12).map((landmark) => ({
     name: landmark.name,
@@ -404,24 +450,55 @@ export default function DashboardPage() {
       <div className="absolute inset-0 -z-10 bg-white/20 backdrop-blur-md" />
       <div className="relative min-h-screen">
       {/* Map Section */}
-      <div className="relative">
-        <div className="relative h-[45vh] min-h-[320px] overflow-hidden">
-          <iframe
-            src="https://www.openstreetmap.org/export/embed.html?bbox=122.4800%2C10.6200%2C122.6500%2C10.7600&layer=mapnik&marker=10.6969%2C122.5644"
-            className="h-full w-full border-0"
-            title="Interactive map of Iloilo City"
-            loading="lazy"
+      <div className="relative overflow-hidden border-b border-border/60 bg-gradient-to-b from-secondary/80 via-secondary/50 to-secondary/0">
+        <div className="relative h-[35vh] min-h-[300px] overflow-hidden lg:h-[40vh]">
+          <MapComponent
+            center={MAP_CENTER}
+            zoom={MAP_ZOOM}
+            routes={HOME_PREVIEW_ROUTES}
+            landmarks={landmarks}
+            selectedRoute={null}
+            selectedLandmarkName={null}
+            focusedLandmarkNames={[]}
+            showLandmarks={false}
+            showCenterMarker={false}
+            showCurrentLocation={false}
+            showLocateControl={false}
+            requireClickToZoom={true}
           />
+
+          <div className="pointer-events-none absolute inset-0 z-[450] bg-transparent" />
+
+          <div className="pointer-events-none absolute left-4 right-4 top-4 z-[500] sm:left-auto sm:max-w-sm">
+            <div className="rounded-2xl border border-white/35 bg-white/88 p-3.5 shadow-xl backdrop-blur-md">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-primary">City Navigator</p>
+              <h1 className="mt-1 text-lg font-bold leading-tight text-foreground sm:text-xl">Explore Iloilo with Live Route Context</h1>
+              <p className="mt-2 text-[13px] text-muted-foreground sm:text-sm">
+                Preview key landmarks, food districts, and commute directions before opening the full interactive planner.
+              </p>
+              <div className="mt-2.5 flex flex-wrap gap-1.5">
+                <span className="rounded-full bg-primary/10 px-2 py-1 text-[11px] font-medium text-primary">{landmarks.length} spots mapped</span>
+                <span className="rounded-full bg-accent/20 px-2 py-1 text-[11px] font-medium text-foreground">{foodHotspots} food hotspots</span>
+                <span className="rounded-full bg-secondary px-2 py-1 text-[11px] font-medium text-foreground">{culturalSpots} cultural sites</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="absolute bottom-4 left-4 right-4 z-[500] flex flex-wrap items-center gap-2 sm:right-auto sm:max-w-xl">
+            <Link href="/dashboard/map" className="inline-flex">
+              <Button size="sm" className="h-10 gap-2 rounded-xl bg-primary px-4 text-primary-foreground shadow-lg hover:bg-primary/90">
+                <Maximize2 className="h-4 w-4" />
+                Open Full Map
+              </Button>
+            </Link>
+            <Link href="/dashboard/food" className="inline-flex">
+              <Button size="sm" variant="outline" className="h-10 gap-2 rounded-xl border-white/60 bg-white/90 px-4 text-foreground hover:bg-white">
+                <Compass className="h-4 w-4" />
+                What's near?
+              </Button>
+            </Link>
+          </div>
         </div>
-        <Link href="/dashboard/map">
-          <Button
-            size="sm"
-            className="absolute bottom-4 right-4 z-10 gap-2 rounded-xl bg-card/95 text-foreground shadow-lg backdrop-blur-sm hover:bg-card"
-          >
-            <Maximize2 className="h-4 w-4" />
-            Full Screen Map
-          </Button>
-        </Link>
       </div>
 
       {/* Infinite Scroll Categories */}
