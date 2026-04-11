@@ -2,8 +2,13 @@
 
 import { useState } from "react"
 import Image from "next/image"
+import { useRouter } from "next/navigation"
 import { CalendarDays, DollarSign, Plus, Trash2, MapPin, Star, ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
+
+function toLandmarkSlug(value: string) {
+  return value.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")
+}
 
 const popularPlaces = [
   { id: 1, name: "Miag-ao Church", image: "/images/places/miagao-church.jpg", category: "Heritage", rating: 4.9, cost: "Free" },
@@ -30,6 +35,7 @@ type ItineraryItem = {
 }
 
 export default function ItineraryPage() {
+  const router = useRouter()
   const [activeTab, setActiveTab] = useState<"planner" | "popular">("planner")
   const [itinerary, setItinerary] = useState<ItineraryItem[]>([
     { id: 1, name: "Miag-ao Church", day: 1, time: "9:00 AM" },
@@ -262,18 +268,26 @@ export default function ItineraryPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <Button className="h-12 rounded-xl bg-primary text-sm font-semibold text-primary-foreground hover:bg-primary/90" onClick={() => setShowRouteModal(null)}>
-                Palihog Bayad
+            <div className="mt-4 grid grid-cols-2 gap-3">
+              <Button
+                className="h-11 rounded-xl bg-primary text-sm font-semibold text-primary-foreground hover:bg-primary/90"
+                onClick={() => {
+                  const target = showRouteModal?.name
+                  if (!target) return
+                  setShowRouteModal(null)
+                  router.push(`/dashboard/map?landmark=${toLandmarkSlug(target)}`)
+                }}
+              >
+                Go to this place
               </Button>
-              <Button variant="outline" className="h-12 rounded-xl border-primary text-sm font-semibold text-primary hover:bg-primary/5" onClick={() => setShowRouteModal(null)}>
-                Sa Lugar
+              <Button
+                variant="outline"
+                className="h-11 rounded-xl border-border text-sm font-medium text-muted-foreground hover:text-foreground"
+                onClick={() => setShowRouteModal(null)}
+              >
+                Cancel
               </Button>
             </div>
-
-            <button onClick={() => setShowRouteModal(null)} className="mt-4 w-full text-center text-sm text-muted-foreground hover:text-foreground">
-              Cancel
-            </button>
           </div>
         </div>
       )}

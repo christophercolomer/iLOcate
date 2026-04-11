@@ -6,56 +6,67 @@ interface AboutUsModalProps {
 }
 
 export const AboutUsModal: React.FC<AboutUsModalProps> = ({ open, onClose }) => {
+  const teamMembers = [
+    {
+      name: "Christopher Colomer",
+      role: "Ultimate Developer",
+      image: "/images/people/Christoper.jpg",
+      alt: "Christopher Colomer",
+    },
+    {
+      name: "Nikko Delos Santos",
+      role: "Backend Developer",
+      image: "/images/people/Nikko.jpg",
+      alt: "Nikko Delos Santos",
+    },
+    {
+      name: "Reinwel Tingson",
+      role: "Front End Developer",
+      image: "/images/people/reinwel.jpg",
+      alt: "Reinwel Tingson",
+    },
+    {
+      name: "Trisha Jambaro",
+      role: "Project Manager",
+      image: "/images/people/trisha.jpg",
+      alt: "Trisha Jambaro",
+    },
+  ];
+
   if (!open) return null;
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="bg-white rounded-lg shadow-lg max-w-4xl w-full p-10 relative flex flex-col items-center">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4 py-6 animate-in fade-in duration-300">
+      <div className="relative flex w-full max-w-5xl max-h-[92vh] flex-col items-center overflow-y-auto rounded-2xl bg-white p-10 shadow-2xl shadow-black/20 animate-in fade-in zoom-in-95 duration-300">
         <button
-          className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+          className="absolute right-3 top-3 text-gray-500 transition-colors hover:text-gray-700"
           onClick={onClose}
           aria-label="Close"
         >
           &times;
         </button>
-        <h2 className="text-3xl font-bold mb-6 text-primary self-start">Meet the Team</h2>
-        <div className="flex flex-wrap justify-center gap-8 w-full mb-8">
-          <div className="flex flex-col items-center w-40">
-            <img
-              src="/images/people/Christoper.jpg"
-              alt="Christopher Colomer"
-              className="w-50 h-40 rounded-lg object-cover mb-2 border border-gray-200"
-            />
-            <span className="font-semibold text-center">Christopher Colomer</span>
-            <span className="text-xs text-gray-500 text-center">Ultimate Developer</span>
-          </div>
-          <div className="flex flex-col items-center w-40">
-            <img
-              src="/images/people/Nikko.jpg"
-              alt="Nikko Delos santos"
-              className="w-50 h-40 rounded-lg object-cover mb-2 border border-gray-200"
-            />
-            <span className="font-semibold text-center">Nikko Delos santos</span>
-            <span className="text-xs text-gray-500 text-center">Backend Developer</span>
-          </div>
-          <div className="flex flex-col items-center w-40">
-            <img
-              src="/images/people/reinwel.jpg"
-              alt="Reinwel Tingson"
-              className="w-50 h-40 rounded-lg object-cover mb-2 border border-gray-200"
-            />
-            <span className="font-semibold text-center">Reinwel Tingson</span>
-            <span className="text-xs text-gray-500 text-center">Front End Developer</span>
-          </div>
-          <div className="flex flex-col items-center w-40">
-            <img
-              src="/images/people/trisha.jpg"
-              alt="Trisha Jambaro"
-              className="w-50 h-40 rounded-lg object-cover mb-2 border border-gray-200"
-            />
-            <span className="font-semibold text-center">Trisha Jambaro</span>
-            <span className="text-xs text-gray-500 text-center">Project Manager</span>
-          </div>
+        <div className="mb-8 w-full">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-primary/80">The people behind iLOcate</p>
+          <h2 className="text-3xl font-bold text-primary">Meet the Team</h2>
         </div>
+
+        <section className="mb-10 w-full space-y-4">
+          <div className="grid w-full grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {teamMembers.map((member) => (
+              <article
+                key={member.name}
+                className="rounded-xl border border-slate-200 bg-slate-50/70 p-4 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md"
+              >
+                <img
+                  src={member.image}
+                  alt={member.alt}
+                  className="mb-4 h-40 w-full rounded-lg object-cover ring-1 ring-slate-200"
+                />
+                <h3 className="text-sm font-semibold text-slate-900">{member.name}</h3>
+                <p className="mt-1 text-xs font-medium uppercase tracking-wide text-primary/80">{member.role}</p>
+              </article>
+            ))}
+          </div>
+        </section>
         <div className="w-full max-w-2xl">
           <h3 className="text-xl font-semibold mb-2">Why we made this web app:</h3>
           <p className="text-gray-700 text-center">
