@@ -6,6 +6,18 @@ import "leaflet/dist/leaflet.css"
 import { Landmark } from "@/lib/landmarks"
 import type { DecodedRoute } from "@/lib/route-decoder"
 
+export interface DirectionsRoute {
+  coordinates: [number, number][]
+  distance: number
+  duration: number
+  steps: Array<{
+    instruction: string
+    distance: number
+    duration: number
+    coordinates: [number, number][]
+  }>
+}
+
 interface MapComponentProps {
   center: [number, number]
   zoom: number
@@ -27,6 +39,9 @@ interface MapComponentProps {
   showLocateControl?: boolean
   requireClickToZoom?: boolean
   decodedRoutes?: DecodedRoute[]
+  directionsRoute?: DirectionsRoute | null
+  originMarker?: [number, number] | null
+  destinationMarker?: [number, number] | null
 }
 
 
@@ -51,12 +66,18 @@ export default function MapLeaflet({
   showLocateControl = true,
   requireClickToZoom = false,
   decodedRoutes = [],
+  directionsRoute = null,
+  originMarker = null,
+  destinationMarker = null,
 }: MapComponentProps) {
   const mapContainer = useRef<HTMLDivElement>(null)
   const map = useRef<L.Map | null>(null)
   const markersRef = useRef<L.Marker[]>([])
   const landmarkMarkersRef = useRef<Map<string, L.Marker>>(new Map())
   const polylineRef = useRef<L.Polyline | null>(null)
+  const directionsPolylineRef = useRef<L.Polyline | null>(null)
+  const originMarkerRef = useRef<L.Marker | null>(null)
+  const destinationMarkerRef = useRef<L.Marker | null>(null)
   const currentLocationMarkerRef = useRef<L.Marker | null>(null)
   const scrollZoomEnabledRef = useRef(false)
   const [currentLocation, setCurrentLocation] = useState<[number, number] | null>(null)
@@ -360,6 +381,85 @@ export default function MapLeaflet({
       .bindPopup("You are here")
       .addTo(mapInstance)
   }, [currentLocation])
+
+  // Handle OSRM directions route
+  useEffect(() => {
+    if (!map.current) return
+    const mapInstance = map.current
+
+    // Clear existing directions polyline
+    if (directionsPolylineRef.current) {
+      if (mapInstance.hasLayer(directionsPolylineRef.current)) {
+        mapInstance.removeLayer(directionsPolylineRef.current)
+      }
+      directionsPolylineRef.current = null
+    }
+
+    // Clear existing origin/destination markers
+    if (originMarkerRef.current) {
+      if (mapInstance.hasLayer(originMarkerRef.current)) {
+        mapInstance.removeLayer(originMarkerRef.current)
+      }
+      originMarkerRef.current = null
+    }
+
+    if (destinationMarkerRef.current) {
+      if (mapInstance.hasLayer(destinationMarkerRef.current)) {
+        mapInstance.removeLayer(destinationMarkerRef.current)
+      }
+      destinationMarkerRef.current = null
+    }
+
+    // Add origin marker
+    if (originMarker && isValidCoordinatePair(originMarker)) {
+      originMarkerRef.current = L.marker(originMarker, {
+        icon: L.icon({
+          iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png",
+          shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png",
+          iconSize: [25, 41],
+          iconAnchor: [12, 41],
+          popupAnchor: [1, -34],
+          shadowSize: [41, 41],
+        }),
+      })
+        .bindPopup("<strong>Start</strong>")
+        .addTo(mapInstance)
+    }
+
+    // Add destination marker
+    if (destinationMarker && isValidCoordinatePair(destinationMarker)) {
+      destinationMarkerRef.current = L.marker(destinationMarker, {
+        icon: L.icon({
+          iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png",
+          shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png",
+          iconSize: [25, 41],
+          iconAnchor: [12, 41],
+          popupAnchor: [1, -34],
+          shadowSize: [41, 41],
+        }),
+      })
+        .bindPopup("<strong>Destination</strong>")
+        .addTo(mapInstance)
+    }
+
+    // Add directions route polyline
+    if (directionsRoute && directionsRoute.coordinates.length >= 2) {
+      const validCoords = directionsRoute.coordinates.filter((coords) => isValidCoordinatePair(coords))
+
+      if (validCoords.length >= 2) {
+        directionsPolylineRef.current = L.polyline(validCoords, {
+          color: "#2563eb",
+          weight: 5,
+          opacity: 0.9,
+        })
+          .addTo(mapInstance)
+
+        // Fit bounds to show route
+        const bounds = L.latLngBounds(validCoords)
+        mapInstance.fitBounds(bounds, { padding: [50, 50] })
+      }
+    }
+  }, [directionsRoute, originMarker, destinationMarker])
 
   return <div ref={mapContainer} className="h-full w-full" />
 }
