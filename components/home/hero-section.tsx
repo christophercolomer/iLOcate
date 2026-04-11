@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
+import dynamic from "next/dynamic"
 import Image from "next/image"
 import Link from "next/link"
 import { ArrowRight, Star, Bookmark, X, Map } from "lucide-react"
@@ -8,6 +9,15 @@ import { Button } from "@/components/ui/button"
 import { landmarks } from "@/lib/landmarks"
 import { useAuth } from "@/lib/auth-context"
 import { loadAndDecodeRoutes, type DecodedRoute } from "@/lib/route-decoder"
+
+const MapLeaflet = dynamic(() => import("@/components/map-leaflet"), {
+  ssr: false,
+  loading: () => (
+    <div className="flex h-full w-full items-center justify-center bg-muted">
+      <p className="text-sm text-muted-foreground">Loading map...</p>
+    </div>
+  ),
+})
 
 // Group landmarks by type
 const churches = landmarks.filter(l => l.type === "Church")
@@ -90,7 +100,9 @@ export function HeroSection() {
   const [scrollY, setScrollY] = useState(0)
   const [showMapModal, setShowMapModal] = useState(false)
   const [pujRoutes, setPujRoutes] = useState<DecodedRoute[]>([])
+  const [allRoutes, setAllRoutes] = useState<DecodedRoute[]>([])
   const [loadingRoutes, setLoadingRoutes] = useState(false)
+  const [selectedRouteId, setSelectedRouteId] = useState<string | null>(null)
   const { user } = useAuth()
 
   // Load PUJ routes from data.json
@@ -99,9 +111,11 @@ export function HeroSection() {
       setLoadingRoutes(true)
       try {
         const decodedRoutes = await loadAndDecodeRoutes()
+        setAllRoutes(decodedRoutes)
         setPujRoutes(decodedRoutes.slice(0, 6)) // Limit to 6 routes for display
       } catch (error) {
         console.error("Error loading PUJ routes:", error)
+        setAllRoutes([])
         setPujRoutes([])
       } finally {
         setLoadingRoutes(false)
@@ -346,7 +360,10 @@ export function HeroSection() {
           <div className="relative w-full max-w-4xl rounded-2xl bg-card shadow-2xl">
             <button
               type="button"
-              onClick={() => setShowMapModal(false)}
+              onClick={() => {
+                setShowMapModal(false)
+                setSelectedRouteId(null)
+              }}
               className="absolute right-4 top-4 z-10 rounded-full bg-muted p-2 text-foreground transition-colors hover:bg-muted/80"
             >
               <X className="h-6 w-6" />
@@ -354,12 +371,19 @@ export function HeroSection() {
 
             <div className="grid gap-6 p-6 md:grid-cols-2">
               {/* Map Side */}
-              <div className="relative h-96 rounded-xl overflow-hidden bg-muted md:h-auto">
-                <iframe
-                  src="https://www.openstreetmap.org/export/embed.html?bbox=122.54,10.69,122.60,10.74&layer=mapnik"
-                  className="h-full w-full"
-                  title="Iloilo City Map"
-                  style={{ border: "none" }}
+              <div className="relative h-96 rounded-xl overflow-hidden bg-muted md:h-auto md:min-h-[400px]">
+                <MapLeaflet
+                  center={[10.7202, 122.5621]}
+                  zoom={13}
+                  routes={[]}
+                  landmarks={[]}
+                  selectedRoute={selectedRouteId}
+                  showLandmarks={false}
+                  showCenterMarker={false}
+                  showCurrentLocation={false}
+                  showLocateControl={false}
+                  requireClickToZoom={false}
+                  decodedRoutes={allRoutes}
                 />
               </div>
 
@@ -368,7 +392,7 @@ export function HeroSection() {
                 <div>
                   <h2 className="text-2xl font-bold text-foreground">PUJ Routes in Iloilo</h2>
                   <p className="mt-1 text-muted-foreground">
-                    Popular transportation routes for exploring the city
+                    Click a route to view it on the map
                   </p>
                 </div>
 
@@ -379,14 +403,26 @@ export function HeroSection() {
                     <p className="text-sm text-muted-foreground">No routes available</p>
                   ) : (
                     pujRoutes.map((route) => (
-                      <div
+                      <button
+                        type="button"
                         key={route.id}
-                        className="rounded-lg border border-border bg-muted/50 p-4 transition-all hover:border-primary hover:bg-muted"
+                        onClick={() => setSelectedRouteId(selectedRouteId === route.id ? null : route.id)}
+                        className={`rounded-lg border p-4 text-left transition-all ${
+                          selectedRouteId === route.id
+                            ? "border-primary bg-primary/10"
+                            : "border-border bg-muted/50 hover:border-primary hover:bg-muted"
+                        }`}
                       >
-                        <h3 className="font-semibold text-foreground">{route.routeNumber} - {route.routeName}</h3>
+                        <div className="flex items-center gap-2">
+                          <div
+                            className="h-3 w-3 rounded-full"
+                            style={{ backgroundColor: route.routeColor || "#3b82f6" }}
+                          />
+                          <h3 className="font-semibold text-foreground">{route.routeNumber} - {route.routeName}</h3>
+                        </div>
                         <p className="text-sm text-muted-foreground">{route.vehicleTypeName}</p>
                         <p className="mt-2 text-xs text-muted-foreground">Stops: {route.stops.length}</p>
-                      </div>
+                      </button>
                     ))
                   )}
                 </div>
