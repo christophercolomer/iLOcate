@@ -4,12 +4,13 @@ import { useEffect, useRef, useState } from "react"
 import L from "leaflet"
 import "leaflet/dist/leaflet.css"
 import { Landmark } from "@/lib/landmarks"
+import type { DecodedRoute } from "@/lib/route-decoder"
 
 interface MapComponentProps {
   center: [number, number]
   zoom: number
   routes: Array<{
-    id: number
+    id: number | string
     name: string
     code: string
     stops: string[]
@@ -17,7 +18,7 @@ interface MapComponentProps {
     time: string
   }>
   landmarks: Landmark[]
-  selectedRoute: number | null
+  selectedRoute: number | string | null
   selectedLandmarkName?: string | null
   focusedLandmarkNames?: string[]
   showLandmarks?: boolean
@@ -25,34 +26,10 @@ interface MapComponentProps {
   showCurrentLocation?: boolean
   showLocateControl?: boolean
   requireClickToZoom?: boolean
+  decodedRoutes?: DecodedRoute[]
 }
 
-const routeCoordinates: Record<number, [number, number][]> = {
-  1: [
-    [10.6850, 122.5500],
-    [10.6900, 122.5550],
-    [10.6950, 122.5600],
-    [10.7000, 122.5650],
-  ],
-  2: [
-    [10.6800, 122.5550],
-    [10.6850, 122.5600],
-    [10.6900, 122.5650],
-    [10.6950, 122.5700],
-  ],
-  3: [
-    [10.7000, 122.5400],
-    [10.7050, 122.5500],
-    [10.7100, 122.5600],
-    [10.7150, 122.5700],
-  ],
-  4: [
-    [10.6700, 122.5400],
-    [10.6800, 122.5500],
-    [10.6900, 122.5600],
-    [10.7000, 122.5650],
-  ],
-}
+
 
 function isValidCoordinatePair(coords: [number, number] | undefined | null): coords is [number, number] {
   if (!coords || coords.length !== 2) return false
@@ -73,6 +50,7 @@ export default function MapLeaflet({
   showCurrentLocation = true,
   showLocateControl = true,
   requireClickToZoom = false,
+  decodedRoutes = [],
 }: MapComponentProps) {
   const mapContainer = useRef<HTMLDivElement>(null)
   const map = useRef<L.Map | null>(null)
@@ -197,14 +175,14 @@ export default function MapLeaflet({
         position: 'topright'
       },
 
-      onAdd: function(map: L.Map) {
+      onAdd: function (map: L.Map) {
         const container = L.DomUtil.create('div', 'leaflet-control-locate leaflet-bar leaflet-control')
         const button = L.DomUtil.create('a', 'leaflet-control-locate-button', container)
         button.href = '#'
         button.title = 'Show my location'
         button.innerHTML = '📍'
 
-        L.DomEvent.on(button, 'click', function(e) {
+        L.DomEvent.on(button, 'click', function (e) {
           L.DomEvent.stopPropagation(e)
           L.DomEvent.preventDefault(e)
           getCurrentLocation()
@@ -277,7 +255,7 @@ export default function MapLeaflet({
               ? "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png"
               : isFocused
                 ? "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png"
-              : "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png",
+                : "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png",
             shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png",
             iconSize: [25, 41],
             iconAnchor: [12, 41],
@@ -294,52 +272,29 @@ export default function MapLeaflet({
     }
 
     // Add selected route polyline
-    if (selectedRoute !== null && routeCoordinates[selectedRoute]) {
-      const routeCoords = routeCoordinates[selectedRoute].filter((coords) => isValidCoordinatePair(coords))
-      if (routeCoords.length < 2) return
-      const selectedRouteName = routes.find((r) => r.id === selectedRoute)?.name
+    if (selectedRoute !== null && decodedRoutes.length > 0) {
+      const decodedRoute = decodedRoutes.find((r) => r.id === selectedRoute)
 
-      polylineRef.current = L.polyline(routeCoords, {
-        color: "hsl(var(--color-primary))",
-        weight: 3,
-        opacity: 0.8,
-        dashArray: "5, 5",
-      })
-        .bindPopup(`<strong>${selectedRouteName}</strong>`)
-        .addTo(mapInstance)
+      if (decodedRoute && decodedRoute.goingToCoordinates.length >= 2) {
+        const routeCoords = decodedRoute.goingToCoordinates.filter((coords) => isValidCoordinatePair(coords))
 
-      // Add stop markers for selected route
-      const selectedRouteData = routes.find((r) => r.id === selectedRoute)
-      if (selectedRouteData) {
-        selectedRouteData.stops.forEach((stop, index) => {
-          const coords = routeCoords[index]
-          if (isValidCoordinatePair(coords)) {
-            const marker = L.marker(coords, {
-              icon: L.icon({
-                iconUrl:
-                  index === 0 || index === selectedRouteData.stops.length - 1
-                    ? "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png"
-                    : "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-orange.png",
-                shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png",
-                iconSize: [25, 41],
-                iconAnchor: [12, 41],
-                popupAnchor: [1, -34],
-                shadowSize: [41, 41],
-              }),
-            })
-              .bindPopup(`<strong>Stop: ${stop}</strong>`)
-              .addTo(mapInstance)
+        if (routeCoords.length >= 2) {
+          polylineRef.current = L.polyline(routeCoords, {
+            color: decodedRoute.routeColor || "hsl(var(--color-primary))",
+            weight: 4,
+            opacity: 0.8,
+            dashArray: "5, 5",
+          })
+            .bindPopup(`<strong>${decodedRoute.routeNumber} - ${decodedRoute.routeName}</strong>`)
+            .addTo(mapInstance)
 
-            markersRef.current.push(marker)
-          }
-        })
+          // Fit bounds to show route
+          const bounds = L.latLngBounds(routeCoords)
+          mapInstance.fitBounds(bounds, { padding: [50, 50] })
+        }
       }
-
-      // Fit bounds to show route
-      const bounds = L.latLngBounds(routeCoords)
-      mapInstance.fitBounds(bounds, { padding: [50, 50] })
     }
-  }, [selectedRoute, selectedLandmarkName, focusedLandmarkNames, landmarks, routes, showLandmarks])
+  }, [selectedRoute, selectedLandmarkName, focusedLandmarkNames, landmarks, routes, showLandmarks, decodedRoutes])
 
   useEffect(() => {
     if (!map.current || !selectedLandmarkName) return
