@@ -415,10 +415,35 @@ export default function FullScreenMapPage() {
                 type="text"
                 value={from}
                 onChange={(e) => setFrom(e.target.value)}
-                placeholder="From"
-                className="w-full rounded-xl border border-input bg-background py-2.5 pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                placeholder={locationLoading ? "Getting your location…" : "From"}
+                disabled={locationLoading}
+                className={`w-full rounded-xl border border-input bg-background py-2.5 pl-10 pr-9 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-60 ${
+                  from === CURRENT_LOCATION_LABEL ? "text-primary font-medium" : ""
+                }`}
               />
+              {/* Right-side indicator: spinner while loading, reset button otherwise */}
+              {locationLoading ? (
+                <span className="absolute right-3 top-1/2 -translate-y-1/2">
+                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent block" />
+                </span>
+              ) : userLocation && from !== CURRENT_LOCATION_LABEL ? (
+                <button
+                  type="button"
+                  onClick={() => setFrom(CURRENT_LOCATION_LABEL)}
+                  title="Use my current location"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors"
+                >
+                  <Locate className="h-4 w-4" />
+                </button>
+              ) : from === CURRENT_LOCATION_LABEL ? (
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-primary" title="Using your current location">
+                  <Locate className="h-4 w-4" />
+                </span>
+              ) : null}
             </div>
+            {locationError && from === "" && (
+              <p className="text-xs text-destructive -mt-1">{locationError} Enter a location manually.</p>
+            )}
             <div className="flex justify-center">
               <button onClick={swapLocations} className="rounded-full border border-border p-1.5 text-muted-foreground hover:border-primary hover:text-primary" aria-label="Swap locations">
                 <ArrowRightLeft className="h-4 w-4" />
