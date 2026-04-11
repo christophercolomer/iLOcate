@@ -96,7 +96,7 @@
             {
               "id": "019d7635-a1ff-70b5-ad49-6f3c61290002",
               "sequence": 13,
-              "address": "Glenville Subdivision Phase Ⅱ, Guihaman, Leganes, Iloilo, Western Visayas, 5003, Philippines",
+              "address": "Glenville Subdivision Phase \u2161, Guihaman, Leganes, Iloilo, Western Visayas, 5003, Philippines",
               "point": [10.7813206742899, 122.585832104087]
             },
             {
@@ -877,37 +877,37 @@
               "id": "019d7635-a1ff-70b5-ad4b-74af227e218c",
               "sequence": 143,
               "address": "We Academy, MacArthur Dr Western Visayas 5000 iloilo City Philippines, MacArthur Drive, Tabuc Suba, Jaro, Arguelles, Iloilo City, Western Visayas, 5000, Philippines",
-              "point": [10.7317191766595, 122.559576630592]
+              "point": [10.7194373, 122.559411]
             },
             {
               "id": "019d7635-a1ff-70b5-ad4b-7a38c87dd1a0",
               "sequence": 144,
               "address": "We Academy, MacArthur Dr Western Visayas 5000 iloilo City Philippines, MacArthur Drive, Tabuc Suba, Jaro, Arguelles, Iloilo City, Western Visayas, 5000, Philippines",
-              "point": [10.7315241924072, 122.559509575367]
+              "point": [10.7194373, 122.559411]
             },
             {
               "id": "019d7635-a1ff-70b5-ad4b-7f42883225cd",
               "sequence": 145,
               "address": "We Academy, MacArthur Dr Western Visayas 5000 iloilo City Philippines, MacArthur Drive, Tabuc Suba, Jaro, Arguelles, Iloilo City, Western Visayas, 5000, Philippines",
-              "point": [10.7313212836124, 122.559442520142]
+              "point": [10.7194373, 122.559411]
             },
             {
               "id": "019d7635-a1ff-70b5-ad4b-80719540a74b",
               "sequence": 146,
               "address": "We Academy, MacArthur Dr Western Visayas 5000 iloilo City Philippines, MacArthur Drive, Tabuc Suba, Jaro, Arguelles, Iloilo City, Western Visayas, 5000, Philippines",
-              "point": [10.7310169332804, 122.55934394896]
+              "point": [10.7194373, 122.559411]
             },
             {
               "id": "019d7635-a1ff-70b5-ad4b-876c9a92971e",
               "sequence": 147,
               "address": "We Academy, MacArthur Dr Western Visayas 5000 iloilo City Philippines, MacArthur Drive, Tabuc Suba, Jaro, Arguelles, Iloilo City, Western Visayas, 5000, Philippines",
-              "point": [10.7307969625566, 122.559265494347]
+              "point": [10.7194373, 122.559411]
             },
             {
               "id": "019d7635-a1ff-70b5-ad4b-8ae08e5e96f3",
               "sequence": 148,
               "address": "We Academy, MacArthur Dr Western Visayas 5000 iloilo City Philippines, MacArthur Drive, Tabuc Suba, Jaro, Arguelles, Iloilo City, Western Visayas, 5000, Philippines",
-              "point": [10.7305492252838, 122.559182345867]
+              "point": [10.7194373, 122.559411]
             },
             {
               "id": "019d7635-a1ff-70b5-ad4b-8d581f2695b9",
@@ -2727,7 +2727,7 @@
             {
               "id": "019d7635-a200-76ec-8307-a370e90bb724",
               "sequence": 223,
-              "address": "Glenville Subdivision Phase Ⅱ, Guihaman, Leganes, Iloilo, Western Visayas, 5003, Philippines",
+              "address": "Glenville Subdivision Phase \u2161, Guihaman, Leganes, Iloilo, Western Visayas, 5003, Philippines",
               "point": [10.7814003788982, 122.585882395506]
             },
             {
@@ -2739,7 +2739,7 @@
             {
               "id": "019d7635-a200-76ec-8307-aba48c21ed8c",
               "sequence": 225,
-              "address": "Glenville Subdivision Phase Ⅱ, Guihaman, Leganes, Iloilo, Western Visayas, 5003, Philippines",
+              "address": "Glenville Subdivision Phase \u2161, Guihaman, Leganes, Iloilo, Western Visayas, 5003, Philippines",
               "point": [10.7819438188466, 122.586224377155]
             },
             {
@@ -3530,7 +3530,7 @@
               "id": "019d7137-d3f3-7592-8704-401109ccb5e6",
               "sequence": 114,
               "address": "Governor Norada Street, Iloilo Provincial Capitol Complex, President Roxas, City Proper, Iloilo City, Western Visayas, 5000, Philippines",
-              "point": [10.70384, 122.56906]
+              "point": [10.7025751, 122.5691305]
             },
             {
               "id": "019d7137-d3f3-7592-8704-4406cdffad58",
@@ -4088,14 +4088,14 @@
             {
               "id": "019d73c6-02d2-77b2-9ce6-6f374a53ab00",
               "sequence": 16,
-              "address": "Rizal Street, Osmeña, City Proper, Iloilo City, Western Visayas, 5000, Philippines",
+              "address": "Rizal Street, Osme\u00f1a, City Proper, Iloilo City, Western Visayas, 5000, Philippines",
               "point": [10.6950205078969, 122.564291954041]
             },
             {
               "id": "019d73c6-02d2-77b2-9ce6-70461109c6d4",
               "sequence": 17,
               "address": "Robinsons Department Store, De Leon Street, Robinsons Iloilo, Roxas Village, City Proper, Iloilo City, Western Visayas, 5000, Philippines",
-              "point": [10.69331, 122.56476]
+              "point": [10.6941504, 122.5662128]
             },
             {
               "id": "019d73c6-02d2-77b2-9ce6-77600bfe6e4f",
@@ -4305,7 +4305,7 @@
             {
               "id": "019d73c7-09e0-711e-8f01-57de2204f489",
               "sequence": 15,
-              "address": "Gusaling Iloilo Acacia Lodge № 11, J. M. Basa Street, Iloilo Central Business District, City Proper, Iloilo City, Western Visayas, 5000, Philippines",
+              "address": "Gusaling Iloilo Acacia Lodge \u2116 11, J. M. Basa Street, Iloilo Central Business District, City Proper, Iloilo City, Western Visayas, 5000, Philippines",
               "point": [10.6920422470059, 122.573567032814]
             }
           ],
@@ -4442,7 +4442,7 @@
               "id": "019d73c7-41ee-75a8-968e-ff128a3753a1",
               "sequence": 1,
               "address": "University of San Agustin, Jalandoni Flyover, Aurora Subdivision, City Proper, Iloilo City, Western Visayas, 5000, Philippines",
-              "point": [10.6959640570189, 122.567808330059]
+              "point": [10.6995028, 122.5629162]
             },
             {
               "id": "019d73c7-41ee-75a8-968f-0295b3ed3ab4",
@@ -4529,13 +4529,13 @@
             {
               "id": "019d73c7-78e1-760d-b441-f92d0b013a3f",
               "sequence": 4,
-              "address": "Gusaling Iloilo Acacia Lodge № 11, J. M. Basa Street, Iloilo Central Business District, City Proper, Iloilo City, Western Visayas, 5000, Philippines",
+              "address": "Gusaling Iloilo Acacia Lodge \u2116 11, J. M. Basa Street, Iloilo Central Business District, City Proper, Iloilo City, Western Visayas, 5000, Philippines",
               "point": [10.6917154272167, 122.570600509644]
             },
             {
               "id": "019d73c7-78e1-760d-b441-fd02094a8395",
               "sequence": 5,
-              "address": "Gusaling Iloilo Acacia Lodge № 11, J. M. Basa Street, Iloilo Central Business District, City Proper, Iloilo City, Western Visayas, 5000, Philippines",
+              "address": "Gusaling Iloilo Acacia Lodge \u2116 11, J. M. Basa Street, Iloilo Central Business District, City Proper, Iloilo City, Western Visayas, 5000, Philippines",
               "point": [10.6919526351632, 122.573652863503]
             }
           ],
@@ -4574,7 +4574,7 @@
             {
               "id": "019d73c7-78e1-760d-b442-1402d8032bd5",
               "sequence": 5,
-              "address": "Civil Service Commission, 7, Oñate de Leon Street, Niceville Subdivision, Jeferson Ville Subdivision, Mandurriao, Pale Benidicto Rizal, Iloilo City, Western Visayas, 5000, Philippines",
+              "address": "Civil Service Commission, 7, O\u00f1ate de Leon Street, Niceville Subdivision, Jeferson Ville Subdivision, Mandurriao, Pale Benidicto Rizal, Iloilo City, Western Visayas, 5000, Philippines",
               "point": [10.7176016262322, 122.53758251667]
             },
             {
@@ -4741,7 +4741,7 @@
             {
               "id": "019d73c7-cdb3-741c-9dd1-a6a94d709efb",
               "sequence": 7,
-              "address": "Gusaling Iloilo Acacia Lodge № 11, J. M. Basa Street, Iloilo Central Business District, City Proper, Iloilo City, Western Visayas, 5000, Philippines",
+              "address": "Gusaling Iloilo Acacia Lodge \u2116 11, J. M. Basa Street, Iloilo Central Business District, City Proper, Iloilo City, Western Visayas, 5000, Philippines",
               "point": [10.6927201529794, 122.572888331577]
             },
             {
@@ -4880,7 +4880,7 @@
             {
               "id": "019d73c8-07ef-73a8-9449-38584b00e26b",
               "sequence": 0,
-              "address": "Metropolis Avenue, Iloilo River Plain Ⅰ, Jaro, Bito-on, Iloilo City, Western Visayas, 5000, Philippines",
+              "address": "Metropolis Avenue, Iloilo River Plain \u2160, Jaro, Bito-on, Iloilo City, Western Visayas, 5000, Philippines",
               "point": [10.7531249982592, 122.590743899345]
             },
             {
@@ -4931,7 +4931,7 @@
             {
               "id": "019d73c8-07ef-73a8-9449-58c047cd3be5",
               "sequence": 2,
-              "address": "Narciso Monfort Boulevard, Iloilo River Plain Ⅰ, Jaro, Bito-on, Iloilo City, Western Visayas, 5000, Philippines",
+              "address": "Narciso Monfort Boulevard, Iloilo River Plain \u2160, Jaro, Bito-on, Iloilo City, Western Visayas, 5000, Philippines",
               "point": [10.75319, 122.5908]
             }
           ]
@@ -4953,7 +4953,7 @@
             {
               "id": "019d73c8-415c-7720-adfe-e4af9e08de21",
               "sequence": 0,
-              "address": "8, Iloilo South Coastal Road, Avanceña Subdivision, Santo Niño Sur, Villa de Arevalo, Bonifacio, Iloilo City, Western Visayas, 5000, Philippines",
+              "address": "8, Iloilo South Coastal Road, Avance\u00f1a Subdivision, Santo Ni\u00f1o Sur, Villa de Arevalo, Bonifacio, Iloilo City, Western Visayas, 5000, Philippines",
               "point": [10.6802712414412, 122.517642974854]
             },
             {
@@ -5064,7 +5064,7 @@
             {
               "id": "019d73c8-415c-7720-adff-2e720d37f2fd",
               "sequence": 8,
-              "address": "8, Iloilo South Coastal Road, Avanceña Subdivision, Santo Niño Sur, Villa de Arevalo, Bonifacio, Iloilo City, Western Visayas, 5000, Philippines",
+              "address": "8, Iloilo South Coastal Road, Avance\u00f1a Subdivision, Santo Ni\u00f1o Sur, Villa de Arevalo, Bonifacio, Iloilo City, Western Visayas, 5000, Philippines",
               "point": [10.68022, 122.51704]
             }
           ]
@@ -5122,13 +5122,13 @@
             {
               "id": "019d73c8-6e38-7420-a805-370b28ffd6bd",
               "sequence": 6,
-              "address": "Iloilo City – Lapuz Road, Progreso Lapuz, Lapuz, Iloilo City, Western Visayas, 5000, Philippines",
+              "address": "Iloilo City \u2013 Lapuz Road, Progreso Lapuz, Lapuz, Iloilo City, Western Visayas, 5000, Philippines",
               "point": [10.69756, 122.574]
             },
             {
               "id": "019d73c8-6e38-7420-a805-3a4545a64e2e",
               "sequence": 7,
-              "address": "Iloilo City – Lapuz Road, Iloilo Central Business District, City Proper, Iloilo City, Western Visayas, 5000, Philippines",
+              "address": "Iloilo City \u2013 Lapuz Road, Iloilo Central Business District, City Proper, Iloilo City, Western Visayas, 5000, Philippines",
               "point": [10.69706, 122.57097]
             },
             {
@@ -5173,13 +5173,13 @@
             {
               "id": "019d73c8-6e38-7420-a805-55db64240253",
               "sequence": 3,
-              "address": "Iloilo City – Lapuz Road, Iloilo Central Business District, City Proper, Iloilo City, Western Visayas, 5000, Philippines",
+              "address": "Iloilo City \u2013 Lapuz Road, Iloilo Central Business District, City Proper, Iloilo City, Western Visayas, 5000, Philippines",
               "point": [10.69706, 122.57097]
             },
             {
               "id": "019d73c8-6e38-7420-a805-5bf1c3ac8978",
               "sequence": 4,
-              "address": "Iloilo City – Lapuz Road, Progreso Lapuz, Lapuz, Iloilo City, Western Visayas, 5000, Philippines",
+              "address": "Iloilo City \u2013 Lapuz Road, Progreso Lapuz, Lapuz, Iloilo City, Western Visayas, 5000, Philippines",
               "point": [10.69777, 122.57375]
             },
             {
@@ -5267,7 +5267,7 @@
             {
               "id": "019d73d3-6801-7035-aa2a-66302a113d25",
               "sequence": 5,
-              "address": "Commissioner Efraim B. Treñas Boulevard, Luna, Railway, La Paz, Iloilo City, Western Visayas, 5000, Philippines",
+              "address": "Commissioner Efraim B. Tre\u00f1as Boulevard, Luna, Railway, La Paz, Iloilo City, Western Visayas, 5000, Philippines",
               "point": [10.7064799504969, 122.567355036736]
             },
             {
@@ -5319,7 +5319,7 @@
               "id": "019d73d3-6801-7035-aa2a-84c9aa56de57",
               "sequence": 1,
               "address": "Robinsons Bank, De Leon Street, Robinsons Iloilo, Roxas Village, City Proper, Iloilo City, Western Visayas, 5000, Philippines",
-              "point": [10.69338, 122.56558]
+              "point": [10.6941504, 122.5662128]
             },
             {
               "id": "019d73d3-6801-7035-aa2a-8978a72b368b",
@@ -5382,7 +5382,7 @@
             {
               "id": "019d73c4-0e41-77d2-90a3-28bc7635f32d",
               "sequence": 1,
-              "address": "Iloilo South Coastal Road, Santo Niño Norte, Villa de Arevalo, Bonifacio, Iloilo City, Western Visayas, 5000, Philippines",
+              "address": "Iloilo South Coastal Road, Santo Ni\u00f1o Norte, Villa de Arevalo, Bonifacio, Iloilo City, Western Visayas, 5000, Philippines",
               "point": [10.6802468608062, 122.517408952117]
             },
             {
@@ -5440,7 +5440,7 @@
               "id": "019d73c4-0e41-77d2-90a3-4d9955ea2514",
               "sequence": 0,
               "address": "Plaza Libertad, J. M. Basa Street, Iloilo Central Business District, City Proper, Iloilo City, Western Visayas, 5000, Philippines",
-              "point": [10.6929489065138, 122.572553157806]
+              "point": [10.6925707, 122.5737112]
             },
             {
               "id": "019d73c4-0e41-77d2-90a3-518ea639f004",
@@ -5499,7 +5499,7 @@
             {
               "id": "019d73c4-0e41-77d2-90a3-74fffa70af04",
               "sequence": 10,
-              "address": "Iloilo South Coastal Road, Santo Niño Norte, Villa de Arevalo, Bonifacio, Iloilo City, Western Visayas, 5000, Philippines",
+              "address": "Iloilo South Coastal Road, Santo Ni\u00f1o Norte, Villa de Arevalo, Bonifacio, Iloilo City, Western Visayas, 5000, Philippines",
               "point": [10.6802488376145, 122.517428398132]
             },
             {
@@ -5527,7 +5527,7 @@
             {
               "id": "019d73df-452a-7228-968e-874e69580754",
               "sequence": 0,
-              "address": "Osmeña Road, Mohon, Villa de Arevalo, Bonifacio, Iloilo City, Western Visayas, 5000, Philippines",
+              "address": "Osme\u00f1a Road, Mohon, Villa de Arevalo, Bonifacio, Iloilo City, Western Visayas, 5000, Philippines",
               "point": [10.6933495226427, 122.500093281269]
             },
             {
@@ -5545,25 +5545,25 @@
             {
               "id": "019d73df-452a-7228-968e-93fc7ccda1ae",
               "sequence": 3,
-              "address": "So-oc Resettlement Area Road, So-oc Arevalo - Project № 5, So-oc, Mandurriao, Calajunan, Iloilo City, Western Visayas, 5000, Philippines",
+              "address": "So-oc Resettlement Area Road, So-oc Arevalo - Project \u2116 5, So-oc, Mandurriao, Calajunan, Iloilo City, Western Visayas, 5000, Philippines",
               "point": [10.6998700028857, 122.520132064819]
             },
             {
               "id": "019d73df-452a-7228-968e-9702a94f7377",
               "sequence": 4,
-              "address": "So-oc Resettlement Area Road, So-oc Arevalo - Project № 5, So-oc, Mandurriao, Calajunan, Iloilo City, Western Visayas, 5000, Philippines",
+              "address": "So-oc Resettlement Area Road, So-oc Arevalo - Project \u2116 5, So-oc, Mandurriao, Calajunan, Iloilo City, Western Visayas, 5000, Philippines",
               "point": [10.7106, 122.52826]
             },
             {
               "id": "019d73df-452a-7228-968e-9b16c02ddf8f",
               "sequence": 5,
-              "address": "Mandurriao Elementary School – Calajunan Extension, Calajunan Road, First Home, Mandurriao, Calajunan, Iloilo City, Western Visayas, 5000, Philippines",
+              "address": "Mandurriao Elementary School \u2013 Calajunan Extension, Calajunan Road, First Home, Mandurriao, Calajunan, Iloilo City, Western Visayas, 5000, Philippines",
               "point": [10.71312, 122.52872]
             },
             {
               "id": "019d73df-452a-7228-968e-9e88cc479387",
               "sequence": 6,
-              "address": "Civil Service Commission, 7, Oñate de Leon Street, Niceville Subdivision, Jeferson Ville Subdivision, Mandurriao, Pale Benidicto Rizal, Iloilo City, Western Visayas, 5000, Philippines",
+              "address": "Civil Service Commission, 7, O\u00f1ate de Leon Street, Niceville Subdivision, Jeferson Ville Subdivision, Mandurriao, Pale Benidicto Rizal, Iloilo City, Western Visayas, 5000, Philippines",
               "point": [10.71709, 122.53729]
             },
             {
@@ -5620,25 +5620,25 @@
             {
               "id": "019d73df-452b-720b-9172-8cf10e3c6a9f",
               "sequence": 4,
-              "address": "Oñate de Leon Street, JEM Subdivision, First Home, Mandurriao, Calajunan, Iloilo City, Western Visayas, 5000, Philippines",
+              "address": "O\u00f1ate de Leon Street, JEM Subdivision, First Home, Mandurriao, Calajunan, Iloilo City, Western Visayas, 5000, Philippines",
               "point": [10.7160888914938, 122.536544501781]
             },
             {
               "id": "019d73df-452b-720b-9172-90e79cc0d9dd",
               "sequence": 5,
-              "address": "Mandurriao Elementary School – Calajunan Extension, Calajunan Road, First Home, Mandurriao, Calajunan, Iloilo City, Western Visayas, 5000, Philippines",
+              "address": "Mandurriao Elementary School \u2013 Calajunan Extension, Calajunan Road, First Home, Mandurriao, Calajunan, Iloilo City, Western Visayas, 5000, Philippines",
               "point": [10.71314, 122.52838]
             },
             {
               "id": "019d73df-452b-720b-9172-97b140a2b404",
               "sequence": 6,
-              "address": "So-oc Resettlement Area Road, So-oc Arevalo - Project № 5, So-oc, Mandurriao, Calajunan, Iloilo City, Western Visayas, 5000, Philippines",
+              "address": "So-oc Resettlement Area Road, So-oc Arevalo - Project \u2116 5, So-oc, Mandurriao, Calajunan, Iloilo City, Western Visayas, 5000, Philippines",
               "point": [10.70819, 122.52712]
             },
             {
               "id": "019d73df-452b-720b-9172-9901e0e689f1",
               "sequence": 7,
-              "address": "So-oc Resettlement Area Road, So-oc Arevalo - Project № 5, So-oc, Villa de Arevalo, Calajunan, Iloilo City, Western Visayas, 5000, Philippines",
+              "address": "So-oc Resettlement Area Road, So-oc Arevalo - Project \u2116 5, So-oc, Villa de Arevalo, Calajunan, Iloilo City, Western Visayas, 5000, Philippines",
               "point": [10.69547, 122.51801]
             },
             {
@@ -5650,7 +5650,7 @@
             {
               "id": "019d73df-452b-720b-9172-a30200a09fbf",
               "sequence": 9,
-              "address": "Osmeña Road, Mohon, Villa de Arevalo, Bonifacio, Iloilo City, Western Visayas, 5000, Philippines",
+              "address": "Osme\u00f1a Road, Mohon, Villa de Arevalo, Bonifacio, Iloilo City, Western Visayas, 5000, Philippines",
               "point": [10.6934, 122.50003]
             }
           ]
@@ -5715,13 +5715,13 @@
               "id": "019d73e0-1df9-774f-baa2-54a3d1df7d15",
               "sequence": 7,
               "address": "Atria Park District, San Rafael, Mandurriao, Calubihan, Iloilo City, Western Visayas, 5000, Philippines",
-              "point": [10.7083221709743, 122.548794150352]
+              "point": [10.7072077, 122.5482318]
             },
             {
               "id": "019d73e0-1df9-774f-baa2-5894b15547a2",
               "sequence": 8,
               "address": "Atria Park District, San Rafael, Mandurriao, Iloilo City, Western Visayas, 5000, Philippines",
-              "point": [10.7079940509794, 122.54877269268]
+              "point": [10.7072077, 122.5482318]
             },
             {
               "id": "019d73e0-1df9-774f-baa2-5c737acf60e4",
@@ -5908,7 +5908,7 @@
             {
               "id": "019d73f2-90a1-73d5-b05a-c7aabfe4ef7e",
               "sequence": 0,
-              "address": "Osmeña Road, Mohon, Villa de Arevalo, Bonifacio, Iloilo City, Western Visayas, 5000, Philippines",
+              "address": "Osme\u00f1a Road, Mohon, Villa de Arevalo, Bonifacio, Iloilo City, Western Visayas, 5000, Philippines",
               "point": [10.69341, 122.49999]
             },
             {
@@ -5989,7 +5989,7 @@
             {
               "id": "019d73f2-90a1-73d5-b05a-f8284133f698",
               "sequence": 4,
-              "address": "Osmeña Road, Mohon, Villa de Arevalo, Bonifacio, Iloilo City, Western Visayas, 5000, Philippines",
+              "address": "Osme\u00f1a Road, Mohon, Villa de Arevalo, Bonifacio, Iloilo City, Western Visayas, 5000, Philippines",
               "point": [10.6934, 122.50003]
             }
           ]
@@ -6029,7 +6029,7 @@
             {
               "id": "019d7403-c13a-7480-97c5-5c68cf6b1d28",
               "sequence": 3,
-              "address": "Commissioner Efraim B. Treñas Boulevard, San Rafael, Mandurriao, Iloilo City, Western Visayas, 5000, Philippines",
+              "address": "Commissioner Efraim B. Tre\u00f1as Boulevard, San Rafael, Mandurriao, Iloilo City, Western Visayas, 5000, Philippines",
               "point": [10.70462, 122.55451]
             },
             {
@@ -6054,7 +6054,7 @@
               "id": "019d7403-c13a-7480-97c5-6d431d02339d",
               "sequence": 7,
               "address": "Atria Park District, San Rafael, Mandurriao, Calubihan, Iloilo City, Western Visayas, 5000, Philippines",
-              "point": [10.70832, 122.54886]
+              "point": [10.7072077, 122.5482318]
             },
             {
               "id": "019d7403-c13a-7480-97c5-7086181153a1",
@@ -6104,7 +6104,7 @@
             {
               "id": "019d7403-c13a-7480-97c5-8f004bcd7e83",
               "sequence": 4,
-              "address": "Commissioner Efraim B. Treñas Boulevard, San Rafael, Mandurriao, Iloilo City, Western Visayas, 5000, Philippines",
+              "address": "Commissioner Efraim B. Tre\u00f1as Boulevard, San Rafael, Mandurriao, Iloilo City, Western Visayas, 5000, Philippines",
               "point": [10.70457, 122.5542]
             },
             {
@@ -6935,7 +6935,7 @@
             {
               "id": "019d73c5-63c6-730c-bcd7-eba86c077c98",
               "sequence": 9,
-              "address": "Gusaling Iloilo Acacia Lodge № 11, J. M. Basa Street, Iloilo Central Business District, City Proper, Iloilo City, Western Visayas, 5000, Philippines",
+              "address": "Gusaling Iloilo Acacia Lodge \u2116 11, J. M. Basa Street, Iloilo Central Business District, City Proper, Iloilo City, Western Visayas, 5000, Philippines",
               "point": [10.6923227806695, 122.573303690489]
             }
           ],
@@ -7135,7 +7135,7 @@
             {
               "id": "019d73c5-cce5-77ae-b603-a4955a2fa1c5",
               "sequence": 0,
-              "address": "Osmeña Road, Mohon, Villa de Arevalo, Bonifacio, Iloilo City, Western Visayas, 5000, Philippines",
+              "address": "Osme\u00f1a Road, Mohon, Villa de Arevalo, Bonifacio, Iloilo City, Western Visayas, 5000, Philippines",
               "point": [10.6933600651653, 122.500104010105]
             },
             {
@@ -7222,7 +7222,7 @@
             {
               "id": "019d73c5-cce5-77ae-b603-ddac63b4f4cb",
               "sequence": 9,
-              "address": "Osmeña Road, Mohon, Villa de Arevalo, Bonifacio, Iloilo City, Western Visayas, 5000, Philippines",
+              "address": "Osme\u00f1a Road, Mohon, Villa de Arevalo, Bonifacio, Iloilo City, Western Visayas, 5000, Philippines",
               "point": [10.6933521582734, 122.500095963478]
             }
           ]
@@ -7887,37 +7887,37 @@
               "id": "019d7628-f6fe-73dd-8d51-b3252e9e7914",
               "sequence": 107,
               "address": "We Academy, MacArthur Dr Western Visayas 5000 iloilo City Philippines, MacArthur Drive, Tabuc Suba, Jaro, Arguelles, Iloilo City, Western Visayas, 5000, Philippines",
-              "point": [10.731536087511, 122.559521645308]
+              "point": [10.7194373, 122.559411]
             },
             {
               "id": "019d7628-f6fe-73dd-8d51-b74c95af2168",
               "sequence": 108,
               "address": "We Academy, MacArthur Dr Western Visayas 5000 iloilo City Philippines, MacArthur Drive, Tabuc Suba, Jaro, Arguelles, Iloilo City, Western Visayas, 5000, Philippines",
-              "point": [10.7314385814544, 122.559484094381]
+              "point": [10.7194373, 122.559411]
             },
             {
               "id": "019d7628-f6fe-73dd-8d51-b8fdd0757bac",
               "sequence": 109,
               "address": "We Academy, MacArthur Dr Western Visayas 5000 iloilo City Philippines, MacArthur Drive, Tabuc Suba, Jaro, Arguelles, Iloilo City, Western Visayas, 5000, Philippines",
-              "point": [10.7312936399609, 122.55943313241]
+              "point": [10.7194373, 122.559411]
             },
             {
               "id": "019d7628-f6fe-73dd-8d51-bffd3631252b",
               "sequence": 110,
               "address": "We Academy, MacArthur Dr Western Visayas 5000 iloilo City Philippines, MacArthur Drive, Tabuc Suba, Jaro, Arguelles, Iloilo City, Western Visayas, 5000, Philippines",
-              "point": [10.7312040397302, 122.559407651424]
+              "point": [10.7194373, 122.559411]
             },
             {
               "id": "019d7628-f6fe-73dd-8d51-c0d6fe3dca96",
               "sequence": 111,
               "address": "We Academy, MacArthur Dr Western Visayas 5000 iloilo City Philippines, MacArthur Drive, Tabuc Suba, Jaro, Arguelles, Iloilo City, Western Visayas, 5000, Philippines",
-              "point": [10.7310920394044, 122.559371441603]
+              "point": [10.7194373, 122.559411]
             },
             {
               "id": "019d7628-f6fe-73dd-8d51-c70b461274d2",
               "sequence": 112,
               "address": "We Academy, MacArthur Dr Western Visayas 5000 iloilo City Philippines, MacArthur Drive, Tabuc Suba, Jaro, Arguelles, Iloilo City, Western Visayas, 5000, Philippines",
-              "point": [10.7307810735765, 122.559262812138]
+              "point": [10.7194373, 122.559411]
             },
             {
               "id": "019d7628-f6fe-73dd-8d51-c992e6aec86f",
@@ -10271,7 +10271,7 @@
             {
               "id": "019d7628-f700-70a6-a9e3-869efcb432b4",
               "sequence": 271,
-              "address": "Glenville Subdivision Phase Ⅱ, Guihaman, Leganes, Iloilo, Western Visayas, 5003, Philippines",
+              "address": "Glenville Subdivision Phase \u2161, Guihaman, Leganes, Iloilo, Western Visayas, 5003, Philippines",
               "point": [10.7812, 122.58581]
             },
             {
@@ -10283,7 +10283,7 @@
             {
               "id": "019d7628-f700-70a6-a9e3-8f0a1cc4352b",
               "sequence": 273,
-              "address": "Glenville Subdivision Phase Ⅱ, Guihaman, Leganes, Iloilo, Western Visayas, 5003, Philippines",
+              "address": "Glenville Subdivision Phase \u2161, Guihaman, Leganes, Iloilo, Western Visayas, 5003, Philippines",
               "point": [10.7819675325674, 122.58623175323]
             },
             {
