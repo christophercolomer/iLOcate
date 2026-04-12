@@ -57,9 +57,12 @@ const HOME_PREVIEW_ROUTES = [
 
 // Helper: assign placeholder images and ratings
 const getImage = (name: string, type: string) => {
-  if (type === "Food" || type === "Cafe") return "/images/food/iloilo-food.jpg"
-  if (type === "Heritage" || type === "Church") return "/images/places/miagao-church.jpg"
-  if (type === "Urban") return "/images/places/esplanade.jpg"
+  if (type === "Food") return "/images/food/Local Food/iloilo-food.jpg"
+  if (type === "Cafe") return "/images/food/Cafes/cafe.jpg"
+  if (type === "Church") return "/images/places/Churches/miagao-church.jpg"
+  if (type === "Museum") return "/images/places/Museums/ilomoca museum.webp"
+  if (type === "Heritage" || type === "Urban") return "/images/places/Attractions/esplanade.jpg"
+  if (type === "Mall") return "/images/banners/hero-iloilo(1).svg"
   return "/images/icons/placeholder.jpg"
 }
 const getRating = (type: string) => {
@@ -67,6 +70,7 @@ const getRating = (type: string) => {
   if (type === "Heritage" || type === "Church") return 4.7
   if (type === "Museum") return 4.6
   if (type === "Urban") return 4.6
+  if (type === "Mall") return 4.4
   return 4.0
 }
 
@@ -75,9 +79,9 @@ const preferenceToLandmarkTypes: Record<string, string[]> = {
   restaurants: ["Food"],
   churches: ["Church"],
   museums: ["Museum"],
-  "city-landmarks": ["Church", "Museum", "Urban", "Heritage"],
+  "city-landmarks": ["Urban", "Heritage"],
   beaches: [],
-  malls: [],
+  malls: ["Mall"],
 }
 
 function toLandmarkSlug(value: string) {
@@ -88,50 +92,50 @@ const exploreCategories = [
   {
     name: "Mall",
     description: "Shopping and lifestyle hubs around Iloilo",
-    image: "/images/banners/hero-iloilo(1).svg",
+    image: "/images/places/Malls/sm city iloilo.jpg",
     href: "/dashboard/places?category=malls",
   },
   {
     name: "Churches",
     description: "Historic churches and spiritual destinations",
-    image: "/images/places/miagao-church.jpg",
+    image: "/images/places/Churches/miagao-church.jpg",
     href: "/dashboard/places?category=churches",
   },
   {
     name: "Museum",
     description: "Culture, heritage, and local history",
-    image: "/images/places/esplanade.jpg",
+    image: "/images/places/Museums/ilomoca museum.webp",
     href: "/dashboard/places?category=museum",
   },
   {
     name: "City Landmark & Attraction",
     description: "Must-visit landmarks and iconic spots",
-    image: "/images/places/jaro church.jpg",
+    image: "/images/places/Attractions/esplanade.jpg",
     href: "/dashboard/places?category=city-landmark-attraction",
+  },
+  {
+    name: "Beaches",
+    description: "Sun, sand, and scenic coastal getaways",
+    image: "/images/places/Beach/sea garden.jpg",
+    href: "/dashboard/places?category=beaches",
   },
   {
     name: "Local Food",
     description: "Beloved Iloilo flavors and specialties",
-    image: "/images/food/iloilo-food.jpg",
+    image: "/images/food/Local Food/alicia's lapaz food.jpg",
     href: "/dashboard/food?category=local-food",
   },
   {
     name: "Cafes",
     description: "Coffee spots and cozy cafe experiences",
-    image: "/images/food/madge lapaz cafe.jpg",
+    image: "/images/food/Cafes/madge lapaz cafe.jpg",
     href: "/dashboard/food?category=cafes",
   },
   {
     name: "Restaurant",
     description: "Dining places for every craving",
-    image: "/images/food/tytche food.jpg",
+    image: "/images/food/Restaurant/tytche food.jpg",
     href: "/dashboard/food?category=restaurants",
-  },
-  {
-    name: "Street Food",
-    description: "Quick bites and street-side favorites",
-    image: "/images/food/roberto's food.jpg",
-    href: "/dashboard/food?category=street-food",
   },
 ]
 
@@ -288,10 +292,21 @@ export default function DashboardPage() {
     preferences.flatMap((preference) => preferenceToLandmarkTypes[preference] ?? [])
   )
 
-  const sourceLandmarks =
-    selectedTypes.size > 0 ? landmarks.filter((landmark) => selectedTypes.has(landmark.type)) : landmarks
+  const shuffleLandmarks = (arr: typeof landmarks) => {
+    const copy = [...arr]
+    for (let i = copy.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [copy[i], copy[j]] = [copy[j], copy[i]]
+    }
+    return copy
+  }
 
-  const recommendedLandmarks = sourceLandmarks.length > 0 ? sourceLandmarks : landmarks
+  const sourceLandmarks =
+    selectedTypes.size > 0
+      ? landmarks.filter((landmark) => selectedTypes.has(landmark.type))
+      : shuffleLandmarks(landmarks)
+
+  const recommendedLandmarks = sourceLandmarks.length > 0 ? sourceLandmarks : shuffleLandmarks(landmarks)
   const foodHotspots = landmarks.filter((landmark) => landmark.type === "Food" || landmark.type === "Cafe").length
   const culturalSpots = landmarks.filter((landmark) => ["Church", "Museum", "Heritage"].includes(landmark.type)).length
 

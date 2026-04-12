@@ -55,15 +55,11 @@ function readLikedItems() {
 
 function getImage(name: string, type: string, imageUrl?: string) {
   if (imageUrl && imageUrl !== "/images/icons/placeholder.jpg") return imageUrl;
-  if (type === "Food") return "/images/food/iloilo-food.jpg";
-  if (type === "Cafe") return "/images/food/cafe.jpg";
-  if (type === "Church" || type === "Museum") {
-    const slug = name
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/(^-|-$)/g, "");
-    return `/images/places/${slug}.jpg`;
-  }
+  if (type === "Food") return "/images/food/Local Food/iloilo-food.jpg";
+  if (type === "Cafe") return "/images/food/Cafes/cafe.jpg";
+  if (type === "Church") return "/images/places/Churches/miagao-church.jpg";
+  if (type === "Museum") return "/images/places/Museums/ilomoca museum.webp";
+  if (type === "Heritage" || type === "Urban") return "/images/places/Attractions/esplanade.jpg";
   return "/images/icons/placeholder.jpg";
 }
 
@@ -91,7 +87,7 @@ function getLocation(name: string) {
   return "Iloilo"
 }
 
-const categories = ["All", "Malls", "Churches", "Museum", "City Landmark & Attraction"]
+const categories = ["All", "Malls", "Churches", "Museum", "City Landmark & Attraction", "Beaches"]
 
 const mallKeywords = ["mall", "sm ", "robinsons", "gaisano", "festive", "megaworld", "ayala", "central", "city mall", "mall of", "shangri-la"]
 
@@ -100,8 +96,8 @@ const preferenceToLandmarkTypes: Record<string, string[]> = {
   restaurants: ["Food"],
   churches: ["Church"],
   museums: ["Museum"],
-  "city-landmarks": ["Church", "Museum", "Urban", "Heritage"],
-  beaches: [],
+  "city-landmarks": ["Urban", "Heritage"],
+  beaches: ["Beach"],
   malls: [],
 }
 
@@ -165,6 +161,8 @@ export default function PlacesPage() {
       museums: "Museum",
       "city-landmark-attraction": "City Landmark & Attraction",
       "city-landmarks": "City Landmark & Attraction",
+      beaches: "Beaches",
+      beach: "Beaches",
     }
 
     const resolvedCategory = categoryFromQuery[category]
@@ -203,10 +201,6 @@ export default function PlacesPage() {
   const filtered = allPlaces.filter((p) => {
     const matchesSearch = p.name.toLowerCase().includes(search.toLowerCase())
 
-    if (activeCategory === "All" && hasPreferredTypes) {
-      return preferredTypes.has(p.category) && matchesSearch
-    }
-
     if (p.category === "Food" || p.category === "Cafe") return false
 
     const normalizedCategory = p.category.toLowerCase().trim()
@@ -217,8 +211,10 @@ export default function PlacesPage() {
       (normalizedActive === "churches" && normalizedCategory === "church") ||
       (normalizedActive === "museum" && normalizedCategory === "museum") ||
       (normalizedActive === "city landmark & attraction" &&
-        (normalizedCategory === "church" || normalizedCategory === "museum")) ||
-      (normalizedActive === "malls" && mallKeywords.some((keyword) => p.name.toLowerCase().includes(keyword)))
+        (normalizedCategory === "urban" || normalizedCategory === "heritage")) ||
+      (normalizedActive === "beaches" && normalizedCategory === "beach") ||
+      (normalizedActive === "malls" &&
+        (normalizedCategory === "mall" || mallKeywords.some((keyword) => p.name.toLowerCase().includes(keyword))))
 
     return matchesCategory && matchesSearch
   })
@@ -230,7 +226,7 @@ export default function PlacesPage() {
           <h1 className="text-2xl font-bold text-foreground">Popular Places</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             {hasPreferredTypes && activeCategory === "All"
-              ? `${filtered.length} destinations based on your preferences`
+              ? `${filtered.length} destinations to explore (showing all places)`
               : `${filtered.length} destinations to explore`}
           </p>
         </div>
@@ -350,7 +346,7 @@ export default function PlacesPage() {
                   const target = showRouteModal?.landmarkSlug
                   if (!target) return
                   setShowRouteModal(null)
-                  router.push(`/dashboard/map?landmark=${target}`)
+                  router.push(`/dashboard/map?landmark=${target}&go=1`)
                 }}
               >
                 Go to this place
