@@ -4,7 +4,7 @@ import { useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { ArrowLeft, MapPin, Coffee, UtensilsCrossed, Waves, Landmark, Church, ShoppingBag, Loader2 } from "lucide-react"
+import { ArrowLeft, Coffee, UtensilsCrossed, Waves, Landmark, Church, ShoppingBag, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { auth } from "@/lib/firebase"
 import { getFirestore, doc, setDoc } from "firebase/firestore"
@@ -58,7 +58,7 @@ export default function PreferencesPage() {
   }
 
   return (
-    <div className="w-full max-w-md">
+    <div className="w-full max-w-xl pb-4">
       <div className="mb-2">
         <Link href="/dashboard" className="flex items-center gap-0">
           <Image
@@ -66,9 +66,9 @@ export default function PreferencesPage() {
             alt="iLOcate logo"
             width={50}
             height={50}
-            className="h-6 w-6 object-contain"
+            className="h-7 w-7 object-contain"
           />
-          <span className="text-sm font-semibold text-primary">iLOcate</span>
+          <span className="text-xl font-semibold text-primary">iLOcate</span>
         </Link>
       </div>
 

@@ -38,6 +38,7 @@ interface MapComponentProps {
   showCurrentLocation?: boolean
   showLocateControl?: boolean
   requireClickToZoom?: boolean
+  showAllRoutes?: boolean
   decodedRoutes?: DecodedRoute[]
   directionsRoute?: DirectionsRoute | null
   originMarker?: [number, number] | null
@@ -65,6 +66,7 @@ export default function MapLeaflet({
   showCurrentLocation = true,
   showLocateControl = true,
   requireClickToZoom = false,
+  showAllRoutes = false,
   decodedRoutes = [],
   directionsRoute = null,
   originMarker = null,
@@ -74,7 +76,8 @@ export default function MapLeaflet({
   const map = useRef<L.Map | null>(null)
   const markersRef = useRef<L.Marker[]>([])
   const landmarkMarkersRef = useRef<Map<string, L.Marker>>(new Map())
-  const polylineRef = useRef<L.Polyline | null>(null)
+  const routePolylinesRef = useRef<L.Polyline[]>([])
+  const hasFittedAllRoutesRef = useRef(false)
   const directionsPolylineRef = useRef<L.Polyline | null>(null)
   const originMarkerRef = useRef<L.Marker | null>(null)
   const destinationMarkerRef = useRef<L.Marker | null>(null)
@@ -235,6 +238,39 @@ export default function MapLeaflet({
   }, [center, zoom, showCenterMarker, showCurrentLocation, showLocateControl, requireClickToZoom])
 
   useEffect(() => {
+    if (!map.current || !mapContainer.current) return
+
+    const mapInstance = map.current
+    const container = mapContainer.current
+
+    const refreshMapSize = () => {
+      if (!map.current) return
+      mapInstance.invalidateSize({ animate: false })
+    }
+
+    // Run once after mount and again on next frame for layout shifts.
+    refreshMapSize()
+    const rafId = requestAnimationFrame(refreshMapSize)
+
+    const resizeObserver = new ResizeObserver(() => {
+      refreshMapSize()
+    })
+
+    resizeObserver.observe(container)
+    window.addEventListener("resize", refreshMapSize)
+
+    return () => {
+      cancelAnimationFrame(rafId)
+      resizeObserver.disconnect()
+      window.removeEventListener("resize", refreshMapSize)
+    }
+  }, [])
+
+  useEffect(() => {
+    hasFittedAllRoutesRef.current = false
+  }, [decodedRoutes, showAllRoutes])
+
+  useEffect(() => {
     if (!map.current) return
     const mapInstance = map.current
 
@@ -255,13 +291,13 @@ export default function MapLeaflet({
     markersRef.current = []
     landmarkMarkersRef.current.clear()
 
-    // Clear existing polyline
-    if (polylineRef.current) {
-      if (mapInstance.hasLayer(polylineRef.current)) {
-        mapInstance.removeLayer(polylineRef.current)
+    // Clear existing route polylines
+    routePolylinesRef.current.forEach((polyline) => {
+      if (mapInstance.hasLayer(polyline)) {
+        mapInstance.removeLayer(polyline)
       }
-      polylineRef.current = null
-    }
+    })
+    routePolylinesRef.current = []
 
     // Add landmark markers
     if (showLandmarks) {
@@ -292,30 +328,47 @@ export default function MapLeaflet({
       })
     }
 
-    // Add selected route polyline
-    if (selectedRoute !== null && decodedRoutes.length > 0) {
-      const decodedRoute = decodedRoutes.find((r) => r.id === selectedRoute)
+    const shouldRenderRoutes = decodedRoutes.length > 0 && (showAllRoutes || selectedRoute !== null)
 
-      if (decodedRoute && decodedRoute.goingToCoordinates.length >= 2) {
+    if (shouldRenderRoutes) {
+      const routesToRender = showAllRoutes
+        ? decodedRoutes
+        : decodedRoutes.filter((route) => route.id === selectedRoute)
+
+      let selectedRouteCoords: [number, number][] = []
+      const allRouteCoords: [number, number][] = []
+
+      routesToRender.forEach((decodedRoute) => {
         const routeCoords = decodedRoute.goingToCoordinates.filter((coords) => isValidCoordinatePair(coords))
+        if (routeCoords.length < 2) return
 
-        if (routeCoords.length >= 2) {
-          polylineRef.current = L.polyline(routeCoords, {
-            color: decodedRoute.routeColor || "hsl(var(--color-primary))",
-            weight: 4,
-            opacity: 0.8,
-            dashArray: "5, 5",
-          })
-            .bindPopup(`<strong>${decodedRoute.routeNumber} - ${decodedRoute.routeName}</strong>`)
-            .addTo(mapInstance)
+        const isSelected = selectedRoute !== null && decodedRoute.id === selectedRoute
 
-          // Fit bounds to show route
-          const bounds = L.latLngBounds(routeCoords)
-          mapInstance.fitBounds(bounds, { padding: [50, 50] })
+        const routePolyline = L.polyline(routeCoords, {
+          color: decodedRoute.routeColor || "hsl(var(--color-primary))",
+          weight: isSelected ? 6 : 4,
+          opacity: isSelected ? 0.95 : 0.72,
+          dashArray: isSelected ? undefined : "5, 5",
+        })
+          .bindPopup(`<strong>${decodedRoute.routeNumber} - ${decodedRoute.routeName}</strong>`)
+          .addTo(mapInstance)
+
+        routePolylinesRef.current.push(routePolyline)
+        allRouteCoords.push(...routeCoords)
+
+        if (isSelected) {
+          selectedRouteCoords = routeCoords
         }
+      })
+
+      if (selectedRouteCoords.length >= 2) {
+        mapInstance.fitBounds(L.latLngBounds(selectedRouteCoords), { padding: [50, 50] })
+      } else if (showAllRoutes && !directionsRoute && allRouteCoords.length >= 2 && !hasFittedAllRoutesRef.current) {
+        mapInstance.fitBounds(L.latLngBounds(allRouteCoords), { padding: [50, 50] })
+        hasFittedAllRoutesRef.current = true
       }
     }
-  }, [selectedRoute, selectedLandmarkName, focusedLandmarkNames, landmarks, routes, showLandmarks, decodedRoutes])
+  }, [selectedRoute, selectedLandmarkName, focusedLandmarkNames, landmarks, routes, showLandmarks, decodedRoutes, showAllRoutes, directionsRoute])
 
   useEffect(() => {
     if (!map.current || !selectedLandmarkName) return

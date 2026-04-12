@@ -11,12 +11,12 @@ function toLandmarkSlug(value: string) {
 }
 
 const popularPlaces = [
-  { id: 1, name: "Miag-ao Church", image: "/images/places/miagao-church.jpg", category: "Heritage", rating: 4.9, cost: "Free" },
-  { id: 2, name: "Islas de Gigantes", image: "/images/places/gigantes-island.jpg", category: "Beach", rating: 4.8, cost: "PHP 500" },
-  { id: 3, name: "Garin Farm", image: "/images/places/garin-farm.jpg", category: "Nature", rating: 4.7, cost: "PHP 150" },
-  { id: 4, name: "Iloilo Esplanade", image: "/images/places/esplanade.jpg", category: "Urban", rating: 4.6, cost: "Free" },
-  { id: 5, name: "Molo Church", image: "/images/places/miagao-church.jpg", category: "Heritage", rating: 4.5, cost: "Free" },
-  { id: 6, name: "La Paz Market", image: "/images/food/iloilo-food.jpg", category: "Food", rating: 4.8, cost: "PHP 50-200" },
+  { id: 1, name: "Travel Company (Name)", image: "/images/places/miagao-church.jpg", rating: 4.9, cost: "Free" },
+  { id: 2, name: "Travel Company (Name)", image: "/images/places/gigantes-island.jpg", rating: 4.8, cost: "PHP 500" },
+  { id: 3, name: "Travel Company (Name)", image: "/images/places/garin-farm.jpg", rating: 4.7, cost: "PHP 150" },
+  { id: 4, name: "Travel Company (Name)", image: "/images/places/esplanade.jpg", rating: 4.6, cost: "Free" },
+  { id: 5, name: "Travel Company (Name)", image: "/images/places/miagao-church.jpg", rating: 4.5, cost: "Free" },
+  { id: 6, name: "Travel Company (Name)", image: "/images/food/iloilo-food.jpg", rating: 4.8, cost: "PHP 50-200" },
 ]
 
 const suggestedActivities = [
@@ -182,7 +182,7 @@ export default function ItineraryPage() {
               </div>
             )}
 
-            {/* Popular Places Button */}
+            {/* Travel Companies Button */}
             <Button
               onClick={() => setActiveTab("planner")}
               variant="outline"
@@ -194,16 +194,17 @@ export default function ItineraryPage() {
                 section?.scrollIntoView({ behavior: "smooth" })
               }}>
                 <MapPin className="mr-2 h-4 w-4" />
-                Popular Places
+                Travel Companies
               </button>
             </Button>
           </div>
         </div>
       </div>
 
-      {/* Popular Places Grid */}
+      {/* Travel Companies Grid */}
       <div id="popular-places" className="mt-10 scroll-mt-20">
-        <h2 className="mb-4 text-xl font-bold text-foreground">Popular Places in Iloilo</h2>
+        <h2 className="mb-4 text-xl font-bold text-foreground">Travel Companies in Iloilo</h2>
+        <p className="mb-5 text-sm text-muted-foreground">Need a guide? Check these out.</p>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {popularPlaces.map((place) => (
             <button
@@ -213,7 +214,6 @@ export default function ItineraryPage() {
             >
               <div className="relative h-40 w-full overflow-hidden">
                 <Image src={place.image} alt={place.name} fill className="object-cover transition-transform duration-500 group-hover:scale-105" sizes="(max-width: 640px) 100vw, 33vw" />
-                <div className="absolute left-2 top-2 rounded-full bg-primary/90 px-2.5 py-0.5 text-[10px] font-semibold text-primary-foreground">{place.category}</div>
               </div>
               <div className="p-4">
                 <div className="flex items-center justify-between">

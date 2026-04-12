@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import dynamic from "next/dynamic"
 import Image from "next/image"
 import Link from "next/link"
@@ -103,6 +103,7 @@ export function HeroSection() {
   const [allRoutes, setAllRoutes] = useState<DecodedRoute[]>([])
   const [loadingRoutes, setLoadingRoutes] = useState(false)
   const [selectedRouteId, setSelectedRouteId] = useState<string | null>(null)
+  const routeListRef = useRef<HTMLDivElement>(null)
   const { user } = useAuth()
 
   // Load PUJ routes from data.json
@@ -111,8 +112,19 @@ export function HeroSection() {
       setLoadingRoutes(true)
       try {
         const decodedRoutes = await loadAndDecodeRoutes()
-        setAllRoutes(decodedRoutes)
-        setPujRoutes(decodedRoutes.slice(0, 6)) // Limit to 6 routes for display
+        const sortedRoutes = [...decodedRoutes].sort((a, b) => {
+          const aNum = Number.parseInt(a.routeNumber.replace(/[^0-9]/g, ""), 10)
+          const bNum = Number.parseInt(b.routeNumber.replace(/[^0-9]/g, ""), 10)
+
+          if (aNum !== bNum) {
+            return aNum - bNum
+          }
+
+          return a.routeNumber.localeCompare(b.routeNumber)
+        })
+
+        setAllRoutes(sortedRoutes)
+        setPujRoutes(sortedRoutes)
       } catch (error) {
         console.error("Error loading PUJ routes:", error)
         setAllRoutes([])
@@ -147,6 +159,30 @@ export function HeroSection() {
     window.addEventListener("scroll", handleScroll, { passive: true })
     return () => window.removeEventListener("scroll", handleScroll)
   }, [handleScroll])
+
+  useEffect(() => {
+    if (!showMapModal) return
+
+    const { style } = document.body
+    const previousOverflow = style.overflow
+    const previousPaddingRight = style.paddingRight
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth
+
+    style.overflow = "hidden"
+    if (scrollbarWidth > 0) {
+      style.paddingRight = `${scrollbarWidth}px`
+    }
+
+    return () => {
+      style.overflow = previousOverflow
+      style.paddingRight = previousPaddingRight
+    }
+  }, [showMapModal])
+
+  useEffect(() => {
+    if (!showMapModal) return
+    routeListRef.current?.scrollTo({ top: 0 })
+  }, [showMapModal])
 
   return (
     <>
@@ -351,13 +387,13 @@ export function HeroSection() {
           </div>
         </div>
 
-        <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-background to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black to-transparent" />
       </section>
 
       {/* Map & Routes Modal */}
       {showMapModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
-          <div className="relative w-full max-w-4xl rounded-2xl bg-card shadow-2xl">
+          <div className="relative w-full max-w-4xl overflow-hidden rounded-2xl bg-card shadow-2xl">
             <button
               type="button"
               onClick={() => {
@@ -369,15 +405,16 @@ export function HeroSection() {
               <X className="h-6 w-6" />
             </button>
 
-            <div className="grid gap-6 p-6 md:grid-cols-2">
+            <div className="grid h-[620px] gap-6 p-6 md:grid-cols-2">
               {/* Map Side */}
-              <div className="relative h-96 rounded-xl overflow-hidden bg-muted md:h-auto md:min-h-[400px]">
+              <div className="relative h-full rounded-xl overflow-hidden bg-muted">
                 <MapLeaflet
                   center={[10.7202, 122.5621]}
                   zoom={13}
                   routes={[]}
                   landmarks={[]}
                   selectedRoute={selectedRouteId}
+                  showAllRoutes={selectedRouteId === null}
                   showLandmarks={false}
                   showCenterMarker={false}
                   showCurrentLocation={false}
@@ -388,21 +425,28 @@ export function HeroSection() {
               </div>
 
               {/* Routes List */}
-              <div className="flex flex-col gap-4">
+              <div className="flex h-full min-h-0 flex-col gap-4">
                 <div>
                   <h2 className="text-2xl font-bold text-foreground">PUJ Routes in Iloilo</h2>
                   <p className="mt-1 text-muted-foreground">
                     Click a route to view it on the map
                   </p>
+                  {!loadingRoutes && pujRoutes.length > 0 && (
+                    <p className="mt-1 text-xs text-muted-foreground">Showing {pujRoutes.length} routes</p>
+                  )}
                 </div>
 
-                <div className="flex flex-col gap-3 overflow-y-auto max-h-80">
+                <div
+                  ref={routeListRef}
+                  className="min-h-0 flex-1 overflow-y-auto pr-1 [scrollbar-width:thin] [scrollbar-color:hsl(var(--primary)/0.45)_transparent] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-primary/45 hover:[&::-webkit-scrollbar-thumb]:bg-primary/65"
+                >
                   {loadingRoutes ? (
                     <p className="text-sm text-muted-foreground">Loading routes...</p>
                   ) : pujRoutes.length === 0 ? (
                     <p className="text-sm text-muted-foreground">No routes available</p>
                   ) : (
-                    pujRoutes.map((route) => (
+                    <div className="flex flex-col gap-3">
+                      {pujRoutes.map((route) => (
                       <button
                         type="button"
                         key={route.id}
@@ -421,9 +465,9 @@ export function HeroSection() {
                           <h3 className="font-semibold text-foreground">{route.routeNumber} - {route.routeName}</h3>
                         </div>
                         <p className="text-sm text-muted-foreground">{route.vehicleTypeName}</p>
-                        <p className="mt-2 text-xs text-muted-foreground">Stops: {route.stops.length}</p>
                       </button>
-                    ))
+                      ))}
+                    </div>
                   )}
                 </div>
 

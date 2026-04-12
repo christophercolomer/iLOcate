@@ -491,7 +491,7 @@ export default function DashboardPage() {
                 Open Full Map
               </Button>
             </Link>
-            <Link href="/dashboard/food" className="inline-flex">
+            <Link href="/dashboard/map" className="inline-flex">
               <Button size="sm" variant="outline" className="h-10 gap-2 rounded-xl border-white/60 bg-white/90 px-4 text-foreground hover:bg-white">
                 <Compass className="h-4 w-4" />
                 What's near?
