@@ -1,7 +1,6 @@
 ﻿"use client"
 
 import { useState, useEffect, useRef } from "react"
-import Image from "next/image"  
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Eye, EyeOff, Mail, Lock } from "lucide-react"
@@ -159,7 +158,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="w-full max-w-sm">
+    <div className="w-full max-w-md pb-4">
       <div className="mb-4">
         <Link href="/" className="text-sm text-primary hover:underline">
           ← Back to home
@@ -239,7 +238,7 @@ export default function LoginPage() {
           <span className="relative bg-background px-3 text-xs text-muted-foreground">or continue with</span>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <Button
             type="button"
             variant="outline"

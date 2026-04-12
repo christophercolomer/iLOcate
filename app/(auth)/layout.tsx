@@ -8,7 +8,7 @@ export default function AuthLayout({
   children: React.ReactNode
 }) {
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="flex min-h-[100dvh] lg:h-[100dvh] lg:overflow-hidden">
       {/* Left: Image */}
       <div className="relative hidden h-full w-1/2 overflow-hidden lg:block">
         <Image
@@ -45,7 +45,7 @@ export default function AuthLayout({
       </div>
 
       {/* Right: Form */}
-      <div className="flex w-full flex-col lg:w-1/2">
+      <div className="flex w-full min-h-0 flex-col lg:w-1/2">
         <div className="flex items-center px-6 py-4 lg:hidden">
           <Link href="/" className="flex items-center gap-2">
             <MapPin className="h-6 w-6 text-primary" />
@@ -54,7 +54,7 @@ export default function AuthLayout({
             </span>
           </Link>
         </div>
-        <main className="flex flex-1 items-center justify-center px-6 py-8 overflow-auto">
+        <main className="flex min-h-0 flex-1 items-start justify-center overflow-y-auto px-6 py-6 lg:items-center lg:py-10">
           {children}
         </main>
       </div>

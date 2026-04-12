@@ -8,6 +8,7 @@ import {
   Navigation,
   Bus,
   ChevronRight,
+  ChevronLeft,
   Info,
   ArrowLeft,
   Locate,
@@ -86,6 +87,24 @@ const preferenceCategoryMap: Record<string, LandmarkCategory[]> = {
 
 const CURRENT_LOCATION_LABEL = "Current Location"
 
+function isSubsequenceMatch(query: string, target: string) {
+  let queryIndex = 0
+  for (let i = 0; i < target.length && queryIndex < query.length; i++) {
+    if (target[i] === query[queryIndex]) queryIndex += 1
+  }
+  return queryIndex === query.length
+}
+
+function getSuggestionScore(query: string, target: string) {
+  if (!query) return 999
+  if (target === query) return 0
+  if (target.startsWith(query)) return 1
+  if (target.split(/\s+/).some((word) => word.startsWith(query))) return 2
+  if (target.includes(query)) return 3
+  if (isSubsequenceMatch(query, target)) return 4
+  return Number.POSITIVE_INFINITY
+}
+
 export default function FullScreenMapPage() {
   const searchParams = useSearchParams()
   const [from, setFrom] = useState(CURRENT_LOCATION_LABEL)
@@ -96,9 +115,11 @@ export default function FullScreenMapPage() {
   const [routeMode, setRouteMode] = useState<"Palihog Bayad" | "Sa Lugar">("Palihog Bayad")
   const [showRoutes, setShowRoutes] = useState(false)
   const [selectedRoute, setSelectedRoute] = useState<string | null>(null)
+  const [showMapSidebar, setShowMapSidebar] = useState(true)
   const [selectedLandmarkSection, setSelectedLandmarkSection] = useState<string | null>(null)
   const [selectedLandmarkName, setSelectedLandmarkName] = useState<string | null>(null)
   const [focusedLandmarkNames, setFocusedLandmarkNames] = useState<string[]>([])
+  const [showLandmarksPanel, setShowLandmarksPanel] = useState(true)
   const [userPreferences, setUserPreferences] = useState<string[]>([])
   const [routes, setRoutes] = useState<DecodedRoute[]>([])
   const [loadingRoutes, setLoadingRoutes] = useState(true)
@@ -107,6 +128,7 @@ export default function FullScreenMapPage() {
   const [directionsError, setDirectionsError] = useState<string | null>(null)
   const [originCoords, setOriginCoords] = useState<[number, number] | null>(null)
   const [destinationCoords, setDestinationCoords] = useState<[number, number] | null>(null)
+  const [activeSuggestionField, setActiveSuggestionField] = useState<"from" | "to" | null>(null)
   const { user } = useAuth()
 
   // Get user's current location on mount
@@ -279,8 +301,53 @@ export default function FullScreenMapPage() {
       return landmarks.filter((lm) => focusedSet.has(lm.name))
     }
 
-    return landmarks
+    return []
   }, [focusedLandmarkNames, selectedLandmarkName])
+
+  const locationSuggestions = useMemo(() => {
+    const baseSuggestions = landmarks.map((landmark) => ({
+      label: landmark.name,
+      subtitle: landmark.type,
+    }))
+
+    if (userLocation) {
+      return [
+        { label: CURRENT_LOCATION_LABEL, subtitle: "Use your live location" },
+        ...baseSuggestions,
+      ]
+    }
+
+    return baseSuggestions
+  }, [userLocation])
+
+  const findBestSuggestions = (query: string) => {
+    const normalizedQuery = query.toLowerCase().trim()
+    if (!normalizedQuery) return locationSuggestions.slice(0, 8)
+
+    return locationSuggestions
+      .map((suggestion) => ({
+        ...suggestion,
+        score: getSuggestionScore(normalizedQuery, suggestion.label.toLowerCase()),
+      }))
+      .filter((suggestion) => Number.isFinite(suggestion.score))
+      .sort((a, b) => {
+        if (a.score !== b.score) return a.score - b.score
+        return a.label.localeCompare(b.label, undefined, { sensitivity: "base" })
+      })
+      .slice(0, 8)
+  }
+
+  const fromSuggestions = useMemo(() => findBestSuggestions(from), [from, locationSuggestions])
+  const toSuggestions = useMemo(() => findBestSuggestions(to), [to, locationSuggestions])
+
+  const applySuggestion = (field: "from" | "to", value: string) => {
+    if (field === "from") {
+      setFrom(value)
+    } else {
+      setTo(value)
+    }
+    setActiveSuggestionField(null)
+  }
 
   const swapLocations = () => {
     setFrom(to)
@@ -397,7 +464,8 @@ export default function FullScreenMapPage() {
   return (
     <div className="flex h-[calc(100vh-64px)] flex-col lg:flex-row">
       {/* Sidebar */}
-      <div className="w-full flex-shrink-0 overflow-y-auto border-b border-border bg-background p-4 lg:w-[380px] lg:border-b-0 lg:border-r">
+      {showMapSidebar && (
+      <div className="relative w-full flex-shrink-0 overflow-y-auto border-b border-border bg-background p-4 lg:w-[380px] lg:border-b-0 lg:border-r">
         <div className="mb-4 flex items-center gap-3">
           <Link href="/dashboard" className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground">
             <ArrowLeft className="h-5 w-5" />
@@ -415,12 +483,32 @@ export default function FullScreenMapPage() {
                 type="text"
                 value={from}
                 onChange={(e) => setFrom(e.target.value)}
+                onFocus={() => setActiveSuggestionField("from")}
+                onBlur={() => setTimeout(() => setActiveSuggestionField(null), 120)}
                 placeholder={locationLoading ? "Getting your location…" : "From"}
                 disabled={locationLoading}
                 className={`w-full rounded-xl border border-input bg-background py-2.5 pl-10 pr-9 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-60 ${
                   from === CURRENT_LOCATION_LABEL ? "text-primary font-medium" : ""
                 }`}
               />
+              {activeSuggestionField === "from" && fromSuggestions.length > 0 && !locationLoading && (
+                <div className="absolute left-0 right-0 top-[calc(100%+6px)] z-30 max-h-56 overflow-y-auto rounded-xl border border-border bg-card p-1 shadow-lg">
+                  {fromSuggestions.map((suggestion) => (
+                    <button
+                      key={`from-${suggestion.label}`}
+                      type="button"
+                      onMouseDown={(e) => {
+                        e.preventDefault()
+                        applySuggestion("from", suggestion.label)
+                      }}
+                      className="flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-left hover:bg-muted"
+                    >
+                      <span className="truncate text-sm text-foreground">{suggestion.label}</span>
+                      <span className="ml-2 flex-shrink-0 text-[11px] text-muted-foreground">{suggestion.subtitle}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
               {/* Right-side indicator: spinner while loading, reset button otherwise */}
               {locationLoading ? (
                 <span className="absolute right-3 top-1/2 -translate-y-1/2">
@@ -455,9 +543,29 @@ export default function FullScreenMapPage() {
                 type="text"
                 value={to}
                 onChange={(e) => setTo(e.target.value)}
+                onFocus={() => setActiveSuggestionField("to")}
+                onBlur={() => setTimeout(() => setActiveSuggestionField(null), 120)}
                 placeholder="To"
                 className="w-full rounded-xl border border-input bg-background py-2.5 pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
               />
+              {activeSuggestionField === "to" && toSuggestions.length > 0 && (
+                <div className="absolute left-0 right-0 top-[calc(100%+6px)] z-30 max-h-56 overflow-y-auto rounded-xl border border-border bg-card p-1 shadow-lg">
+                  {toSuggestions.map((suggestion) => (
+                    <button
+                      key={`to-${suggestion.label}`}
+                      type="button"
+                      onMouseDown={(e) => {
+                        e.preventDefault()
+                        applySuggestion("to", suggestion.label)
+                      }}
+                      className="flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-left hover:bg-muted"
+                    >
+                      <span className="truncate text-sm text-foreground">{suggestion.label}</span>
+                      <span className="ml-2 flex-shrink-0 text-[11px] text-muted-foreground">{suggestion.subtitle}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
             <Button 
               onClick={handleSearchRoute} 
@@ -567,10 +675,108 @@ export default function FullScreenMapPage() {
           </div>
         </div>
 
-        {/* Landmarks */}
         <div className="mt-4 rounded-2xl bg-secondary p-4">
-          <h3 className="mb-3 text-sm font-semibold text-foreground">Landmarks</h3>
-          <div className="flex max-h-[360px] flex-col gap-2 overflow-y-auto pr-1">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <h3 className="text-sm font-semibold text-foreground">Landmarks Panel</h3>
+              <p className="text-xs text-muted-foreground">Use the side arrow tabs to collapse or expand panels.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      )}
+
+      {/* Map */}
+      <div className="relative flex-1">
+        <MapComponent
+          center={MAP_CENTER}
+          zoom={MAP_ZOOM}
+          showCenterMarker={false}
+          routes={routes.map((route) => ({
+            id: route.id,
+            name: `${route.routeNumber} - ${route.routeName}`,
+            code: route.vehicleTypeName,
+            stops: route.stops.map((s) => s.address),
+            fare: "",
+            time: "",
+          }))}
+          landmarks={visibleLandmarks}
+          selectedRoute={selectedRoute}
+          selectedLandmarkName={selectedLandmarkName}
+          focusedLandmarkNames={focusedLandmarkNames}
+          decodedRoutes={routes}
+          directionsRoute={directionsRoute}
+          originMarker={originCoords}
+          destinationMarker={destinationCoords}
+        />
+        <button
+          type="button"
+          onClick={() => setShowMapSidebar((prev) => !prev)}
+          aria-label={showMapSidebar ? "Collapse interactive map sidebar" : "Expand interactive map sidebar"}
+          className="absolute left-0 top-1/2 z-[700] hidden h-12 w-7 -translate-y-1/2 items-center justify-center rounded-r-md border border-l-0 border-border bg-background text-muted-foreground shadow-sm transition-colors hover:border-primary hover:bg-primary hover:text-primary-foreground lg:flex"
+        >
+          {showMapSidebar ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+        </button>
+        <button
+          type="button"
+          onClick={() => setShowLandmarksPanel((prev) => !prev)}
+          aria-label={showLandmarksPanel ? "Collapse landmarks panel" : "Expand landmarks panel"}
+          className="absolute right-0 top-1/2 z-[700] hidden h-12 w-7 -translate-y-1/2 items-center justify-center rounded-l-md border border-r-0 border-border bg-background text-muted-foreground shadow-sm transition-colors hover:border-primary hover:bg-primary hover:text-primary-foreground lg:flex"
+        >
+          {showLandmarksPanel ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+        </button>
+        {showRoutes && directionsRoute && (
+          <div className="absolute bottom-4 right-4 max-w-sm rounded-xl bg-card/95 p-4 shadow-lg backdrop-blur-sm">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-start gap-3">
+                <Navigation className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" />
+                <div>
+                  <p className="text-sm font-medium text-foreground">Directions</p>
+                  <div className="mt-1 flex items-center gap-3 text-xs text-muted-foreground">
+                    <span>{formatDistance(directionsRoute.distance)}</span>
+                    <span>|</span>
+                    <span>{formatDuration(directionsRoute.duration)}</span>
+                  </div>
+                </div>
+              </div>
+              <button
+                onClick={clearDirections}
+                className="rounded-lg p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+                aria-label="Clear directions"
+              >
+                <ArrowLeft className="h-4 w-4" />
+              </button>
+            </div>
+            {directionsRoute.steps.length > 0 && (
+              <div className="mt-3 max-h-40 overflow-y-auto border-t border-border pt-3">
+                <p className="mb-2 text-xs font-medium text-muted-foreground">Turn-by-turn directions:</p>
+                <div className="flex flex-col gap-2">
+                  {directionsRoute.steps.slice(0, 8).map((step, i) => (
+                    <div key={i} className="flex items-start gap-2">
+                      <div className={`mt-1.5 h-2 w-2 flex-shrink-0 rounded-full ${i === 0 ? "bg-green-500" : i === Math.min(7, directionsRoute.steps.length - 1) ? "bg-red-500" : "bg-border"}`} />
+                      <div className="flex-1">
+                        <p className="text-xs text-foreground">{step.instruction}</p>
+                        <p className="text-[10px] text-muted-foreground">{formatDistance(step.distance)}</p>
+                      </div>
+                    </div>
+                  ))}
+                  {directionsRoute.steps.length > 8 && (
+                    <p className="text-xs text-muted-foreground">+{directionsRoute.steps.length - 8} more steps</p>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {showLandmarksPanel && (
+        <div className="relative w-full flex-shrink-0 overflow-y-auto border-t border-border bg-background p-4 lg:w-[360px] lg:border-l lg:border-t-0">
+          <div className="mb-3">
+            <h3 className="text-sm font-semibold text-foreground">Landmarks</h3>
+          </div>
+          <div className="flex max-h-[calc(100vh-170px)] flex-col gap-2 overflow-y-auto pr-1">
             <button
               onClick={() => handleLandmarkSectionToggle("All Places & Food")}
               className={`w-full rounded-xl border p-3 text-left transition-all ${
@@ -718,74 +924,7 @@ export default function FullScreenMapPage() {
             ))}
           </div>
         </div>
-      </div>
-
-      {/* Map */}
-      <div className="relative flex-1">
-        <MapComponent
-          center={MAP_CENTER}
-          zoom={MAP_ZOOM}
-          routes={routes.map((route) => ({
-            id: route.id,
-            name: `${route.routeNumber} - ${route.routeName}`,
-            code: route.vehicleTypeName,
-            stops: route.stops.map((s) => s.address),
-            fare: "",
-            time: "",
-          }))}
-          landmarks={visibleLandmarks}
-          selectedRoute={selectedRoute}
-          selectedLandmarkName={selectedLandmarkName}
-          focusedLandmarkNames={focusedLandmarkNames}
-          decodedRoutes={routes}
-          directionsRoute={directionsRoute}
-          originMarker={originCoords}
-          destinationMarker={destinationCoords}
-        />
-        {showRoutes && directionsRoute && (
-          <div className="absolute bottom-4 right-4 max-w-sm rounded-xl bg-card/95 p-4 shadow-lg backdrop-blur-sm">
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex items-start gap-3">
-                <Navigation className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" />
-                <div>
-                  <p className="text-sm font-medium text-foreground">Directions</p>
-                  <div className="mt-1 flex items-center gap-3 text-xs text-muted-foreground">
-                    <span>{formatDistance(directionsRoute.distance)}</span>
-                    <span>|</span>
-                    <span>{formatDuration(directionsRoute.duration)}</span>
-                  </div>
-                </div>
-              </div>
-              <button
-                onClick={clearDirections}
-                className="rounded-lg p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
-                aria-label="Clear directions"
-              >
-                <ArrowLeft className="h-4 w-4" />
-              </button>
-            </div>
-            {directionsRoute.steps.length > 0 && (
-              <div className="mt-3 max-h-40 overflow-y-auto border-t border-border pt-3">
-                <p className="mb-2 text-xs font-medium text-muted-foreground">Turn-by-turn directions:</p>
-                <div className="flex flex-col gap-2">
-                  {directionsRoute.steps.slice(0, 8).map((step, i) => (
-                    <div key={i} className="flex items-start gap-2">
-                      <div className={`mt-1.5 h-2 w-2 flex-shrink-0 rounded-full ${i === 0 ? "bg-green-500" : i === Math.min(7, directionsRoute.steps.length - 1) ? "bg-red-500" : "bg-border"}`} />
-                      <div className="flex-1">
-                        <p className="text-xs text-foreground">{step.instruction}</p>
-                        <p className="text-[10px] text-muted-foreground">{formatDistance(step.distance)}</p>
-                      </div>
-                    </div>
-                  ))}
-                  {directionsRoute.steps.length > 8 && (
-                    <p className="text-xs text-muted-foreground">+{directionsRoute.steps.length - 8} more steps</p>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
+      )}
     </div>
   )
 }

@@ -21,10 +21,10 @@ export function Footer() {
                 height={50}
                 className="h-6 w-6 object-contain"
               />
-              <span className="text-sm font-semibold text-primary">iLOcate</span>
+              <span className="text-lg font-semibold text-primary">iLOcate</span>
             </Link>
             <p className="text-sm leading-relaxed text-muted-foreground">
-              Your ultimate tourism discovery platform for Iloilo City, Philippines. Explore places, food, events, and more.
+              Your ultimate tourism discovery platform for Iloilo City, Philippines. Explore places, food, attractions, and more.
             </p>
           </div>
 

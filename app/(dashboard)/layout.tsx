@@ -67,7 +67,7 @@ function UserMenu() {
           </div>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="z-[200] w-56">
+      <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuLabel className="flex flex-col gap-1">
           <div className="text-sm font-medium">{user?.displayName || "User"}</div>
           <div className="text-xs text-muted-foreground">{user?.email}</div>

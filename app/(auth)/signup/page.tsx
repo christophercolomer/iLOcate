@@ -153,7 +153,7 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="w-full max-w-sm">
+    <div className="w-full max-w-md pb-4">
       <div className="mb-4">
         <Link href="/" className="text-sm text-primary hover:underline">
           ← Back to home
@@ -257,7 +257,7 @@ export default function SignupPage() {
           <span className="relative bg-background px-3 text-xs text-muted-foreground">or sign up with</span>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <Button
             type="button"
             variant="outline"
