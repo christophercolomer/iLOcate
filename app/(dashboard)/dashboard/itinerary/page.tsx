@@ -11,12 +11,12 @@ function toLandmarkSlug(value: string) {
 }
 
 const popularPlaces = [
-  { id: 1, name: "Travel Company (Name)", image: "/images/places/miagao-church.jpg", rating: 4.9, cost: "Free" },
-  { id: 2, name: "Travel Company (Name)", image: "/images/places/gigantes-island.jpg", rating: 4.8, cost: "PHP 500" },
-  { id: 3, name: "Travel Company (Name)", image: "/images/places/garin-farm.jpg", rating: 4.7, cost: "PHP 150" },
-  { id: 4, name: "Travel Company (Name)", image: "/images/places/esplanade.jpg", rating: 4.6, cost: "Free" },
-  { id: 5, name: "Travel Company (Name)", image: "/images/places/miagao-church.jpg", rating: 4.5, cost: "Free" },
-  { id: 6, name: "Travel Company (Name)", image: "/images/food/iloilo-food.jpg", rating: 4.8, cost: "PHP 50-200" },
+  { id: 1, name: "Travel Company (Name)", image: "/images/places/Churches/miagao-church.jpg", rating: 4.9, cost: "Free" },
+  { id: 2, name: "Travel Company (Name)", image: "/images/places/Attractions/gigantes-island.jpg", rating: 4.8, cost: "PHP 500" },
+  { id: 3, name: "Travel Company (Name)", image: "/images/places/Attractions/garin-farm.jpg", rating: 4.7, cost: "PHP 150" },
+  { id: 4, name: "Travel Company (Name)", image: "/images/places/Attractions/esplanade.jpg", rating: 4.6, cost: "Free" },
+  { id: 5, name: "Travel Company (Name)", image: "/images/places/Churches/miagao-church.jpg", rating: 4.5, cost: "Free" },
+  { id: 6, name: "Travel Company (Name)", image: "/images/food/Local Food/iloilo-food.jpg", rating: 4.8, cost: "PHP 50-200" },
 ]
 
 const suggestedActivities = [

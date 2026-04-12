@@ -79,8 +79,8 @@ function normalizeItem(input: unknown, idx: number): LikedItem | null {
       : typeof source.imageUrl === "string"
         ? source.imageUrl
         : category === "Food"
-          ? "/images/food/iloilo-food.jpg"
-          : "/images/places/miagao-church.jpg"
+          ? "/images/food/Local Food/iloilo-food.jpg"
+          : "/images/places/Churches/miagao-church.jpg"
 
   const rating =
     typeof source.rating === "number" && Number.isFinite(source.rating)

@@ -27,15 +27,11 @@ const heritages = landmarks.filter(l => l.type === "Heritage")
 
 function getImage(name: string, type: string, imageUrl?: string) {
   if (imageUrl && imageUrl !== "/images/icons/placeholder.jpg") return imageUrl
-  if (type === "Food") return "/images/food/iloilo-food.jpg"
-  if (type === "Cafe") return "/images/food/cafe.jpg"
-  if (type === "Church" || type === "Museum") {
-    const slug = name
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/(^-|-$)/g, "")
-    return `/images/places/${slug}.jpg`
-  }
+  if (type === "Food") return "/images/food/Local Food/iloilo-food.jpg"
+  if (type === "Cafe") return "/images/food/Cafes/cafe.jpg"
+  if (type === "Church") return "/images/places/Churches/miagao-church.jpg"
+  if (type === "Museum") return "/images/places/Museums/ilomoca museum.webp"
+  if (type === "Heritage" || type === "Urban") return "/images/places/Attractions/esplanade.jpg"
   return "/images/icons/placeholder.jpg"
 }
 function getRating(type: string) {

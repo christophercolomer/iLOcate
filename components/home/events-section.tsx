@@ -24,14 +24,14 @@ const events = [
     name: "Iloilo Food Festival",
     date: "March 20, 2026",
     description: "A celebration of Ilonggo cuisine featuring local delicacies and culinary talents.",
-    image: "/images/food/food-festival.jpg",
+    image: "/images/food/Local Food/food-festival.jpg",
   },
   {
     id: 4,
     name: "Heritage Walk",
     date: "April 10, 2026",
     description: "A guided walking tour through Iloilo's historic Calle Real district and colonial buildings.",
-    image: "/images/places/esplanade.jpg",
+    image: "/images/places/Attractions/esplanade.jpg",
   },
 ]
 

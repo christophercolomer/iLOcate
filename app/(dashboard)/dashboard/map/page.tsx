@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
 import dynamic from "next/dynamic"
+import Image from "next/image"
 import { landmarks } from "@/lib/landmarks"
 import { useAuth } from "@/lib/auth-context"
 import { doc, getDoc, getFirestore } from "firebase/firestore"
@@ -129,6 +130,7 @@ export default function FullScreenMapPage() {
   const [originCoords, setOriginCoords] = useState<[number, number] | null>(null)
   const [destinationCoords, setDestinationCoords] = useState<[number, number] | null>(null)
   const [activeSuggestionField, setActiveSuggestionField] = useState<"from" | "to" | null>(null)
+  const [pendingGoToLandmark, setPendingGoToLandmark] = useState<string | null>(null)
   const { user } = useAuth()
 
   // Get user's current location on mount
@@ -221,6 +223,10 @@ export default function FullScreenMapPage() {
     setSelectedLandmarkName(matchedLandmark.name)
     setSelectedLandmarkSection(null)
     setFocusedLandmarkNames([])
+
+    if (searchParams.get("go") === "1") {
+      setPendingGoToLandmark(matchedLandmark.name)
+    }
   }, [searchParams])
 
   const categorizedLandmarks = useMemo(() => {
@@ -304,6 +310,11 @@ export default function FullScreenMapPage() {
     return []
   }, [focusedLandmarkNames, selectedLandmarkName])
 
+  const selectedLandmark = useMemo(() => {
+    if (!selectedLandmarkName) return null
+    return landmarks.find((landmark) => landmark.name === selectedLandmarkName) ?? null
+  }, [selectedLandmarkName])
+
   const locationSuggestions = useMemo(() => {
     const baseSuggestions = landmarks.map((landmark) => ({
       label: landmark.name,
@@ -369,9 +380,11 @@ export default function FullScreenMapPage() {
     )
   }
 
-  // Handle route search
-  const handleSearchRoute = async () => {
-    if (!from.trim() || !to.trim()) {
+  const searchRoute = async (originValue: string, destinationValue: string) => {
+    const normalizedFrom = originValue.trim()
+    const normalizedTo = destinationValue.trim()
+
+    if (!normalizedFrom || !normalizedTo) {
       setDirectionsError("Please enter both origin and destination")
       return
     }
@@ -385,7 +398,7 @@ export default function FullScreenMapPage() {
     let destLatLng: [number, number]
 
     // Handle "Current Location" as origin
-    const isFromCurrentLocation = from.trim().toLowerCase() === CURRENT_LOCATION_LABEL.toLowerCase()
+    const isFromCurrentLocation = normalizedFrom.toLowerCase() === CURRENT_LOCATION_LABEL.toLowerCase()
     
     if (isFromCurrentLocation) {
       if (!userLocation) {
@@ -395,9 +408,9 @@ export default function FullScreenMapPage() {
       }
       originLatLng = userLocation
     } else {
-      const fromLandmark = findLandmarkByName(from)
+      const fromLandmark = findLandmarkByName(normalizedFrom)
       if (!fromLandmark) {
-        setDirectionsError(`Could not find location: "${from}". Try selecting from Landmarks.`)
+        setDirectionsError(`Could not find location: "${normalizedFrom}". Try selecting from Landmarks.`)
         setDirectionsLoading(false)
         return
       }
@@ -405,7 +418,7 @@ export default function FullScreenMapPage() {
     }
 
     // Handle "Current Location" as destination
-    const isToCurrentLocation = to.trim().toLowerCase() === CURRENT_LOCATION_LABEL.toLowerCase()
+    const isToCurrentLocation = normalizedTo.toLowerCase() === CURRENT_LOCATION_LABEL.toLowerCase()
     
     if (isToCurrentLocation) {
       if (!userLocation) {
@@ -415,9 +428,9 @@ export default function FullScreenMapPage() {
       }
       destLatLng = userLocation
     } else {
-      const toLandmark = findLandmarkByName(to)
+      const toLandmark = findLandmarkByName(normalizedTo)
       if (!toLandmark) {
-        setDirectionsError(`Could not find location: "${to}". Try selecting from Landmarks.`)
+        setDirectionsError(`Could not find location: "${normalizedTo}". Try selecting from Landmarks.`)
         setDirectionsLoading(false)
         return
       }
@@ -450,7 +463,47 @@ export default function FullScreenMapPage() {
     }
   }
 
-  // Clear directions
+  // Handle route search from the manual fields
+  const handleSearchRoute = async () => {
+    await searchRoute(from, to)
+  }
+
+  const handleGoToLandmark = async (landmarkName: string) => {
+    const destination = landmarkName.trim()
+    if (!destination) return
+
+    const origin = userLocation ? CURRENT_LOCATION_LABEL : from.trim()
+
+    if (!origin) {
+      setDirectionsError("Current location not available. Please allow location access or enter an origin manually.")
+      return
+    }
+
+    setSelectedLandmarkName(destination)
+    setSelectedLandmarkSection(null)
+    setFocusedLandmarkNames([])
+    setFrom(origin)
+    setTo(destination)
+    setShowRoutes(true)
+
+    await searchRoute(origin, destination)
+  }
+
+  useEffect(() => {
+    if (!pendingGoToLandmark) return
+    if (locationLoading) return
+
+    if (!userLocation) {
+      setDirectionsError("Current location not available. Please allow location access and try again.")
+      setPendingGoToLandmark(null)
+      return
+    }
+
+    void handleGoToLandmark(pendingGoToLandmark)
+    setPendingGoToLandmark(null)
+  }, [pendingGoToLandmark, locationLoading, userLocation])
+
+  // Clear only the computed route data
   const clearDirections = () => {
     setDirectionsRoute(null)
     setDirectionsError(null)
@@ -459,6 +512,16 @@ export default function FullScreenMapPage() {
     setShowRoutes(false)
     setFrom(userLocation ? CURRENT_LOCATION_LABEL : "")
     setTo("")
+  }
+
+  // Exit route mode completely (used by cancel/close actions)
+  const handleExitRoute = () => {
+    clearDirections()
+    setPendingGoToLandmark(null)
+    setSelectedLandmarkName(null)
+    setSelectedLandmarkSection(null)
+    setFocusedLandmarkNames([])
+    setSelectedRoute(null)
   }
 
   return (
@@ -727,7 +790,7 @@ export default function FullScreenMapPage() {
           {showLandmarksPanel ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
         </button>
         {showRoutes && directionsRoute && (
-          <div className="absolute bottom-4 right-4 max-w-sm rounded-xl bg-card/95 p-4 shadow-lg backdrop-blur-sm">
+          <div className="absolute bottom-4 right-4 z-[2200] max-w-sm rounded-xl bg-card/95 p-4 shadow-lg backdrop-blur-sm">
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-start gap-3">
                 <Navigation className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" />
@@ -741,9 +804,9 @@ export default function FullScreenMapPage() {
                 </div>
               </div>
               <button
-                onClick={clearDirections}
+                onClick={handleExitRoute}
                 className="rounded-lg p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
-                aria-label="Clear directions"
+                aria-label="Exit route"
               >
                 <ArrowLeft className="h-4 w-4" />
               </button>
@@ -769,6 +832,60 @@ export default function FullScreenMapPage() {
             )}
           </div>
         )}
+
+        {selectedLandmark && (
+          <div className={`absolute left-4 z-[2200] w-[min(92vw,380px)] rounded-2xl border border-border bg-card/95 p-4 shadow-xl backdrop-blur-sm ${directionsRoute ? "bottom-48" : "bottom-4"}`}>
+            <div className="mb-3 flex items-center gap-3">
+              <div className="relative h-12 w-12 overflow-hidden rounded-lg border border-border">
+                <Image
+                  src={selectedLandmark.imageUrl && selectedLandmark.imageUrl !== "/images/icons/placeholder.jpg" ? selectedLandmark.imageUrl : "/images/icons/placeholder.jpg"}
+                  alt={selectedLandmark.name}
+                  fill
+                  className="object-cover"
+                  sizes="48px"
+                />
+              </div>
+              <div className="min-w-0">
+                <p className="truncate text-sm font-semibold text-foreground">{selectedLandmark.name}</p>
+                <p className="text-xs text-muted-foreground">Explore this destination</p>
+              </div>
+            </div>
+
+            <div className="mb-3 rounded-xl bg-secondary p-3">
+              <div className="mb-2 flex items-center gap-2">
+                <MapPin className="h-3.5 w-3.5 text-primary" />
+                <span className="text-xs font-medium text-foreground">Route Details</span>
+              </div>
+              <div className="space-y-1.5 text-xs text-muted-foreground">
+                <div className="flex justify-between gap-3">
+                  <span>From: Your Location</span>
+                  <span className="truncate">To: {selectedLandmark.name}</span>
+                </div>
+                <div className="flex justify-between border-t border-border pt-1.5">
+                  <span>Estimated Commute:</span>
+                  <span className="font-semibold text-foreground">~25 min</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <Button
+                className="h-9 rounded-lg bg-primary px-3 text-xs font-semibold text-primary-foreground hover:bg-primary/90"
+                onClick={() => void handleGoToLandmark(selectedLandmark.name)}
+                disabled={directionsLoading}
+              >
+                {directionsLoading ? "Finding..." : "Go to this place"}
+              </Button>
+              <Button
+                variant="outline"
+                className="h-9 rounded-lg border-border px-3 text-xs text-muted-foreground hover:text-foreground"
+                onClick={handleExitRoute}
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
 
       {showLandmarksPanel && (
@@ -776,6 +893,18 @@ export default function FullScreenMapPage() {
           <div className="mb-3">
             <h3 className="text-sm font-semibold text-foreground">Landmarks</h3>
           </div>
+          {selectedLandmarkName && (
+            <div className="mb-3 rounded-xl border border-border bg-secondary p-3">
+              <p className="truncate text-xs text-muted-foreground">Selected: {selectedLandmarkName}</p>
+              <Button
+                className="mt-2 h-9 w-full rounded-lg bg-primary text-xs font-semibold text-primary-foreground hover:bg-primary/90"
+                onClick={() => void handleGoToLandmark(selectedLandmarkName)}
+                disabled={directionsLoading}
+              >
+                {directionsLoading ? "Finding Route..." : "Go to this place"}
+              </Button>
+            </div>
+          )}
           <div className="flex max-h-[calc(100vh-170px)] flex-col gap-2 overflow-y-auto pr-1">
             <button
               onClick={() => handleLandmarkSectionToggle("All Places & Food")}
