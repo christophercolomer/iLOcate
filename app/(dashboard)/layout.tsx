@@ -60,14 +60,14 @@ function UserMenu() {
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
-          className="h-9 w-9 rounded-full p-0 hover:bg-muted"
+          className="h-9 w-9 cursor-pointer rounded-full p-0 hover:bg-muted focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
         >
           <div className="flex h-full w-full items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
             {getUserInitial()}
           </div>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56">
+      <DropdownMenuContent align="end" className="z-[200] w-56">
         <DropdownMenuLabel className="flex flex-col gap-1">
           <div className="text-sm font-medium">{user?.displayName || "User"}</div>
           <div className="text-xs text-muted-foreground">{user?.email}</div>
@@ -102,7 +102,7 @@ export default function DashboardLayout({
 
   return (
     <div className="flex min-h-screen flex-col bg-secondary">
-      <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-md">
+      <header className="sticky top-0 z-[100] border-b border-border bg-background/95 backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-[1400px] items-center justify-between px-4 lg:px-6">
           <Link href="/dashboard" className="flex items-center gap-0">
             <Image
