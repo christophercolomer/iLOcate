@@ -284,6 +284,9 @@ export function HeroSection() {
                 <h2 className="text-3xl font-semibold text-white/90 sm:text-4xl">
                   Explore Iloilo Like a Local
                 </h2>
+                <p className="mx-auto mt-2 inline-flex w-fit -translate-x-2 whitespace-nowrap rounded-full border border-primary/60 bg-primary/20 px-4 py-2 text-xs font-semibold tracking-wide text-primary backdrop-blur-sm sm:text-sm md:text-base">
+                  Find your way. Feel the Love. Your gentle guide in Iloilo
+                </p>
               </div>
 
               <p className="mt-6 max-w-md text-pretty text-sm leading-relaxed text-white/75 md:text-base">

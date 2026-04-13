@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { Suspense, useEffect, useState } from "react"
 import Image from "next/image"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Search, Star, MapPin, ArrowRight, Heart } from "lucide-react"
@@ -115,7 +115,7 @@ const allFood = landmarks.filter((l) => l.type === "Food" || l.type === "Cafe").
 
 const categories = ["All", "Local Food", "Cafes", "Restaurants"]
 
-export default function FoodPage() {
+function FoodPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [activeCategory, setActiveCategory] = useState("All")
@@ -322,5 +322,13 @@ export default function FoodPage() {
         </div>
       )}
     </div>
+  )
+}
+
+export default function FoodPage() {
+  return (
+    <Suspense fallback={<div className="mx-auto max-w-[1400px] px-4 py-8 lg:px-6" />}>
+      <FoodPageContent />
+    </Suspense>
   )
 }

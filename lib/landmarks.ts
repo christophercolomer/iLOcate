@@ -339,7 +339,7 @@ export const landmarks: Landmark[] = [
   {
     name: "Molo Church",
     type: "Church",
-    coordinates: [10.6869, 122.5646],
+    coordinates: [10.697540512031699, 122.54444379349131],
     imageUrl: "/images/places/Churches/molo church.jpg",
   },
   {

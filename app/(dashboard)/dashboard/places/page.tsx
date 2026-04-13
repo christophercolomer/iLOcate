@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { Suspense, useEffect, useState } from "react"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { useSearchParams } from "next/navigation"
@@ -101,7 +101,7 @@ const preferenceToLandmarkTypes: Record<string, string[]> = {
   malls: [],
 }
 
-export default function PlacesPage() {
+function PlacesPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [activeCategory, setActiveCategory] = useState("All")
@@ -363,5 +363,13 @@ export default function PlacesPage() {
         </div>
       )}
     </div>
+  )
+}
+
+export default function PlacesPage() {
+  return (
+    <Suspense fallback={<div className="mx-auto max-w-[1400px] px-4 py-8 lg:px-6" />}>
+      <PlacesPageContent />
+    </Suspense>
   )
 }

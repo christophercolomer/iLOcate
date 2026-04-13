@@ -321,21 +321,38 @@ export default function DashboardPage() {
     preferences.flatMap((preference) => preferenceToLandmarkTypes[preference] ?? [])
   )
 
-  const shuffleLandmarks = (arr: typeof landmarks) => {
-    const copy = [...arr]
-    for (let i = copy.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [copy[i], copy[j]] = [copy[j], copy[i]]
+  // Keep recommendation order deterministic to avoid SSR/CSR hydration mismatches.
+  const orderByStableHash = (arr: typeof landmarks) => {
+    const hash = (value: string) => {
+      let result = 2166136261
+      for (let i = 0; i < value.length; i++) {
+        result ^= value.charCodeAt(i)
+        result +=
+          (result << 1) +
+          (result << 4) +
+          (result << 7) +
+          (result << 8) +
+          (result << 24)
+      }
+      return result >>> 0
     }
-    return copy
+
+    return [...arr].sort((a, b) => {
+      const scoreA = hash(`${a.name}|${a.type}`)
+      const scoreB = hash(`${b.name}|${b.type}`)
+      if (scoreA !== scoreB) return scoreA - scoreB
+      return a.name.localeCompare(b.name)
+    })
   }
+
+  const fallbackLandmarks = orderByStableHash(landmarks)
 
   const sourceLandmarks =
     selectedTypes.size > 0
       ? landmarks.filter((landmark) => selectedTypes.has(landmark.type))
-      : shuffleLandmarks(landmarks)
+      : fallbackLandmarks
 
-  const recommendedLandmarks = sourceLandmarks.length > 0 ? sourceLandmarks : shuffleLandmarks(landmarks)
+  const recommendedLandmarks = sourceLandmarks.length > 0 ? sourceLandmarks : fallbackLandmarks
   const foodHotspots = landmarks.filter((landmark) => landmark.type === "Food" || landmark.type === "Cafe").length
   const culturalSpots = landmarks.filter((landmark) => ["Church", "Museum", "Heritage"].includes(landmark.type)).length
   const likedIds = new Set(likedItems.map((item) => item.id))
