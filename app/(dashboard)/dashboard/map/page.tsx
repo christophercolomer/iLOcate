@@ -119,6 +119,7 @@ function FullScreenMapPageContent() {
   const [showRoutes, setShowRoutes] = useState(false)
   const [selectedRoute, setSelectedRoute] = useState<string | null>(null)
   const [showAllPujRoutes, setShowAllPujRoutes] = useState(false)
+  const [selectedRouteDirection, setSelectedRouteDirection] = useState<"goingTo" | "returning" | null>(null)
   const [showMapSidebar, setShowMapSidebar] = useState(true)
   const [selectedLandmarkSection, setSelectedLandmarkSection] = useState<string | null>(null)
   const [selectedLandmarkName, setSelectedLandmarkName] = useState<string | null>(null)
@@ -539,6 +540,26 @@ function FullScreenMapPageContent() {
     setFocusedLandmarkNames([])
     setSelectedRoute(null)
     setShowAllPujRoutes(false)
+    setSelectedRouteDirection(null)
+  }
+
+  // Handle route click - show direction choice
+  const handleRouteClick = (routeId: string | number) => {
+    const routeIdString = String(routeId)
+    if (selectedRoute === routeIdString) {
+      // If clicking same route, clear selection
+      setSelectedRoute(null)
+      setSelectedRouteDirection(null)
+    } else {
+      // Show direction choice for new route
+      setSelectedRoute(routeIdString)
+      setSelectedRouteDirection(null) // User must choose direction
+    }
+  }
+
+  // Handle direction selection
+  const handleDirectionSelect = (direction: "goingTo" | "returning") => {
+    setSelectedRouteDirection(direction)
   }
 
   // Pin drop handlers
@@ -730,6 +751,7 @@ function FullScreenMapPageContent() {
               onClick={() => {
                 setSelectedRoute(null)
                 setShowAllPujRoutes(false)
+                setSelectedRouteDirection(null)
               }}
               className="mb-2 w-full rounded-lg border border-primary/40 bg-primary/5 px-3 py-2 text-xs font-medium text-primary transition-colors hover:bg-primary/10"
             >
@@ -748,6 +770,7 @@ function FullScreenMapPageContent() {
                   onClick={() => {
                     setSelectedRoute(null)
                     setShowAllPujRoutes((prev) => !prev)
+                    setSelectedRouteDirection(null)
                   }}
                   className={`w-full rounded-xl border p-3 text-left transition-all ${
                     showAllPujRoutes ? "border-primary bg-primary/5" : "border-border bg-background hover:border-primary/40"
@@ -767,16 +790,11 @@ function FullScreenMapPageContent() {
                     type="button"
                     key={route.id}
                     onClick={() => {
-                      if (selectedRoute === route.id) {
-                        setSelectedRoute(null)
-                        setShowAllPujRoutes(false)
-                      } else {
-                        setSelectedRoute(route.id)
-                        setShowAllPujRoutes(false)
-                      }
+                      handleRouteClick(route.id)
+                      setShowAllPujRoutes(false)
                     }}
                     className={`w-full rounded-xl border p-3 text-left transition-all ${
-                      selectedRoute === route.id ? "border-primary bg-primary/5" : "border-border bg-background hover:border-primary/40"
+                      selectedRoute === String(route.id) ? "border-primary bg-primary/5" : "border-border bg-background hover:border-primary/40"
                     }`}
                   >
                     <div className="flex items-center justify-between">
@@ -784,10 +802,43 @@ function FullScreenMapPageContent() {
                         <p className="text-sm font-medium text-foreground">{route.routeNumber} - {route.routeName}</p>
                         <p className="text-xs text-muted-foreground">{route.vehicleTypeName}</p>
                       </div>
-                      <ChevronRight className={`h-4 w-4 text-muted-foreground transition-transform ${selectedRoute === route.id ? "rotate-90" : ""}`} />
+                      <ChevronRight className={`h-4 w-4 text-muted-foreground transition-transform ${selectedRoute === String(route.id) ? "rotate-90" : ""}`} />
                     </div>
-                    {selectedRoute === route.id && (
+                    {selectedRoute === String(route.id) && (
                       <div className="mt-3 border-t border-border pt-3">
+                        <p className="mb-2 text-xs font-medium text-foreground">Select direction:</p>
+                        <div className="mb-3 grid grid-cols-2 gap-2">
+                          <Button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleDirectionSelect("goingTo")
+                            }}
+                            variant={selectedRouteDirection === "goingTo" ? "default" : "outline"}
+                            className={`h-9 rounded-lg text-xs font-medium ${
+                              selectedRouteDirection === "goingTo"
+                                ? "bg-primary text-primary-foreground"
+                                : "border-border hover:bg-primary/10 hover:text-primary"
+                            }`}
+                          >
+                            <Navigation className="mr-1.5 h-3.5 w-3.5" />
+                            Going To
+                          </Button>
+                          <Button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleDirectionSelect("returning")
+                            }}
+                            variant={selectedRouteDirection === "returning" ? "default" : "outline"}
+                            className={`h-9 rounded-lg text-xs font-medium ${
+                              selectedRouteDirection === "returning"
+                                ? "bg-primary text-primary-foreground"
+                                : "border-border hover:bg-primary/10 hover:text-primary"
+                            }`}
+                          >
+                            <ArrowRightLeft className="mr-1.5 h-3.5 w-3.5" />
+                            Returning
+                          </Button>
+                        </div>
                         <p className="mb-2 text-xs font-medium text-muted-foreground">Stops ({route.stops.length}):</p>
                         <div className="max-h-40 flex flex-col gap-1.5 overflow-y-auto pr-2">
                           {route.stops.slice(0, 10).map((stop, i) => (
@@ -863,6 +914,8 @@ function FullScreenMapPageContent() {
           }))}
           landmarks={visibleLandmarks}
           selectedRoute={selectedRoute}
+          showAllRoutes={showAllPujRoutes}
+          selectedRouteDirection={selectedRouteDirection}
           showAllRoutes={showAllPujRoutes}
           selectedLandmarkName={selectedLandmarkName}
           focusedLandmarkNames={focusedLandmarkNames}

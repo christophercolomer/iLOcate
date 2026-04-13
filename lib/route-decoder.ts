@@ -60,7 +60,7 @@ export interface RouteData {
       address: string;
       point: [number, number];
     }>;
-    polylineReturning?: string;
+    polylineGoingBack?: string;
     returning?: Array<{
       id: string;
       sequence: number;
@@ -101,9 +101,14 @@ export async function loadAndDecodeRoutes(): Promise<DecodedRoute[]> {
         ? decodePolyline(route.points.polylineGoingTo)
         : [];
 
-      const returningCoordinates = route.points.polylineReturning
-        ? decodePolyline(route.points.polylineReturning)
+      let returningCoordinates = route.points.polylineGoingBack
+        ? decodePolyline(route.points.polylineGoingBack)
         : [];
+
+      // If no returning polyline data, use reversed going to polyline
+      if (returningCoordinates.length === 0 && goingToCoordinates.length > 0) {
+        returningCoordinates = [...goingToCoordinates].reverse();
+      }
 
       return {
         id: route.id,
