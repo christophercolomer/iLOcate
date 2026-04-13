@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { Suspense, useEffect, useMemo, useState } from "react"
 import {
   Search,
   ArrowRightLeft,
@@ -108,7 +108,7 @@ function getSuggestionScore(query: string, target: string) {
   return Number.POSITIVE_INFINITY
 }
 
-export default function FullScreenMapPage() {
+function FullScreenMapPageContent() {
   const searchParams = useSearchParams()
   const [from, setFrom] = useState(CURRENT_LOCATION_LABEL)
   const [to, setTo] = useState("")
@@ -1193,5 +1193,13 @@ export default function FullScreenMapPage() {
         </div>
       )}
     </div>
+  )
+}
+
+export default function FullScreenMapPage() {
+  return (
+    <Suspense fallback={<div className="flex h-[calc(100vh-64px)] w-full bg-background" />}>
+      <FullScreenMapPageContent />
+    </Suspense>
   )
 }
