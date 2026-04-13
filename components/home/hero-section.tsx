@@ -146,6 +146,9 @@ export function HeroSection() {
     if (!churches[i] && !foodPlaces[i] && !cafes[i] && !heritages[i]) break
   }
   const guestSuggestionsLimited = guestSuggestions.slice(0, maxSuggestions)
+  const pujRouteCount = allRoutes.length
+  const foodSpotCount = landmarks.filter((landmark) => landmark.type === "Food" || landmark.type === "Cafe").length
+  const placeSpotCount = landmarks.filter((landmark) => landmark.type !== "Food" && landmark.type !== "Cafe").length
 
   const handleScroll = useCallback(() => {
     setScrollY(window.scrollY)
@@ -316,18 +319,18 @@ export function HeroSection() {
 
               <div className="mt-10 flex items-center gap-8">
                 <div>
-                  <p className="text-3xl font-bold text-white">50+</p>
-                  <p className="text-xs text-white/50">Destinations</p>
+                  <p className="text-3xl font-bold text-white">{loadingRoutes ? "..." : `20+`}</p>
+                  <p className="text-xs text-white/50">PUJ Routes</p>
                 </div>
                 <div className="h-10 w-px bg-white/20" />
                 <div>
-                  <p className="text-3xl font-bold text-white">100+</p>
+                  <p className="text-3xl font-bold text-white">{`50+`}</p>
+                  <p className="text-xs text-white/50">Places Spots</p>
+                </div>
+                <div className="h-10 w-px bg-white/20" />
+                <div>
+                  <p className="text-3xl font-bold text-white">{`40+`}</p>
                   <p className="text-xs text-white/50">Food Spots</p>
-                </div>
-                <div className="h-10 w-px bg-white/20" />
-                <div>
-                  <p className="text-3xl font-bold text-white">20+</p>
-                  <p className="text-xs text-white/50">Events</p>
                 </div>
               </div>
             </div>

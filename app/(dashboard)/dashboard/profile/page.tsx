@@ -2,7 +2,9 @@
 
 import { useEffect, useMemo, useState } from "react"
 import Image from "next/image"
+import { useRouter } from "next/navigation"
 import {
+  ArrowRight,
   Award,
   CalendarCheck2,
   Church,
@@ -23,6 +25,7 @@ import {
 import { getDoc, getFirestore, doc, setDoc } from "firebase/firestore"
 import { auth } from "@/lib/firebase"
 import { useAuth } from "@/lib/auth-context"
+import { landmarks } from "@/lib/landmarks"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -56,6 +59,27 @@ const PREFERENCE_CATEGORIES = [
   { id: "museums", label: "Museums", icon: Landmark },
 ] as const
 
+function toLandmarkSlug(value: string) {
+  return value.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")
+}
+
+function getFallbackImage(category: LikedItem["category"]) {
+  return category === "Food"
+    ? "/images/food/Local Food/iloilo-food.jpg"
+    : "/images/places/Churches/miagao-church.jpg"
+}
+
+function findLandmarkImage(name: string) {
+  const normalizedName = name.trim().toLowerCase()
+  const matchingLandmark = landmarks.find((landmark) => landmark.name.trim().toLowerCase() === normalizedName)
+
+  if (matchingLandmark?.imageUrl && matchingLandmark.imageUrl !== "/images/icons/placeholder.jpg") {
+    return matchingLandmark.imageUrl
+  }
+
+  return null
+}
+
 function normalizeItem(input: unknown, idx: number): LikedItem | null {
   if (!input || typeof input !== "object") return null
 
@@ -73,14 +97,17 @@ function normalizeItem(input: unknown, idx: number): LikedItem | null {
   const category: LikedItem["category"] =
     rawCategory === "food" || rawCategory === "cafe" ? "Food" : "Place"
 
-  const image =
+  const storedImage =
     typeof source.image === "string"
       ? source.image
       : typeof source.imageUrl === "string"
         ? source.imageUrl
-        : category === "Food"
-          ? "/images/food/Local Food/iloilo-food.jpg"
-          : "/images/places/Churches/miagao-church.jpg"
+        : ""
+
+  const resolvedLandmarkImage = findLandmarkImage(name)
+  const image =
+    resolvedLandmarkImage ||
+    (storedImage && storedImage !== "/images/icons/placeholder.jpg" ? storedImage : getFallbackImage(category))
 
   const rating =
     typeof source.rating === "number" && Number.isFinite(source.rating)
@@ -130,11 +157,13 @@ function loadLikedItemsFromStorage(): LikedItem[] {
 }
 
 export default function ProfilePage() {
+  const router = useRouter()
   const { user } = useAuth()
   const [likedItems, setLikedItems] = useState<LikedItem[]>([])
   const [selectedPreferences, setSelectedPreferences] = useState<string[]>([])
   const [loadingPreferences, setLoadingPreferences] = useState(true)
   const [savingPreferences, setSavingPreferences] = useState(false)
+  const [selectedLikedItem, setSelectedLikedItem] = useState<LikedItem | null>(null)
 
   const handleUnlike = (id: string) => {
     setLikedItems((prev) => {
@@ -362,6 +391,15 @@ export default function ProfilePage() {
                 {likedItems.map((item) => (
                   <article
                     key={item.id}
+                    onClick={() => setSelectedLikedItem(item)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault()
+                        setSelectedLikedItem(item)
+                      }
+                    }}
+                    role="button"
+                    tabIndex={0}
                     className="group overflow-hidden rounded-xl border border-border/70 bg-background/50 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
                   >
                     <div className="relative h-40 w-full overflow-hidden">
@@ -408,7 +446,10 @@ export default function ProfilePage() {
                           variant="ghost"
                           size="sm"
                           className="h-7 rounded-lg px-2 text-xs text-muted-foreground hover:text-foreground"
-                          onClick={() => handleUnlike(item.id)}
+                          onClick={(event) => {
+                            event.stopPropagation()
+                            handleUnlike(item.id)
+                          }}
                         >
                           <HeartOff className="h-3.5 w-3.5" />
                           Unlike
@@ -421,6 +462,85 @@ export default function ProfilePage() {
             )}
           </CardContent>
         </Card>
+
+        {selectedLikedItem && (
+          <div
+            className="fixed inset-0 z-[3000] overflow-y-auto bg-black/60 p-4 backdrop-blur-sm sm:flex sm:items-center sm:justify-center"
+            onClick={() => setSelectedLikedItem(null)}
+          >
+            <div
+              className="relative z-[3001] mx-auto mt-6 max-h-[calc(100vh-3rem)] w-full max-w-lg overflow-y-auto rounded-2xl bg-card p-6 shadow-2xl sm:mt-0"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <div className="mb-4 flex items-center gap-3">
+                <div className="relative h-16 w-16 overflow-hidden rounded-xl">
+                  <Image
+                    src={selectedLikedItem.image}
+                    alt={selectedLikedItem.name}
+                    fill
+                    className="object-cover"
+                    sizes="64px"
+                  />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-foreground">{selectedLikedItem.name}</h3>
+                  <p className="text-sm text-muted-foreground">{selectedLikedItem.label || selectedLikedItem.category}</p>
+                </div>
+              </div>
+
+              <div className="mb-4 rounded-xl bg-secondary p-4">
+                <div className="mb-3 flex items-center gap-2">
+                  <MapPin className="h-4 w-4 text-primary" />
+                  <span className="text-sm font-medium text-foreground">Route Details</span>
+                </div>
+                <div className="space-y-2 text-sm text-muted-foreground">
+                  <div className="flex items-center justify-between">
+                    <span>From: Your Location</span>
+                    <span>To: {selectedLikedItem.name}</span>
+                  </div>
+                  <div className="flex items-center justify-between border-t border-border pt-2">
+                    <span>Estimated Commute:</span>
+                    <span className="font-semibold text-foreground">~20 min</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span>Estimated Cost:</span>
+                    <span className="font-semibold text-foreground">PHP 10 - PHP 30</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mb-4 rounded-xl border border-border p-4">
+                <p className="mb-2 text-xs font-semibold text-muted-foreground">Suggested Route</p>
+                <div className="flex items-center gap-2 text-sm text-foreground">
+                  <div className="h-2 w-2 rounded-full bg-primary" />
+                  <span>Your Location</span>
+                  <ArrowRight className="h-3 w-3 text-muted-foreground" />
+                  <span>{selectedLikedItem.name}</span>
+                </div>
+              </div>
+
+              <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <Button
+                  className="h-11 rounded-xl bg-primary text-sm font-semibold text-primary-foreground hover:bg-primary/90"
+                  onClick={() => {
+                    const target = toLandmarkSlug(selectedLikedItem.name)
+                    setSelectedLikedItem(null)
+                    router.push(`/dashboard/map?landmark=${target}&go=1`)
+                  }}
+                >
+                  Go to this place
+                </Button>
+                <Button
+                  variant="outline"
+                  className="h-11 rounded-xl border-border text-sm font-medium text-muted-foreground hover:text-foreground"
+                  onClick={() => setSelectedLikedItem(null)}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
 
         <Card className="border-border/80 bg-card/95 shadow-sm">
           <CardHeader>
