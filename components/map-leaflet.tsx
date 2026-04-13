@@ -40,6 +40,7 @@ interface MapComponentProps {
   }>
   landmarks: Landmark[]
   selectedRoute: number | string | null
+  selectedRouteDirection?: "goingTo" | "returning" | null
   selectedLandmarkName?: string | null
   focusedLandmarkNames?: string[]
   showLandmarks?: boolean
@@ -68,6 +69,7 @@ export default function MapLeaflet({
   routes,
   landmarks,
   selectedRoute,
+  selectedRouteDirection,
   selectedLandmarkName,
   focusedLandmarkNames = [],
   showLandmarks = true,
@@ -335,16 +337,24 @@ export default function MapLeaflet({
     if (shouldRenderRoutes) {
       const routesToRender = showAllRoutes
         ? decodedRoutes
-        : decodedRoutes.filter((route) => route.id === selectedRoute)
+        : decodedRoutes.filter((route) => String(route.id) === selectedRoute)
 
       let selectedRouteCoords: [number, number][] = []
       const allRouteCoords: [number, number][] = []
 
       routesToRender.forEach((decodedRoute) => {
-        const routeCoords = decodedRoute.goingToCoordinates.filter((coords) => isValidCoordinatePair(coords))
+        const isSelected = selectedRoute !== null && String(decodedRoute.id) === selectedRoute
+        
+        // Determine which coordinates to use based on direction selection
+        let routeCoords: [number, number][] = []
+        if (isSelected && selectedRouteDirection === "returning") {
+          routeCoords = decodedRoute.returningCoordinates.filter((coords) => isValidCoordinatePair(coords))
+        } else {
+          // Use goingTo for all routes mode or when direction not selected
+          routeCoords = decodedRoute.goingToCoordinates.filter((coords) => isValidCoordinatePair(coords))
+        }
+        
         if (routeCoords.length < 2) return
-
-        const isSelected = selectedRoute !== null && decodedRoute.id === selectedRoute
 
         const routePolyline = L.polyline(routeCoords, {
           color: decodedRoute.routeColor || "hsl(var(--color-primary))",
@@ -370,7 +380,7 @@ export default function MapLeaflet({
         hasFittedAllRoutesRef.current = true
       }
     }
-  }, [selectedRoute, selectedLandmarkName, focusedLandmarkNames, landmarks, routes, showLandmarks, decodedRoutes, showAllRoutes, directionsRoute])
+  }, [selectedRoute, selectedRouteDirection, selectedLandmarkName, focusedLandmarkNames, landmarks, routes, showLandmarks, decodedRoutes, showAllRoutes, directionsRoute])
 
   useEffect(() => {
     if (!map.current || !selectedLandmarkName) return

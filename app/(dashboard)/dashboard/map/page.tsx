@@ -116,6 +116,7 @@ export default function FullScreenMapPage() {
   const [routeMode, setRouteMode] = useState<"Palihog Bayad" | "Sa Lugar">("Palihog Bayad")
   const [showRoutes, setShowRoutes] = useState(false)
   const [selectedRoute, setSelectedRoute] = useState<string | null>(null)
+  const [selectedRouteDirection, setSelectedRouteDirection] = useState<"goingTo" | "returning" | null>(null)
   const [showMapSidebar, setShowMapSidebar] = useState(true)
   const [selectedLandmarkSection, setSelectedLandmarkSection] = useState<string | null>(null)
   const [selectedLandmarkName, setSelectedLandmarkName] = useState<string | null>(null)
@@ -522,6 +523,26 @@ export default function FullScreenMapPage() {
     setSelectedLandmarkSection(null)
     setFocusedLandmarkNames([])
     setSelectedRoute(null)
+    setSelectedRouteDirection(null)
+  }
+
+  // Handle route click - show direction choice
+  const handleRouteClick = (routeId: string | number) => {
+    const routeIdString = String(routeId)
+    if (selectedRoute === routeIdString) {
+      // If clicking same route, clear selection
+      setSelectedRoute(null)
+      setSelectedRouteDirection(null)
+    } else {
+      // Show direction choice for new route
+      setSelectedRoute(routeIdString)
+      setSelectedRouteDirection(null) // User must choose direction
+    }
+  }
+
+  // Handle direction selection
+  const handleDirectionSelect = (direction: "goingTo" | "returning") => {
+    setSelectedRouteDirection(direction)
   }
 
   return (
@@ -678,9 +699,9 @@ export default function FullScreenMapPage() {
               routes.map((route) => (
                 <button
                   key={route.id}
-                  onClick={() => setSelectedRoute(selectedRoute === route.id ? null : route.id)}
+                  onClick={() => handleRouteClick(route.id)}
                   className={`w-full rounded-xl border p-3 text-left transition-all ${
-                    selectedRoute === route.id ? "border-primary bg-primary/5" : "border-border bg-background hover:border-primary/40"
+                    selectedRoute === String(route.id) ? "border-primary bg-primary/5" : "border-border bg-background hover:border-primary/40"
                   }`}
                 >
                   <div className="flex items-center justify-between">
@@ -688,21 +709,42 @@ export default function FullScreenMapPage() {
                       <p className="text-sm font-medium text-foreground">{route.routeNumber} - {route.routeName}</p>
                       <p className="text-xs text-muted-foreground">{route.vehicleTypeName}</p>
                     </div>
-                    <ChevronRight className={`h-4 w-4 text-muted-foreground transition-transform ${selectedRoute === route.id ? "rotate-90" : ""}`} />
+                    <ChevronRight className={`h-4 w-4 text-muted-foreground transition-transform ${selectedRoute === String(route.id) ? "rotate-90" : ""}`} />
                   </div>
-                  {selectedRoute === route.id && (
+                  {selectedRoute === String(route.id) && (
                     <div className="mt-3 border-t border-border pt-3">
-                      <p className="mb-2 text-xs font-medium text-muted-foreground">Stops ({route.stops.length}):</p>
-                      <div className="max-h-40 flex flex-col gap-1.5 overflow-y-auto pr-2">
-                        {route.stops.slice(0, 10).map((stop, i) => (
-                          <div key={`${route.id}-${stop.id}`} className="flex items-center gap-2">
-                            <div className={`h-2 w-2 rounded-full flex-shrink-0 ${i === 0 ? "bg-primary" : i === Math.min(9, route.stops.length - 1) ? "bg-accent" : "bg-border"}`} />
-                            <span className="text-xs text-foreground truncate">{stop.address}</span>
-                          </div>
-                        ))}
-                        {route.stops.length > 10 && (
-                          <p className="text-xs text-muted-foreground">+{route.stops.length - 10} more stops</p>
-                        )}
+                      <p className="mb-2 text-xs font-medium text-foreground">Select direction:</p>
+                      <div className="grid grid-cols-2 gap-2">
+                        <Button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleDirectionSelect("goingTo")
+                          }}
+                          variant={selectedRouteDirection === "goingTo" ? "default" : "outline"}
+                          className={`h-9 rounded-lg text-xs font-medium ${
+                            selectedRouteDirection === "goingTo"
+                              ? "bg-primary text-primary-foreground"
+                              : "border-border hover:bg-primary/10 hover:text-primary"
+                          }`}
+                        >
+                          <Navigation className="mr-1.5 h-3.5 w-3.5" />
+                          Going To
+                        </Button>
+                        <Button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleDirectionSelect("returning")
+                          }}
+                          variant={selectedRouteDirection === "returning" ? "default" : "outline"}
+                          className={`h-9 rounded-lg text-xs font-medium ${
+                            selectedRouteDirection === "returning"
+                              ? "bg-primary text-primary-foreground"
+                              : "border-border hover:bg-primary/10 hover:text-primary"
+                          }`}
+                        >
+                          <ArrowRightLeft className="mr-1.5 h-3.5 w-3.5" />
+                          Returning
+                        </Button>
                       </div>
                     </div>
                   )}
@@ -766,6 +808,7 @@ export default function FullScreenMapPage() {
           }))}
           landmarks={visibleLandmarks}
           selectedRoute={selectedRoute}
+          selectedRouteDirection={selectedRouteDirection}
           selectedLandmarkName={selectedLandmarkName}
           focusedLandmarkNames={focusedLandmarkNames}
           decodedRoutes={routes}
