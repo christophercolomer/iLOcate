@@ -130,11 +130,11 @@
 }
 
 .animate-scroll-up {
-  animation: scroll-up 100s linear infinite;
+  animation: scroll-up 140s linear infinite;
 }
 
 .animate-scroll-down {
-  animation: scroll-down 100s linear infinite;
+  animation: scroll-down 140s linear infinite;
 }
 
 .animate-scroll-up:hover,
@@ -152,7 +152,7 @@
 }
 
 .animate-infinite-scroll-x {
-  animation: infinite-scroll-x 40s linear infinite;
+  animation: infinite-scroll-x 70s linear infinite;
 }
 
 .animate-infinite-scroll-x:hover {
