@@ -713,50 +713,39 @@ export default function FullScreenMapPage() {
                   </div>
                   {selectedRoute === String(route.id) && (
                     <div className="mt-3 border-t border-border pt-3">
-                      {!selectedRouteDirection ? (
-                        <div className="space-y-3">
-                          <p className="text-xs font-medium text-foreground">Choose direction:</p>
-                          <div className="grid grid-cols-2 gap-2">
-                            <Button
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                handleDirectionSelect("goingTo")
-                              }}
-                              variant="outline"
-                              className="h-9 rounded-lg border-border text-xs font-medium hover:bg-primary/10 hover:text-primary"
-                            >
-                              <Navigation className="mr-1.5 h-3.5 w-3.5" />
-                              Going To
-                            </Button>
-                            <Button
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                handleDirectionSelect("returning")
-                              }}
-                              variant="outline"
-                              className="h-9 rounded-lg border-border text-xs font-medium hover:bg-primary/10 hover:text-primary"
-                            >
-                              <ArrowRightLeft className="mr-1.5 h-3.5 w-3.5" />
-                              Returning
-                            </Button>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="flex items-center justify-between rounded-lg bg-primary/10 p-2">
-                          <p className="text-xs font-medium text-primary">
-                            {selectedRouteDirection === "goingTo" ? "Going To Direction" : "Returning Direction"}
-                          </p>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              setSelectedRouteDirection(null)
-                            }}
-                            className="text-primary hover:text-primary/80"
-                          >
-                            <X className="h-3.5 w-3.5" />
-                          </button>
-                        </div>
-                      )}
+                      <p className="mb-2 text-xs font-medium text-foreground">Select direction:</p>
+                      <div className="grid grid-cols-2 gap-2">
+                        <Button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleDirectionSelect("goingTo")
+                          }}
+                          variant={selectedRouteDirection === "goingTo" ? "default" : "outline"}
+                          className={`h-9 rounded-lg text-xs font-medium ${
+                            selectedRouteDirection === "goingTo"
+                              ? "bg-primary text-primary-foreground"
+                              : "border-border hover:bg-primary/10 hover:text-primary"
+                          }`}
+                        >
+                          <Navigation className="mr-1.5 h-3.5 w-3.5" />
+                          Going To
+                        </Button>
+                        <Button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleDirectionSelect("returning")
+                          }}
+                          variant={selectedRouteDirection === "returning" ? "default" : "outline"}
+                          className={`h-9 rounded-lg text-xs font-medium ${
+                            selectedRouteDirection === "returning"
+                              ? "bg-primary text-primary-foreground"
+                              : "border-border hover:bg-primary/10 hover:text-primary"
+                          }`}
+                        >
+                          <ArrowRightLeft className="mr-1.5 h-3.5 w-3.5" />
+                          Returning
+                        </Button>
+                      </div>
                     </div>
                   )}
                 </button>
