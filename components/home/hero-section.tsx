@@ -100,6 +100,7 @@ export function HeroSection() {
   const [loadingRoutes, setLoadingRoutes] = useState(false)
   const [selectedRouteId, setSelectedRouteId] = useState<string | null>(null)
   const routeListRef = useRef<HTMLDivElement>(null)
+  const routeItemRefs = useRef<Record<string, HTMLButtonElement | null>>({})
   const { user } = useAuth()
 
   // Load PUJ routes from data.json
@@ -182,6 +183,18 @@ export function HeroSection() {
     if (!showMapModal) return
     routeListRef.current?.scrollTo({ top: 0 })
   }, [showMapModal])
+
+  useEffect(() => {
+    if (!showMapModal || !selectedRouteId) return
+
+    const selectedRouteButton = routeItemRefs.current[selectedRouteId]
+    if (!selectedRouteButton) return
+
+    selectedRouteButton.scrollIntoView({
+      behavior: "smooth",
+      block: "nearest",
+    })
+  }, [showMapModal, selectedRouteId])
 
   return (
     <>
@@ -417,12 +430,14 @@ export function HeroSection() {
                   landmarks={[]}
                   selectedRoute={selectedRouteId}
                   showAllRoutes={selectedRouteId === null}
+                  showSelectedRouteBothDirections={true}
                   showLandmarks={false}
                   showCenterMarker={false}
                   showCurrentLocation={false}
                   showLocateControl={false}
                   requireClickToZoom={false}
                   decodedRoutes={allRoutes}
+                  onRouteSelect={(routeId) => setSelectedRouteId(String(routeId))}
                 />
               </div>
 
@@ -452,6 +467,9 @@ export function HeroSection() {
                       <button
                         type="button"
                         key={route.id}
+                        ref={(element) => {
+                          routeItemRefs.current[String(route.id)] = element
+                        }}
                         onClick={() => setSelectedRouteId(selectedRouteId === route.id ? null : route.id)}
                         className={`rounded-lg border p-4 text-left transition-all ${
                           selectedRouteId === route.id
