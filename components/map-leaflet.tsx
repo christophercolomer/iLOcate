@@ -265,6 +265,11 @@ export default function MapLeaflet({
     // Run once after mount and again on next frame for layout shifts.
     refreshMapSize()
     const rafId = requestAnimationFrame(refreshMapSize)
+    const timeoutIds = [
+      window.setTimeout(refreshMapSize, 100),
+      window.setTimeout(refreshMapSize, 300),
+      window.setTimeout(refreshMapSize, 800),
+    ]
 
     const resizeObserver = new ResizeObserver(() => {
       refreshMapSize()
@@ -272,11 +277,14 @@ export default function MapLeaflet({
 
     resizeObserver.observe(container)
     window.addEventListener("resize", refreshMapSize)
+    window.addEventListener("orientationchange", refreshMapSize)
 
     return () => {
       cancelAnimationFrame(rafId)
+      timeoutIds.forEach((id) => window.clearTimeout(id))
       resizeObserver.disconnect()
       window.removeEventListener("resize", refreshMapSize)
+      window.removeEventListener("orientationchange", refreshMapSize)
     }
   }, [])
 

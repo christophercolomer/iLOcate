@@ -56,7 +56,9 @@ function DestinationCard({
 }) {
   const isLarge = size === "large"
   return (
-    <div
+    <Link
+      href="/signup"
+      aria-label={`Sign up to explore ${name}`}
       className={`group relative flex-shrink-0 overflow-hidden rounded-2xl ${
         isLarge ? "h-[280px] w-[220px] md:h-[320px] md:w-[260px]" : "h-[200px] w-[160px] md:h-[240px] md:w-[200px]"
       }`}
@@ -88,7 +90,7 @@ function DestinationCard({
           <span className="ml-1 text-xs text-white/70">{rating}</span>
         </div>
       </div>
-    </div>
+    </Link>
   )
 }
 
@@ -100,6 +102,7 @@ export function HeroSection() {
   const [loadingRoutes, setLoadingRoutes] = useState(false)
   const [selectedRouteId, setSelectedRouteId] = useState<string | null>(null)
   const routeListRef = useRef<HTMLDivElement>(null)
+  const routesPanelRef = useRef<HTMLDivElement>(null)
   const routeItemRefs = useRef<Record<string, HTMLButtonElement | null>>({})
   const { user } = useAuth()
 
@@ -187,6 +190,13 @@ export function HeroSection() {
   useEffect(() => {
     if (!showMapModal || !selectedRouteId) return
 
+    if (window.matchMedia("(max-width: 767px)").matches) {
+      routesPanelRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      })
+    }
+
     const selectedRouteButton = routeItemRefs.current[selectedRouteId]
     if (!selectedRouteButton) return
 
@@ -198,7 +208,7 @@ export function HeroSection() {
 
   return (
     <>
-      <section className="relative -mt-[72px] h-screen min-h-[600px] w-full overflow-hidden">
+      <section className="relative -mt-[72px] min-h-[100svh] w-full overflow-hidden">
         {/* Animated Map Background */}
         <div className="absolute inset-0 opacity-[0.08]">
           <svg
@@ -270,9 +280,9 @@ export function HeroSection() {
         <div className="absolute inset-0 bg-gradient-to-r from-black/30 via-black/50 to-black/5" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-black/5" />
         
-        <div className="relative z-10 mx-auto flex h-full w-full max-w-[1300px] items-center px-4 pt-[12px] lg:px-8 xl:px-10">
-          <div className="flex w-full flex-col gap-8 lg:flex-row lg:items-center lg:justify-between lg:gap-12">
-            <div className="flex max-w-lg flex-1 flex-col rounded-3xl border border-white/15 bg-white/[0.06] p-5 shadow-[0_8px_30px_rgba(0,0,0,0.28)] backdrop-blur-sm md:p-7">
+        <div className="relative z-10 mx-auto flex min-h-[100svh] w-full max-w-[1300px] items-center px-4 pb-20 pt-24 sm:pt-28 lg:px-8 lg:pb-10 xl:px-10">
+          <div className="flex w-full flex-col gap-6 lg:flex-row lg:items-center lg:justify-between lg:gap-12">
+            <div className="flex max-w-lg flex-1 flex-col rounded-[28px] border border-white/15 bg-white/[0.06] p-4 shadow-[0_8px_30px_rgba(0,0,0,0.28)] backdrop-blur-sm sm:p-5 md:p-7">
               <Link
                 href="/dashboard"
                 className="mb-4 inline-flex w-fit items-center gap-0 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 backdrop-blur-sm transition-colors hover:bg-white/15"
@@ -288,37 +298,37 @@ export function HeroSection() {
               </Link>
 
               {/* Main Heading - Emphasize iLOcate */}
-              <div className="space-y-1">
-                <h1 className="text-6xl font-bold leading-[0.95] tracking-tight text-white sm:text-7xl md:text-8xl">
+              <div className="space-y-1.5">
+                <h1 className="text-5xl font-bold leading-[0.95] tracking-tight text-white sm:text-7xl md:text-8xl">
                   <span className="block bg-primary bg-clip-text text-transparent">
                     iLOcate
                   </span>
                 </h1>
-                <h2 className="text-3xl font-semibold text-white/90 sm:text-4xl">
+                <h2 className="text-2xl font-semibold text-white/90 sm:text-4xl">
                   Explore Iloilo Like a Local
                 </h2>
-                <p className="mx-auto mt-2 inline-flex w-fit -translate-x-2 whitespace-nowrap rounded-full border border-primary/60 bg-primary/20 px-4 py-2 text-xs font-semibold tracking-wide text-primary backdrop-blur-sm sm:text-sm md:text-base">
+                <p className="mt-2 inline-flex max-w-full rounded-full border border-primary/60 bg-primary/20 px-3 py-2 text-[11px] font-semibold leading-tight tracking-wide text-primary backdrop-blur-sm sm:w-fit sm:px-4 sm:text-sm md:text-base">
                   Find your way. Feel the Love. Your gentle guide in Iloilo
                 </p>
               </div>
 
-              <p className="mt-6 max-w-md text-pretty text-sm leading-relaxed text-white/75 md:text-base">
+              <p className="mt-5 max-w-md text-pretty text-sm leading-relaxed text-white/75 md:text-base">
                 Navigate Iloilo with confidence. Discover the best routes, places, food, and hidden gems. View PUJ routes instantly or sign in to unlock personalized recommendations.
               </p>
 
-              <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center">
+              <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
                 <button
                   type="button"
                   onClick={() => setShowMapModal(true)}
-                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-8 py-3 text-base font-semibold text-primary-foreground transition-all hover:bg-primary/90 hover:shadow-lg"
+                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 text-base font-semibold text-primary-foreground transition-all hover:bg-primary/90 hover:shadow-lg"
                 >
                   <Map className="h-5 w-5" />
                   View Routes
                 </button>
-                <Link href="/signup">
+                <Link href="/signup" className="w-full sm:w-auto">
                   <Button
                     size="lg"
-                    className="rounded-xl bg-white/10 px-8 text-base font-semibold text-white backdrop-blur-sm transition-all hover:bg-white/20 border border-white/20"
+                    className="w-full rounded-xl border border-white/20 bg-white/10 px-6 text-base font-semibold text-white backdrop-blur-sm transition-all hover:bg-white/20 sm:w-auto"
                   >
                     Explore More
                     <ArrowRight className="ml-2 h-5 w-5" />
@@ -333,19 +343,19 @@ export function HeroSection() {
                 </Link>
               </p>
 
-              <div className="mt-10 flex items-center gap-8">
+              <div className="mt-8 grid grid-cols-3 gap-3 sm:flex sm:items-center sm:gap-8">
                 <div>
-                  <p className="text-3xl font-bold text-white">{loadingRoutes ? "..." : `20+`}</p>
+                  <p className="text-2xl font-bold text-white sm:text-3xl">{loadingRoutes ? "..." : `20+`}</p>
                   <p className="text-xs text-white/50">PUJ Routes</p>
                 </div>
-                <div className="h-10 w-px bg-white/20" />
+                <div className="hidden h-10 w-px bg-white/20 sm:block" />
                 <div>
-                  <p className="text-3xl font-bold text-white">{`50+`}</p>
+                  <p className="text-2xl font-bold text-white sm:text-3xl">{`50+`}</p>
                   <p className="text-xs text-white/50">Places Spots</p>
                 </div>
-                <div className="h-10 w-px bg-white/20" />
+                <div className="hidden h-10 w-px bg-white/20 sm:block" />
                 <div>
-                  <p className="text-3xl font-bold text-white">{`40+`}</p>
+                  <p className="text-2xl font-bold text-white sm:text-3xl">{`40+`}</p>
                   <p className="text-xs text-white/50">Food Spots</p>
                 </div>
               </div>
@@ -387,7 +397,7 @@ export function HeroSection() {
               </div>
             </div>
 
-            <div className="flex gap-3 overflow-x-auto pb-4 lg:hidden">
+            <div className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-2 lg:hidden">
               {(user ? landmarks.slice(0, 8) : guestSuggestionsLimited).map((dest, i) => (
                 <DestinationCard
                   key={`mobile-${dest.name}-${dest.type}-${i}`}
@@ -407,22 +417,22 @@ export function HeroSection() {
 
       {/* Map & Routes Modal */}
       {showMapModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
-          <div className="relative w-full max-w-4xl overflow-hidden rounded-2xl bg-card shadow-2xl">
+        <div className="fixed inset-0 z-50 bg-black/80 p-3 sm:flex sm:items-center sm:justify-center sm:p-4">
+          <div className="relative mx-auto flex h-[calc(100svh-24px)] w-full max-w-4xl flex-col overflow-hidden rounded-2xl bg-card shadow-2xl sm:h-auto sm:max-h-[90svh]">
             <button
               type="button"
               onClick={() => {
                 setShowMapModal(false)
                 setSelectedRouteId(null)
               }}
-              className="absolute right-4 top-4 z-10 rounded-full bg-muted p-2 text-foreground transition-colors hover:bg-muted/80"
+              className="absolute right-3 top-3 z-20 rounded-full bg-muted/95 p-2 text-foreground transition-colors hover:bg-muted sm:right-4 sm:top-4"
             >
               <X className="h-6 w-6" />
             </button>
 
-            <div className="grid h-[620px] gap-6 p-6 md:grid-cols-2">
+            <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-3 pt-14 sm:gap-6 sm:p-6 sm:pt-6 md:grid md:grid-cols-2 md:gap-6">
               {/* Map Side */}
-              <div className="relative h-full rounded-xl overflow-hidden bg-muted">
+              <div className="relative h-[38svh] min-h-[220px] shrink-0 rounded-xl overflow-hidden bg-muted sm:h-[320px] md:h-full md:min-h-0">
                 <MapLeaflet
                   center={[10.7202, 122.5621]}
                   zoom={13}
@@ -442,10 +452,10 @@ export function HeroSection() {
               </div>
 
               {/* Routes List */}
-              <div className="flex h-full min-h-0 flex-col gap-4">
+              <div ref={routesPanelRef} className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden pb-2 md:h-full md:pb-0">
                 <div>
-                  <h2 className="text-2xl font-bold text-foreground">PUJ Routes in Iloilo</h2>
-                  <p className="mt-1 text-muted-foreground">
+                  <h2 className="text-xl font-bold text-foreground sm:text-2xl">PUJ Routes in Iloilo</h2>
+                  <p className="mt-1 text-sm text-muted-foreground">
                     Click a route to view it on the map
                   </p>
                   {!loadingRoutes && pujRoutes.length > 0 && (
@@ -455,7 +465,7 @@ export function HeroSection() {
 
                 <div
                   ref={routeListRef}
-                  className="min-h-0 flex-1 overflow-y-auto pr-1 [scrollbar-width:thin] [scrollbar-color:hsl(var(--primary)/0.45)_transparent] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-primary/45 hover:[&::-webkit-scrollbar-thumb]:bg-primary/65"
+                  className="min-h-[220px] flex-1 overflow-y-auto pr-1 [scrollbar-width:thin] [scrollbar-color:hsl(var(--primary)/0.45)_transparent] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-primary/45 hover:[&::-webkit-scrollbar-thumb]:bg-primary/65 md:min-h-0"
                 >
                   {loadingRoutes ? (
                     <p className="text-sm text-muted-foreground">Loading routes...</p>
@@ -471,7 +481,7 @@ export function HeroSection() {
                           routeItemRefs.current[String(route.id)] = element
                         }}
                         onClick={() => setSelectedRouteId(selectedRouteId === route.id ? null : route.id)}
-                        className={`rounded-lg border p-4 text-left transition-all ${
+                        className={`rounded-lg border p-3.5 text-left transition-all sm:p-4 ${
                           selectedRouteId === route.id
                             ? "border-primary bg-primary/10"
                             : "border-border bg-muted/50 hover:border-primary hover:bg-muted"
@@ -491,7 +501,7 @@ export function HeroSection() {
                   )}
                 </div>
 
-                <div className="mt-auto pt-4">
+                <div className="mt-auto shrink-0 pt-4">
                   <Link href="/signup" className="w-full">
                     <Button className="w-full rounded-lg bg-primary text-primary-foreground hover:bg-primary/90">
                       Sign Up for Detailed Routes

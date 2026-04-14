@@ -595,11 +595,222 @@ function FullScreenMapPageContent() {
   }
 
   return (
-    <div className="flex h-[calc(100vh-64px)] flex-col lg:flex-row">
+    <>
+    <div className="min-h-[calc(100svh-64px)] overflow-y-auto bg-background lg:hidden">
+      <div className="relative h-[42svh] min-h-[300px] w-full overflow-hidden border-b border-border bg-muted">
+        <MapComponent
+          center={MAP_CENTER}
+          zoom={MAP_ZOOM}
+          showCenterMarker={false}
+          routes={routes.map((route) => ({
+            id: route.id,
+            name: `${route.routeNumber} - ${route.routeName}`,
+            code: route.vehicleTypeName,
+            stops: route.stops.map((s) => s.address),
+            fare: "",
+            time: "",
+          }))}
+          landmarks={visibleLandmarks}
+          selectedRoute={selectedRoute}
+          showAllRoutes={showAllPujRoutes}
+          selectedRouteDirection={selectedRouteDirection}
+          selectedLandmarkName={selectedLandmarkName}
+          focusedLandmarkNames={focusedLandmarkNames}
+          decodedRoutes={routes}
+          directionsRoute={directionsRoute}
+          originMarker={originCoords}
+          destinationMarker={destinationCoords}
+          pinDropMode={isPinDropMode}
+          onPinDropped={handlePinDropped}
+          onRouteSelect={handleRouteClick}
+        />
+      </div>
+
+      <div className="space-y-3 bg-background p-3 pb-6">
+        <div className="rounded-2xl bg-secondary p-3">
+          <div className="mb-3 flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-foreground">PUJ Routes</h3>
+            <Bus className="h-4 w-4 text-primary" />
+          </div>
+          {selectedRoute !== null && (
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedRoute(null)
+                setShowAllPujRoutes(false)
+                setSelectedRouteDirection(null)
+              }}
+              className="mb-2 w-full rounded-lg border border-primary/40 bg-primary/5 px-3 py-2 text-xs font-medium text-primary transition-colors hover:bg-primary/10"
+            >
+              Unselect current route
+            </button>
+          )}
+          <div className="flex flex-col gap-2">
+            {loadingRoutes ? (
+              <p className="text-xs text-muted-foreground">Loading routes...</p>
+            ) : routes.length === 0 ? (
+              <p className="text-xs text-muted-foreground">No routes available</p>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedRoute(null)
+                    setShowAllPujRoutes((prev) => !prev)
+                    setSelectedRouteDirection(null)
+                  }}
+                  className={`w-full rounded-xl border p-3 text-left transition-all ${
+                    showAllPujRoutes ? "border-primary bg-primary/5" : "border-border bg-background hover:border-primary/40"
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-foreground">Show All Routes</p>
+                      <p className="text-xs text-muted-foreground">Display every PUJ route on the map</p>
+                    </div>
+                    <ChevronRight className={`h-4 w-4 text-muted-foreground transition-transform ${showAllPujRoutes ? "rotate-90" : ""}`} />
+                  </div>
+                </button>
+
+                {routes.map((route) => (
+                  <button
+                    type="button"
+                    key={`mobile-${route.id}`}
+                    ref={(element) => {
+                      routeItemRefs.current[String(route.id)] = element
+                    }}
+                    onClick={() => {
+                      handleRouteClick(route.id)
+                      setShowAllPujRoutes(false)
+                    }}
+                    className={`w-full rounded-xl border p-3 text-left transition-all ${
+                      selectedRoute === String(route.id) ? "border-primary bg-primary/5" : "border-border bg-background hover:border-primary/40"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-foreground">{route.routeNumber} - {route.routeName}</p>
+                        <p className="text-xs text-muted-foreground">{route.vehicleTypeName}</p>
+                      </div>
+                      <ChevronRight className={`h-4 w-4 text-muted-foreground transition-transform ${selectedRoute === String(route.id) ? "rotate-90" : ""}`} />
+                    </div>
+                    {selectedRoute === String(route.id) && (
+                      <div className="mt-3 border-t border-border pt-3">
+                        <p className="mb-2 text-xs font-medium text-foreground">Select direction:</p>
+                        <div className="mb-3 grid grid-cols-1 gap-2">
+                          <Button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleDirectionSelect("goingTo")
+                            }}
+                            variant={selectedRouteDirection === "goingTo" ? "default" : "outline"}
+                            className={`h-9 rounded-lg text-xs font-medium ${
+                              selectedRouteDirection === "goingTo"
+                                ? "bg-primary text-primary-foreground"
+                                : "border-border hover:bg-primary/10 hover:text-primary"
+                            }`}
+                          >
+                            <Navigation className="mr-1.5 h-3.5 w-3.5" />
+                            Going To
+                          </Button>
+                          <Button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleDirectionSelect("returning")
+                            }}
+                            variant={selectedRouteDirection === "returning" ? "default" : "outline"}
+                            className={`h-9 rounded-lg text-xs font-medium ${
+                              selectedRouteDirection === "returning"
+                                ? "bg-primary text-primary-foreground"
+                                : "border-border hover:bg-primary/10 hover:text-primary"
+                            }`}
+                          >
+                            <ArrowRightLeft className="mr-1.5 h-3.5 w-3.5" />
+                            Returning
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </button>
+                ))}
+              </>
+            )}
+          </div>
+        </div>
+
+        <div className="rounded-2xl bg-secondary p-3">
+          <h3 className="mb-3 text-sm font-semibold text-foreground">Find a Route</h3>
+          <div className="flex flex-col gap-3">
+            <div className="relative">
+              <MapPin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-primary" />
+              <input
+                type="text"
+                value={from}
+                onChange={(e) => setFrom(e.target.value)}
+                onFocus={() => setActiveSuggestionField("from")}
+                onBlur={() => setTimeout(() => setActiveSuggestionField(null), 120)}
+                placeholder={locationLoading ? "Getting your location…" : "From"}
+                disabled={locationLoading}
+                className={`w-full rounded-xl border border-input bg-background py-2.5 pl-10 pr-9 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-60 ${
+                  from === CURRENT_LOCATION_LABEL ? "font-medium text-primary" : ""
+                }`}
+              />
+            </div>
+            <div className="flex justify-center">
+              <button onClick={swapLocations} className="rounded-full border border-border p-1.5 text-muted-foreground hover:border-primary hover:text-primary" aria-label="Swap locations">
+                <ArrowRightLeft className="h-4 w-4" />
+              </button>
+            </div>
+            <div className="relative">
+              <Navigation className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-primary" />
+              <input
+                type="text"
+                value={to}
+                onChange={(e) => setTo(e.target.value)}
+                onFocus={() => setActiveSuggestionField("to")}
+                onBlur={() => setTimeout(() => setActiveSuggestionField(null), 120)}
+                placeholder="To"
+                className="w-full rounded-xl border border-input bg-background py-2.5 pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+              />
+            </div>
+            <Button
+              onClick={handleSearchRoute}
+              disabled={directionsLoading}
+              className="w-full rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+            >
+              {directionsLoading ? "Finding Route..." : "Search Route"}
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div className="hidden min-h-[calc(100svh-64px)] flex-col lg:flex lg:h-[calc(100vh-64px)] lg:flex-row">
+      <div className="flex gap-2 border-b border-border bg-background p-3 lg:hidden">
+        <Button
+          type="button"
+          size="sm"
+          variant="secondary"
+          onClick={() => setShowMapSidebar((prev) => !prev)}
+          className="h-9 rounded-lg px-3 text-xs"
+        >
+          {showMapSidebar ? "Hide Routes" : "Show Routes"}
+        </Button>
+        <Button
+          type="button"
+          size="sm"
+          variant="secondary"
+          onClick={() => setShowLandmarksPanel((prev) => !prev)}
+          className="h-9 rounded-lg px-3 text-xs"
+        >
+          {showLandmarksPanel ? "Hide Landmarks" : "Show Landmarks"}
+        </Button>
+      </div>
+
       {/* Sidebar */}
       {showMapSidebar && (
-      <div className="relative flex w-full flex-shrink-0 flex-col overflow-y-auto border-b border-border bg-background p-4 lg:w-[380px] lg:border-b-0 lg:border-r">
-        <div className="mb-4 flex items-center gap-3">
+      <div className="order-2 relative flex w-full flex-shrink-0 flex-col overflow-y-auto border-b border-border bg-background p-3 sm:p-4 lg:order-1 lg:w-[380px] lg:border-b-0 lg:border-r">
+        <div className="mb-3 flex items-center gap-3 sm:mb-4">
           <Link href="/dashboard" className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground">
             <ArrowLeft className="h-5 w-5" />
           </Link>
@@ -607,7 +818,7 @@ function FullScreenMapPageContent() {
         </div>
 
         {/* Search Form */}
-        <div className="order-2 mt-4 rounded-2xl bg-secondary p-4">
+        <div className="order-2 mt-3 rounded-2xl bg-secondary p-3 sm:mt-4 sm:p-4">
           <h3 className="mb-3 text-sm font-semibold text-foreground">Find a Route</h3>
           <div className="flex flex-col gap-3">
             <div className="relative">
@@ -663,7 +874,7 @@ function FullScreenMapPageContent() {
               ) : null}
             </div>
             {locationError && from === "" && (
-              <p className="text-xs text-destructive -mt-1">{locationError} Enter a location manually.</p>
+              <p className="-mt-1 text-xs text-destructive">{locationError} Enter a location manually.</p>
             )}
             <div className="flex justify-center">
               <button onClick={swapLocations} className="rounded-full border border-border p-1.5 text-muted-foreground hover:border-primary hover:text-primary" aria-label="Swap locations">
@@ -754,7 +965,7 @@ function FullScreenMapPageContent() {
         </div>
 
         {/* PUJ Routes */}
-        <div className="order-1 mt-4 rounded-2xl bg-secondary p-4">
+        <div className="order-1 mt-3 rounded-2xl bg-secondary p-3 sm:mt-4 sm:p-4">
           <div className="mb-3 flex items-center justify-between">
             <h3 className="text-sm font-semibold text-foreground">PUJ Routes</h3>
             <Bus className="h-4 w-4 text-primary" />
@@ -824,7 +1035,7 @@ function FullScreenMapPageContent() {
                     {selectedRoute === String(route.id) && (
                       <div className="mt-3 border-t border-border pt-3">
                         <p className="mb-2 text-xs font-medium text-foreground">Select direction:</p>
-                        <div className="mb-3 grid grid-cols-2 gap-2">
+                        <div className="mb-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
                           <Button
                             onClick={(e) => {
                               e.stopPropagation()
@@ -878,8 +1089,8 @@ function FullScreenMapPageContent() {
         </div>
 
         {/* Route Mode */}
-        <div className="mt-4 rounded-2xl bg-secondary p-4">
-          <div className="grid grid-cols-2 gap-2">
+        <div className="mt-3 rounded-2xl bg-secondary p-3 sm:mt-4 sm:p-4">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
             <Button
               onClick={() => setRouteMode("Palihog Bayad")}
               className={`h-10 rounded-xl text-sm font-semibold ${
@@ -903,7 +1114,7 @@ function FullScreenMapPageContent() {
           </div>
         </div>
 
-        <div className="mt-4 rounded-2xl bg-secondary p-4">
+        <div className="mt-3 rounded-2xl bg-secondary p-3 sm:mt-4 sm:p-4">
           <div className="flex items-center justify-between gap-3">
             <div>
               <h3 className="text-sm font-semibold text-foreground">Landmarks Panel</h3>
@@ -916,7 +1127,7 @@ function FullScreenMapPageContent() {
       )}
 
       {/* Map */}
-      <div className="relative flex-1">
+      <div className="order-1 relative h-[56svh] min-h-[360px] w-full flex-1 overflow-hidden border-b border-border bg-muted lg:order-2 lg:h-auto lg:min-h-0 lg:border-b-0">
         <MapComponent
           center={MAP_CENTER}
           zoom={MAP_ZOOM}
@@ -1097,7 +1308,7 @@ function FullScreenMapPageContent() {
       </div>
 
       {showLandmarksPanel && (
-        <div className="relative w-full flex-shrink-0 overflow-y-auto border-t border-border bg-background p-4 lg:w-[360px] lg:border-l lg:border-t-0">
+        <div className="order-3 relative w-full flex-shrink-0 overflow-y-auto border-t border-border bg-background p-3 sm:p-4 lg:w-[360px] lg:border-l lg:border-t-0">
           <div className="mb-3">
             <h3 className="text-sm font-semibold text-foreground">Landmarks</h3>
           </div>
@@ -1113,7 +1324,7 @@ function FullScreenMapPageContent() {
               </Button>
             </div>
           )}
-          <div className="flex max-h-[calc(100vh-170px)] flex-col gap-2 overflow-y-auto pr-1">
+          <div className="flex max-h-[45svh] flex-col gap-2 overflow-y-auto pr-1 lg:max-h-[calc(100vh-170px)]">
             <button
               onClick={() => handleLandmarkSectionToggle("All Places & Food")}
               className={`w-full rounded-xl border p-3 text-left transition-all ${
@@ -1263,6 +1474,7 @@ function FullScreenMapPageContent() {
         </div>
       )}
     </div>
+    </>
   )
 }
 
