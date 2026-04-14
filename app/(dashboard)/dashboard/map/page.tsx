@@ -1,6 +1,6 @@
 "use client"
 
-import { Suspense, useEffect, useMemo, useState } from "react"
+import { Suspense, useEffect, useMemo, useRef, useState } from "react"
 import {
   Search,
   ArrowRightLeft,
@@ -137,6 +137,7 @@ function FullScreenMapPageContent() {
   const [pendingGoToLandmark, setPendingGoToLandmark] = useState<string | null>(null)
   const [isPinDropMode, setIsPinDropMode] = useState(false)
   const [pinnedCoords, setPinnedCoords] = useState<[number, number] | null>(null)
+  const routeItemRefs = useRef<Record<string, HTMLButtonElement | null>>({})
   const { user } = useAuth()
 
   // Get user's current location on mount
@@ -546,6 +547,7 @@ function FullScreenMapPageContent() {
   // Handle route click - show direction choice
   const handleRouteClick = (routeId: string | number) => {
     const routeIdString = String(routeId)
+    setShowAllPujRoutes(false)
     if (selectedRoute === routeIdString) {
       // If clicking same route, clear selection
       setSelectedRoute(null)
@@ -561,6 +563,18 @@ function FullScreenMapPageContent() {
   const handleDirectionSelect = (direction: "goingTo" | "returning") => {
     setSelectedRouteDirection(direction)
   }
+
+  useEffect(() => {
+    if (!selectedRoute) return
+
+    const selectedRouteButton = routeItemRefs.current[selectedRoute]
+    if (!selectedRouteButton) return
+
+    selectedRouteButton.scrollIntoView({
+      behavior: "smooth",
+      block: "nearest",
+    })
+  }, [selectedRoute])
 
   // Pin drop handlers
   const handlePinDropped = (coords: [number, number]) => {
@@ -584,7 +598,7 @@ function FullScreenMapPageContent() {
     <div className="flex h-[calc(100vh-64px)] flex-col lg:flex-row">
       {/* Sidebar */}
       {showMapSidebar && (
-      <div className="relative w-full flex-shrink-0 overflow-y-auto border-b border-border bg-background p-4 lg:w-[380px] lg:border-b-0 lg:border-r">
+      <div className="relative flex w-full flex-shrink-0 flex-col overflow-y-auto border-b border-border bg-background p-4 lg:w-[380px] lg:border-b-0 lg:border-r">
         <div className="mb-4 flex items-center gap-3">
           <Link href="/dashboard" className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground">
             <ArrowLeft className="h-5 w-5" />
@@ -593,7 +607,7 @@ function FullScreenMapPageContent() {
         </div>
 
         {/* Search Form */}
-        <div className="rounded-2xl bg-secondary p-4">
+        <div className="order-2 mt-4 rounded-2xl bg-secondary p-4">
           <h3 className="mb-3 text-sm font-semibold text-foreground">Find a Route</h3>
           <div className="flex flex-col gap-3">
             <div className="relative">
@@ -740,7 +754,7 @@ function FullScreenMapPageContent() {
         </div>
 
         {/* PUJ Routes */}
-        <div className="mt-4 rounded-2xl bg-secondary p-4">
+        <div className="order-1 mt-4 rounded-2xl bg-secondary p-4">
           <div className="mb-3 flex items-center justify-between">
             <h3 className="text-sm font-semibold text-foreground">PUJ Routes</h3>
             <Bus className="h-4 w-4 text-primary" />
@@ -789,6 +803,9 @@ function FullScreenMapPageContent() {
                   <button
                     type="button"
                     key={route.id}
+                    ref={(element) => {
+                      routeItemRefs.current[String(route.id)] = element
+                    }}
                     onClick={() => {
                       handleRouteClick(route.id)
                       setShowAllPujRoutes(false)
@@ -916,7 +933,6 @@ function FullScreenMapPageContent() {
           selectedRoute={selectedRoute}
           showAllRoutes={showAllPujRoutes}
           selectedRouteDirection={selectedRouteDirection}
-          showAllRoutes={showAllPujRoutes}
           selectedLandmarkName={selectedLandmarkName}
           focusedLandmarkNames={focusedLandmarkNames}
           decodedRoutes={routes}
@@ -925,6 +941,7 @@ function FullScreenMapPageContent() {
           destinationMarker={destinationCoords}
           pinDropMode={isPinDropMode}
           onPinDropped={handlePinDropped}
+          onRouteSelect={handleRouteClick}
         />
         {/* Pin drop mode overlay */}
         {isPinDropMode && (
