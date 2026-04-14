@@ -9,7 +9,7 @@ const places = [
     location: "Miag-ao, Iloilo",
     description: "A UNESCO World Heritage Site featuring stunning Baroque Romanesque architecture with intricate stone carvings.",
     price: "Free Admission",
-    image: "/images/places/miagao-church.jpg",
+    image: "/images/places/Churches/miagao-church.jpg",
   },
   {
     id: 2,
@@ -17,7 +17,7 @@ const places = [
     location: "Carles, Iloilo",
     description: "A breathtaking island group with crystal-clear waters, white sand beaches, and dramatic rock formations.",
     price: "From PHP 2,500",
-    image: "/images/places/gigantes-island.jpg",
+    image: "/images/places/Attractions/gigantes-island.jpg",
   },
   {
     id: 3,
@@ -25,7 +25,7 @@ const places = [
     location: "San Joaquin, Iloilo",
     description: "A pilgrimage resort featuring the famous stairway to heaven with panoramic views of Iloilo.",
     price: "From PHP 350",
-    image: "/images/places/garin-farm.jpg",
+    image: "/images/places/Attractions/garin-farm.jpg",
   },
 ]
 

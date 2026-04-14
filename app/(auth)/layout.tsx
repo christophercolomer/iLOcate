@@ -38,7 +38,7 @@ export default function AuthLayout({
               Discover the beauty of Iloilo
             </h2>
             <p className="mt-3 max-w-sm text-pretty text-sm leading-relaxed text-white/80">
-              Join thousands of explorers finding the best places, food, and experiences in the City of Love.
+              Join thousands of explorers finding the best places, foods, and experiences in the City of Love.
             </p>
           </div>
         </div>

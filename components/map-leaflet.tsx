@@ -6,6 +6,16 @@ import "leaflet/dist/leaflet.css"
 import { Landmark } from "@/lib/landmarks"
 import type { DecodedRoute } from "@/lib/route-decoder"
 
+const currentLocationIcon = L.icon({
+  iconUrl: "/images/icons/MapIconLight.svg",
+  shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png",
+  iconSize: [38, 48],
+  iconAnchor: [19, 47],
+  popupAnchor: [0, -40],
+  shadowSize: [44, 24],
+  shadowAnchor: [14, 24],
+})
+
 export interface DirectionsRoute {
   coordinates: [number, number][]
   distance: number
@@ -31,6 +41,7 @@ interface MapComponentProps {
   }>
   landmarks: Landmark[]
   selectedRoute: number | string | null
+  selectedRouteDirection?: "goingTo" | "returning" | null
   selectedLandmarkName?: string | null
   focusedLandmarkNames?: string[]
   showLandmarks?: boolean
@@ -43,6 +54,8 @@ interface MapComponentProps {
   directionsRoute?: DirectionsRoute | null
   originMarker?: [number, number] | null
   destinationMarker?: [number, number] | null
+  pinDropMode?: boolean
+  onPinDropped?: (coords: [number, number]) => void
 }
 
 
@@ -59,6 +72,7 @@ export default function MapLeaflet({
   routes,
   landmarks,
   selectedRoute,
+  selectedRouteDirection,
   selectedLandmarkName,
   focusedLandmarkNames = [],
   showLandmarks = true,
@@ -71,6 +85,8 @@ export default function MapLeaflet({
   directionsRoute = null,
   originMarker = null,
   destinationMarker = null,
+  pinDropMode = false,
+  onPinDropped,
 }: MapComponentProps) {
   const mapContainer = useRef<HTMLDivElement>(null)
   const map = useRef<L.Map | null>(null)
@@ -81,6 +97,7 @@ export default function MapLeaflet({
   const directionsPolylineRef = useRef<L.Polyline | null>(null)
   const originMarkerRef = useRef<L.Marker | null>(null)
   const destinationMarkerRef = useRef<L.Marker | null>(null)
+  const pinDropMarkerRef = useRef<L.Marker | null>(null)
   const currentLocationMarkerRef = useRef<L.Marker | null>(null)
   const scrollZoomEnabledRef = useRef(false)
   const [currentLocation, setCurrentLocation] = useState<[number, number] | null>(null)
@@ -102,14 +119,7 @@ export default function MapLeaflet({
         // Add current location marker
         if (map.current && !currentLocationMarkerRef.current) {
           currentLocationMarkerRef.current = L.marker(coords, {
-            icon: L.icon({
-              iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png",
-              shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png",
-              iconSize: [25, 41],
-              iconAnchor: [12, 41],
-              popupAnchor: [1, -34],
-              shadowSize: [41, 41],
-            }),
+            icon: currentLocationIcon,
           })
             .bindPopup("You are here")
             .addTo(map.current)
@@ -333,16 +343,24 @@ export default function MapLeaflet({
     if (shouldRenderRoutes) {
       const routesToRender = showAllRoutes
         ? decodedRoutes
-        : decodedRoutes.filter((route) => route.id === selectedRoute)
+        : decodedRoutes.filter((route) => String(route.id) === selectedRoute)
 
       let selectedRouteCoords: [number, number][] = []
       const allRouteCoords: [number, number][] = []
 
       routesToRender.forEach((decodedRoute) => {
-        const routeCoords = decodedRoute.goingToCoordinates.filter((coords) => isValidCoordinatePair(coords))
+        const isSelected = selectedRoute !== null && String(decodedRoute.id) === selectedRoute
+        
+        // Determine which coordinates to use based on direction selection
+        let routeCoords: [number, number][] = []
+        if (isSelected && selectedRouteDirection === "returning") {
+          routeCoords = decodedRoute.returningCoordinates.filter((coords) => isValidCoordinatePair(coords))
+        } else {
+          // Use goingTo for all routes mode or when direction not selected
+          routeCoords = decodedRoute.goingToCoordinates.filter((coords) => isValidCoordinatePair(coords))
+        }
+        
         if (routeCoords.length < 2) return
-
-        const isSelected = selectedRoute !== null && decodedRoute.id === selectedRoute
 
         const routePolyline = L.polyline(routeCoords, {
           color: decodedRoute.routeColor || "hsl(var(--color-primary))",
@@ -368,7 +386,7 @@ export default function MapLeaflet({
         hasFittedAllRoutesRef.current = true
       }
     }
-  }, [selectedRoute, selectedLandmarkName, focusedLandmarkNames, landmarks, routes, showLandmarks, decodedRoutes, showAllRoutes, directionsRoute])
+  }, [selectedRoute, selectedRouteDirection, selectedLandmarkName, focusedLandmarkNames, landmarks, routes, showLandmarks, decodedRoutes, showAllRoutes, directionsRoute])
 
   useEffect(() => {
     if (!map.current || !selectedLandmarkName) return
@@ -422,14 +440,7 @@ export default function MapLeaflet({
 
     // Add new current location marker
     currentLocationMarkerRef.current = L.marker(currentLocation, {
-      icon: L.icon({
-        iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png",
-        shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png",
-        iconSize: [25, 41],
-        iconAnchor: [12, 41],
-        popupAnchor: [1, -34],
-        shadowSize: [41, 41],
-      }),
+      icon: currentLocationIcon,
     })
       .bindPopup("You are here")
       .addTo(mapInstance)
@@ -513,6 +524,69 @@ export default function MapLeaflet({
       }
     }
   }, [directionsRoute, originMarker, destinationMarker])
+
+  // Handle pin drop mode — lets users click/drag to place a custom destination pin
+  useEffect(() => {
+    if (!map.current) return
+    const mapInstance = map.current
+
+    if (!pinDropMode) {
+      // Remove the draggable pin when mode is turned off
+      if (pinDropMarkerRef.current) {
+        if (mapInstance.hasLayer(pinDropMarkerRef.current)) {
+          mapInstance.removeLayer(pinDropMarkerRef.current)
+        }
+        pinDropMarkerRef.current = null
+      }
+      mapInstance.getContainer().style.cursor = ""
+      return
+    }
+
+    mapInstance.getContainer().style.cursor = "crosshair"
+
+    const handleMapClick = (e: L.LeafletMouseEvent) => {
+      const coords: [number, number] = [e.latlng.lat, e.latlng.lng]
+
+      // Remove any existing draggable pin
+      if (pinDropMarkerRef.current) {
+        if (mapInstance.hasLayer(pinDropMarkerRef.current)) {
+          mapInstance.removeLayer(pinDropMarkerRef.current)
+        }
+        pinDropMarkerRef.current = null
+      }
+
+      // Place a new draggable orange pin
+      const marker = L.marker(coords, {
+        draggable: true,
+        icon: L.icon({
+          iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-orange.png",
+          shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png",
+          iconSize: [25, 41],
+          iconAnchor: [12, 41],
+          popupAnchor: [1, -34],
+          shadowSize: [41, 41],
+        }),
+      })
+        .bindPopup("<strong>📍 Your Destination</strong><br/><small>Drag to adjust position</small>")
+        .addTo(mapInstance)
+        .openPopup()
+
+      marker.on("dragend", () => {
+        const newLatLng = marker.getLatLng()
+        onPinDropped?.([newLatLng.lat, newLatLng.lng])
+      })
+
+      pinDropMarkerRef.current = marker
+      onPinDropped?.(coords)
+    }
+
+    mapInstance.on("click", handleMapClick)
+
+    return () => {
+      mapInstance.off("click", handleMapClick)
+      mapInstance.getContainer().style.cursor = ""
+    }
+  }, [pinDropMode, onPinDropped])
 
   return <div ref={mapContainer} className="h-full w-full" />
 }

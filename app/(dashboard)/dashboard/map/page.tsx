@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { Suspense, useEffect, useMemo, useState } from "react"
 import {
   Search,
   ArrowRightLeft,
@@ -15,11 +15,13 @@ import {
   X,
   Clock,
   Route,
+  Crosshair,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
 import dynamic from "next/dynamic"
+import Image from "next/image"
 import { landmarks } from "@/lib/landmarks"
 import { useAuth } from "@/lib/auth-context"
 import { doc, getDoc, getFirestore } from "firebase/firestore"
@@ -86,6 +88,7 @@ const preferenceCategoryMap: Record<string, LandmarkCategory[]> = {
 }
 
 const CURRENT_LOCATION_LABEL = "Current Location"
+const PINNED_LOCATION_LABEL = "📍 Pinned Location"
 
 function isSubsequenceMatch(query: string, target: string) {
   let queryIndex = 0
@@ -105,7 +108,7 @@ function getSuggestionScore(query: string, target: string) {
   return Number.POSITIVE_INFINITY
 }
 
-export default function FullScreenMapPage() {
+function FullScreenMapPageContent() {
   const searchParams = useSearchParams()
   const [from, setFrom] = useState(CURRENT_LOCATION_LABEL)
   const [to, setTo] = useState("")
@@ -115,6 +118,8 @@ export default function FullScreenMapPage() {
   const [routeMode, setRouteMode] = useState<"Palihog Bayad" | "Sa Lugar">("Palihog Bayad")
   const [showRoutes, setShowRoutes] = useState(false)
   const [selectedRoute, setSelectedRoute] = useState<string | null>(null)
+  const [showAllPujRoutes, setShowAllPujRoutes] = useState(false)
+  const [selectedRouteDirection, setSelectedRouteDirection] = useState<"goingTo" | "returning" | null>(null)
   const [showMapSidebar, setShowMapSidebar] = useState(true)
   const [selectedLandmarkSection, setSelectedLandmarkSection] = useState<string | null>(null)
   const [selectedLandmarkName, setSelectedLandmarkName] = useState<string | null>(null)
@@ -129,6 +134,9 @@ export default function FullScreenMapPage() {
   const [originCoords, setOriginCoords] = useState<[number, number] | null>(null)
   const [destinationCoords, setDestinationCoords] = useState<[number, number] | null>(null)
   const [activeSuggestionField, setActiveSuggestionField] = useState<"from" | "to" | null>(null)
+  const [pendingGoToLandmark, setPendingGoToLandmark] = useState<string | null>(null)
+  const [isPinDropMode, setIsPinDropMode] = useState(false)
+  const [pinnedCoords, setPinnedCoords] = useState<[number, number] | null>(null)
   const { user } = useAuth()
 
   // Get user's current location on mount
@@ -221,6 +229,10 @@ export default function FullScreenMapPage() {
     setSelectedLandmarkName(matchedLandmark.name)
     setSelectedLandmarkSection(null)
     setFocusedLandmarkNames([])
+
+    if (searchParams.get("go") === "1") {
+      setPendingGoToLandmark(matchedLandmark.name)
+    }
   }, [searchParams])
 
   const categorizedLandmarks = useMemo(() => {
@@ -304,6 +316,11 @@ export default function FullScreenMapPage() {
     return []
   }, [focusedLandmarkNames, selectedLandmarkName])
 
+  const selectedLandmark = useMemo(() => {
+    if (!selectedLandmarkName) return null
+    return landmarks.find((landmark) => landmark.name === selectedLandmarkName) ?? null
+  }, [selectedLandmarkName])
+
   const locationSuggestions = useMemo(() => {
     const baseSuggestions = landmarks.map((landmark) => ({
       label: landmark.name,
@@ -369,9 +386,11 @@ export default function FullScreenMapPage() {
     )
   }
 
-  // Handle route search
-  const handleSearchRoute = async () => {
-    if (!from.trim() || !to.trim()) {
+  const searchRoute = async (originValue: string, destinationValue: string) => {
+    const normalizedFrom = originValue.trim()
+    const normalizedTo = destinationValue.trim()
+
+    if (!normalizedFrom || !normalizedTo) {
       setDirectionsError("Please enter both origin and destination")
       return
     }
@@ -385,7 +404,7 @@ export default function FullScreenMapPage() {
     let destLatLng: [number, number]
 
     // Handle "Current Location" as origin
-    const isFromCurrentLocation = from.trim().toLowerCase() === CURRENT_LOCATION_LABEL.toLowerCase()
+    const isFromCurrentLocation = normalizedFrom.toLowerCase() === CURRENT_LOCATION_LABEL.toLowerCase()
     
     if (isFromCurrentLocation) {
       if (!userLocation) {
@@ -395,9 +414,9 @@ export default function FullScreenMapPage() {
       }
       originLatLng = userLocation
     } else {
-      const fromLandmark = findLandmarkByName(from)
+      const fromLandmark = findLandmarkByName(normalizedFrom)
       if (!fromLandmark) {
-        setDirectionsError(`Could not find location: "${from}". Try selecting from Landmarks.`)
+        setDirectionsError(`Could not find location: "${normalizedFrom}". Try selecting from Landmarks.`)
         setDirectionsLoading(false)
         return
       }
@@ -405,9 +424,17 @@ export default function FullScreenMapPage() {
     }
 
     // Handle "Current Location" as destination
-    const isToCurrentLocation = to.trim().toLowerCase() === CURRENT_LOCATION_LABEL.toLowerCase()
-    
-    if (isToCurrentLocation) {
+    const isToCurrentLocation = normalizedTo.toLowerCase() === CURRENT_LOCATION_LABEL.toLowerCase()
+    const isPinnedDestination = normalizedTo === PINNED_LOCATION_LABEL
+
+    if (isPinnedDestination) {
+      if (!pinnedCoords) {
+        setDirectionsError("No pin placed. Click 'Pick on map' to pin your destination.")
+        setDirectionsLoading(false)
+        return
+      }
+      destLatLng = pinnedCoords
+    } else if (isToCurrentLocation) {
       if (!userLocation) {
         setDirectionsError("Current location not available. Please enter a location or enable location access.")
         setDirectionsLoading(false)
@@ -415,9 +442,9 @@ export default function FullScreenMapPage() {
       }
       destLatLng = userLocation
     } else {
-      const toLandmark = findLandmarkByName(to)
+      const toLandmark = findLandmarkByName(normalizedTo)
       if (!toLandmark) {
-        setDirectionsError(`Could not find location: "${to}". Try selecting from Landmarks.`)
+        setDirectionsError(`Could not find location: "${normalizedTo}". Try selecting from Landmarks.`)
         setDirectionsLoading(false)
         return
       }
@@ -438,6 +465,7 @@ export default function FullScreenMapPage() {
         setDirectionsError(null)
         // Clear selected PUJ route when showing directions
         setSelectedRoute(null)
+        setShowAllPujRoutes(false)
       } else {
         setDirectionsError(result.error || "Failed to get directions")
         setDirectionsRoute(null)
@@ -450,7 +478,47 @@ export default function FullScreenMapPage() {
     }
   }
 
-  // Clear directions
+  // Handle route search from the manual fields
+  const handleSearchRoute = async () => {
+    await searchRoute(from, to)
+  }
+
+  const handleGoToLandmark = async (landmarkName: string) => {
+    const destination = landmarkName.trim()
+    if (!destination) return
+
+    const origin = userLocation ? CURRENT_LOCATION_LABEL : from.trim()
+
+    if (!origin) {
+      setDirectionsError("Current location not available. Please allow location access or enter an origin manually.")
+      return
+    }
+
+    setSelectedLandmarkName(destination)
+    setSelectedLandmarkSection(null)
+    setFocusedLandmarkNames([])
+    setFrom(origin)
+    setTo(destination)
+    setShowRoutes(true)
+
+    await searchRoute(origin, destination)
+  }
+
+  useEffect(() => {
+    if (!pendingGoToLandmark) return
+    if (locationLoading) return
+
+    if (!userLocation) {
+      setDirectionsError("Current location not available. Please allow location access and try again.")
+      setPendingGoToLandmark(null)
+      return
+    }
+
+    void handleGoToLandmark(pendingGoToLandmark)
+    setPendingGoToLandmark(null)
+  }, [pendingGoToLandmark, locationLoading, userLocation])
+
+  // Clear only the computed route data
   const clearDirections = () => {
     setDirectionsRoute(null)
     setDirectionsError(null)
@@ -459,6 +527,57 @@ export default function FullScreenMapPage() {
     setShowRoutes(false)
     setFrom(userLocation ? CURRENT_LOCATION_LABEL : "")
     setTo("")
+    setPinnedCoords(null)
+    setIsPinDropMode(false)
+  }
+
+  // Exit route mode completely (used by cancel/close actions)
+  const handleExitRoute = () => {
+    clearDirections()
+    setPendingGoToLandmark(null)
+    setSelectedLandmarkName(null)
+    setSelectedLandmarkSection(null)
+    setFocusedLandmarkNames([])
+    setSelectedRoute(null)
+    setShowAllPujRoutes(false)
+    setSelectedRouteDirection(null)
+  }
+
+  // Handle route click - show direction choice
+  const handleRouteClick = (routeId: string | number) => {
+    const routeIdString = String(routeId)
+    if (selectedRoute === routeIdString) {
+      // If clicking same route, clear selection
+      setSelectedRoute(null)
+      setSelectedRouteDirection(null)
+    } else {
+      // Show direction choice for new route
+      setSelectedRoute(routeIdString)
+      setSelectedRouteDirection(null) // User must choose direction
+    }
+  }
+
+  // Handle direction selection
+  const handleDirectionSelect = (direction: "goingTo" | "returning") => {
+    setSelectedRouteDirection(direction)
+  }
+
+  // Pin drop handlers
+  const handlePinDropped = (coords: [number, number]) => {
+    setPinnedCoords(coords)
+  }
+
+  const handlePinDone = () => {
+    if (!pinnedCoords) return
+    setIsPinDropMode(false)
+    setTo(PINNED_LOCATION_LABEL)
+    void searchRoute(from, PINNED_LOCATION_LABEL)
+  }
+
+  const handlePinCancel = () => {
+    setIsPinDropMode(false)
+    setPinnedCoords(null)
+    if (to === PINNED_LOCATION_LABEL) setTo("")
   }
 
   return (
@@ -542,7 +661,12 @@ export default function FullScreenMapPage() {
               <input
                 type="text"
                 value={to}
-                onChange={(e) => setTo(e.target.value)}
+                onChange={(e) => {
+                  setTo(e.target.value)
+                  if (pinnedCoords && e.target.value !== PINNED_LOCATION_LABEL) {
+                    setPinnedCoords(null)
+                  }
+                }}
                 onFocus={() => setActiveSuggestionField("to")}
                 onBlur={() => setTimeout(() => setActiveSuggestionField(null), 120)}
                 placeholder="To"
@@ -567,6 +691,21 @@ export default function FullScreenMapPage() {
                 </div>
               )}
             </div>
+            <button
+              type="button"
+              onClick={() => {
+                setIsPinDropMode(true)
+                setPinnedCoords(null)
+              }}
+              className={`flex items-center gap-1.5 self-start rounded-lg px-2 py-1 text-xs font-medium transition-colors ${
+                isPinDropMode
+                  ? "bg-primary/10 text-primary"
+                  : "text-muted-foreground hover:bg-muted hover:text-primary"
+              }`}
+            >
+              <Crosshair className="h-3.5 w-3.5" />
+              Pick on map
+            </button>
             <Button 
               onClick={handleSearchRoute} 
               disabled={directionsLoading}
@@ -606,45 +745,117 @@ export default function FullScreenMapPage() {
             <h3 className="text-sm font-semibold text-foreground">PUJ Routes</h3>
             <Bus className="h-4 w-4 text-primary" />
           </div>
+          {selectedRoute !== null && (
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedRoute(null)
+                setShowAllPujRoutes(false)
+                setSelectedRouteDirection(null)
+              }}
+              className="mb-2 w-full rounded-lg border border-primary/40 bg-primary/5 px-3 py-2 text-xs font-medium text-primary transition-colors hover:bg-primary/10"
+            >
+              Unselect current route
+            </button>
+          )}
           <div className="flex flex-col gap-2">
             {loadingRoutes ? (
               <p className="text-xs text-muted-foreground">Loading routes...</p>
             ) : routes.length === 0 ? (
               <p className="text-xs text-muted-foreground">No routes available</p>
             ) : (
-              routes.map((route) => (
+              <>
                 <button
-                  key={route.id}
-                  onClick={() => setSelectedRoute(selectedRoute === route.id ? null : route.id)}
+                  type="button"
+                  onClick={() => {
+                    setSelectedRoute(null)
+                    setShowAllPujRoutes((prev) => !prev)
+                    setSelectedRouteDirection(null)
+                  }}
                   className={`w-full rounded-xl border p-3 text-left transition-all ${
-                    selectedRoute === route.id ? "border-primary bg-primary/5" : "border-border bg-background hover:border-primary/40"
+                    showAllPujRoutes ? "border-primary bg-primary/5" : "border-border bg-background hover:border-primary/40"
                   }`}
                 >
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-foreground">{route.routeNumber} - {route.routeName}</p>
-                      <p className="text-xs text-muted-foreground">{route.vehicleTypeName}</p>
+                      <p className="text-sm font-medium text-foreground">Show All Routes</p>
+                      <p className="text-xs text-muted-foreground">Display every PUJ route on the map</p>
                     </div>
-                    <ChevronRight className={`h-4 w-4 text-muted-foreground transition-transform ${selectedRoute === route.id ? "rotate-90" : ""}`} />
+                    <ChevronRight className={`h-4 w-4 text-muted-foreground transition-transform ${showAllPujRoutes ? "rotate-90" : ""}`} />
                   </div>
-                  {selectedRoute === route.id && (
-                    <div className="mt-3 border-t border-border pt-3">
-                      <p className="mb-2 text-xs font-medium text-muted-foreground">Stops ({route.stops.length}):</p>
-                      <div className="max-h-40 flex flex-col gap-1.5 overflow-y-auto pr-2">
-                        {route.stops.slice(0, 10).map((stop, i) => (
-                          <div key={`${route.id}-${stop.id}`} className="flex items-center gap-2">
-                            <div className={`h-2 w-2 rounded-full flex-shrink-0 ${i === 0 ? "bg-primary" : i === Math.min(9, route.stops.length - 1) ? "bg-accent" : "bg-border"}`} />
-                            <span className="text-xs text-foreground truncate">{stop.address}</span>
-                          </div>
-                        ))}
-                        {route.stops.length > 10 && (
-                          <p className="text-xs text-muted-foreground">+{route.stops.length - 10} more stops</p>
-                        )}
-                      </div>
-                    </div>
-                  )}
                 </button>
-              ))
+
+                {routes.map((route) => (
+                  <button
+                    type="button"
+                    key={route.id}
+                    onClick={() => {
+                      handleRouteClick(route.id)
+                      setShowAllPujRoutes(false)
+                    }}
+                    className={`w-full rounded-xl border p-3 text-left transition-all ${
+                      selectedRoute === String(route.id) ? "border-primary bg-primary/5" : "border-border bg-background hover:border-primary/40"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-foreground">{route.routeNumber} - {route.routeName}</p>
+                        <p className="text-xs text-muted-foreground">{route.vehicleTypeName}</p>
+                      </div>
+                      <ChevronRight className={`h-4 w-4 text-muted-foreground transition-transform ${selectedRoute === String(route.id) ? "rotate-90" : ""}`} />
+                    </div>
+                    {selectedRoute === String(route.id) && (
+                      <div className="mt-3 border-t border-border pt-3">
+                        <p className="mb-2 text-xs font-medium text-foreground">Select direction:</p>
+                        <div className="mb-3 grid grid-cols-2 gap-2">
+                          <Button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleDirectionSelect("goingTo")
+                            }}
+                            variant={selectedRouteDirection === "goingTo" ? "default" : "outline"}
+                            className={`h-9 rounded-lg text-xs font-medium ${
+                              selectedRouteDirection === "goingTo"
+                                ? "bg-primary text-primary-foreground"
+                                : "border-border hover:bg-primary/10 hover:text-primary"
+                            }`}
+                          >
+                            <Navigation className="mr-1.5 h-3.5 w-3.5" />
+                            Going To
+                          </Button>
+                          <Button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleDirectionSelect("returning")
+                            }}
+                            variant={selectedRouteDirection === "returning" ? "default" : "outline"}
+                            className={`h-9 rounded-lg text-xs font-medium ${
+                              selectedRouteDirection === "returning"
+                                ? "bg-primary text-primary-foreground"
+                                : "border-border hover:bg-primary/10 hover:text-primary"
+                            }`}
+                          >
+                            <ArrowRightLeft className="mr-1.5 h-3.5 w-3.5" />
+                            Returning
+                          </Button>
+                        </div>
+                        <p className="mb-2 text-xs font-medium text-muted-foreground">Stops ({route.stops.length}):</p>
+                        <div className="max-h-40 flex flex-col gap-1.5 overflow-y-auto pr-2">
+                          {route.stops.slice(0, 10).map((stop, i) => (
+                            <div key={`${route.id}-${stop.id}`} className="flex items-center gap-2">
+                              <div className={`h-2 w-2 rounded-full flex-shrink-0 ${i === 0 ? "bg-primary" : i === Math.min(9, route.stops.length - 1) ? "bg-accent" : "bg-border"}`} />
+                              <span className="text-xs text-foreground truncate">{stop.address}</span>
+                            </div>
+                          ))}
+                          {route.stops.length > 10 && (
+                            <p className="text-xs text-muted-foreground">+{route.stops.length - 10} more stops</p>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </button>
+                ))}
+              </>
             )}
           </div>
         </div>
@@ -703,13 +914,56 @@ export default function FullScreenMapPage() {
           }))}
           landmarks={visibleLandmarks}
           selectedRoute={selectedRoute}
+          showAllRoutes={showAllPujRoutes}
+          selectedRouteDirection={selectedRouteDirection}
+          showAllRoutes={showAllPujRoutes}
           selectedLandmarkName={selectedLandmarkName}
           focusedLandmarkNames={focusedLandmarkNames}
           decodedRoutes={routes}
           directionsRoute={directionsRoute}
           originMarker={originCoords}
           destinationMarker={destinationCoords}
+          pinDropMode={isPinDropMode}
+          onPinDropped={handlePinDropped}
         />
+        {/* Pin drop mode overlay */}
+        {isPinDropMode && (
+          <div className="absolute left-1/2 top-4 z-[2200] flex -translate-x-1/2 items-center gap-3 rounded-xl bg-card/95 px-4 py-3 shadow-lg backdrop-blur-sm">
+            <Crosshair className="h-4 w-4 flex-shrink-0 animate-pulse text-primary" />
+            <p className="text-sm font-medium text-foreground">
+              {pinnedCoords ? "Drag the pin to adjust" : "Click anywhere to set your destination"}
+            </p>
+            {pinnedCoords ? (
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  onClick={handlePinDone}
+                  disabled={directionsLoading}
+                  className="h-7 rounded-lg bg-primary px-3 text-xs font-semibold text-primary-foreground hover:bg-primary/90"
+                >
+                  {directionsLoading ? "Finding..." : "Done"}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handlePinCancel}
+                  className="h-7 rounded-lg px-3 text-xs"
+                >
+                  Cancel
+                </Button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={handlePinCancel}
+                className="rounded-lg p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+                aria-label="Cancel pin drop"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
+          </div>
+        )}
         <button
           type="button"
           onClick={() => setShowMapSidebar((prev) => !prev)}
@@ -727,7 +981,7 @@ export default function FullScreenMapPage() {
           {showLandmarksPanel ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
         </button>
         {showRoutes && directionsRoute && (
-          <div className="absolute bottom-4 right-4 max-w-sm rounded-xl bg-card/95 p-4 shadow-lg backdrop-blur-sm">
+          <div className="absolute bottom-4 right-4 z-[2200] max-w-sm rounded-xl bg-card/95 p-4 shadow-lg backdrop-blur-sm">
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-start gap-3">
                 <Navigation className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" />
@@ -741,9 +995,9 @@ export default function FullScreenMapPage() {
                 </div>
               </div>
               <button
-                onClick={clearDirections}
+                onClick={handleExitRoute}
                 className="rounded-lg p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
-                aria-label="Clear directions"
+                aria-label="Exit route"
               >
                 <ArrowLeft className="h-4 w-4" />
               </button>
@@ -769,6 +1023,60 @@ export default function FullScreenMapPage() {
             )}
           </div>
         )}
+
+        {selectedLandmark && (
+          <div className={`absolute left-4 z-[2200] w-[min(92vw,380px)] rounded-2xl border border-border bg-card/95 p-4 shadow-xl backdrop-blur-sm ${directionsRoute ? "bottom-48" : "bottom-4"}`}>
+            <div className="mb-3 flex items-center gap-3">
+              <div className="relative h-12 w-12 overflow-hidden rounded-lg border border-border">
+                <Image
+                  src={selectedLandmark.imageUrl && selectedLandmark.imageUrl !== "/images/icons/placeholder.jpg" ? selectedLandmark.imageUrl : "/images/icons/placeholder.jpg"}
+                  alt={selectedLandmark.name}
+                  fill
+                  className="object-cover"
+                  sizes="48px"
+                />
+              </div>
+              <div className="min-w-0">
+                <p className="truncate text-sm font-semibold text-foreground">{selectedLandmark.name}</p>
+                <p className="text-xs text-muted-foreground">Explore this destination</p>
+              </div>
+            </div>
+
+            <div className="mb-3 rounded-xl bg-secondary p-3">
+              <div className="mb-2 flex items-center gap-2">
+                <MapPin className="h-3.5 w-3.5 text-primary" />
+                <span className="text-xs font-medium text-foreground">Route Details</span>
+              </div>
+              <div className="space-y-1.5 text-xs text-muted-foreground">
+                <div className="flex justify-between gap-3">
+                  <span>From: Your Location</span>
+                  <span className="truncate">To: {selectedLandmark.name}</span>
+                </div>
+                <div className="flex justify-between border-t border-border pt-1.5">
+                  <span>Estimated Commute:</span>
+                  <span className="font-semibold text-foreground">~25 min</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <Button
+                className="h-9 rounded-lg bg-primary px-3 text-xs font-semibold text-primary-foreground hover:bg-primary/90"
+                onClick={() => void handleGoToLandmark(selectedLandmark.name)}
+                disabled={directionsLoading}
+              >
+                {directionsLoading ? "Finding..." : "Go to this place"}
+              </Button>
+              <Button
+                variant="outline"
+                className="h-9 rounded-lg border-border px-3 text-xs text-muted-foreground hover:text-foreground"
+                onClick={handleExitRoute}
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
 
       {showLandmarksPanel && (
@@ -776,6 +1084,18 @@ export default function FullScreenMapPage() {
           <div className="mb-3">
             <h3 className="text-sm font-semibold text-foreground">Landmarks</h3>
           </div>
+          {selectedLandmarkName && (
+            <div className="mb-3 rounded-xl border border-border bg-secondary p-3">
+              <p className="truncate text-xs text-muted-foreground">Selected: {selectedLandmarkName}</p>
+              <Button
+                className="mt-2 h-9 w-full rounded-lg bg-primary text-xs font-semibold text-primary-foreground hover:bg-primary/90"
+                onClick={() => void handleGoToLandmark(selectedLandmarkName)}
+                disabled={directionsLoading}
+              >
+                {directionsLoading ? "Finding Route..." : "Go to this place"}
+              </Button>
+            </div>
+          )}
           <div className="flex max-h-[calc(100vh-170px)] flex-col gap-2 overflow-y-auto pr-1">
             <button
               onClick={() => handleLandmarkSectionToggle("All Places & Food")}
@@ -926,5 +1246,13 @@ export default function FullScreenMapPage() {
         </div>
       )}
     </div>
+  )
+}
+
+export default function FullScreenMapPage() {
+  return (
+    <Suspense fallback={<div className="flex h-[calc(100vh-64px)] w-full bg-background" />}>
+      <FullScreenMapPageContent />
+    </Suspense>
   )
 }

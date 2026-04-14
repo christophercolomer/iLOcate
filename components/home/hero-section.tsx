@@ -27,15 +27,11 @@ const heritages = landmarks.filter(l => l.type === "Heritage")
 
 function getImage(name: string, type: string, imageUrl?: string) {
   if (imageUrl && imageUrl !== "/images/icons/placeholder.jpg") return imageUrl
-  if (type === "Food") return "/images/food/iloilo-food.jpg"
-  if (type === "Cafe") return "/images/food/cafe.jpg"
-  if (type === "Church" || type === "Museum") {
-    const slug = name
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/(^-|-$)/g, "")
-    return `/images/places/${slug}.jpg`
-  }
+  if (type === "Food") return "/images/food/Local Food/iloilo-food.jpg"
+  if (type === "Cafe") return "/images/food/Cafes/cafe.jpg"
+  if (type === "Church") return "/images/places/Churches/miagao-church.jpg"
+  if (type === "Museum") return "/images/places/Museums/ilomoca museum.webp"
+  if (type === "Heritage" || type === "Urban") return "/images/places/Attractions/esplanade.jpg"
   return "/images/icons/placeholder.jpg"
 }
 function getRating(type: string) {
@@ -150,6 +146,9 @@ export function HeroSection() {
     if (!churches[i] && !foodPlaces[i] && !cafes[i] && !heritages[i]) break
   }
   const guestSuggestionsLimited = guestSuggestions.slice(0, maxSuggestions)
+  const pujRouteCount = allRoutes.length
+  const foodSpotCount = landmarks.filter((landmark) => landmark.type === "Food" || landmark.type === "Cafe").length
+  const placeSpotCount = landmarks.filter((landmark) => landmark.type !== "Food" && landmark.type !== "Cafe").length
 
   const handleScroll = useCallback(() => {
     setScrollY(window.scrollY)
@@ -285,6 +284,9 @@ export function HeroSection() {
                 <h2 className="text-3xl font-semibold text-white/90 sm:text-4xl">
                   Explore Iloilo Like a Local
                 </h2>
+                <p className="mx-auto mt-2 inline-flex w-fit -translate-x-2 whitespace-nowrap rounded-full border border-primary/60 bg-primary/20 px-4 py-2 text-xs font-semibold tracking-wide text-primary backdrop-blur-sm sm:text-sm md:text-base">
+                  Find your way. Feel the Love. Your gentle guide in Iloilo
+                </p>
               </div>
 
               <p className="mt-6 max-w-md text-pretty text-sm leading-relaxed text-white/75 md:text-base">
@@ -320,18 +322,18 @@ export function HeroSection() {
 
               <div className="mt-10 flex items-center gap-8">
                 <div>
-                  <p className="text-3xl font-bold text-white">50+</p>
-                  <p className="text-xs text-white/50">Destinations</p>
+                  <p className="text-3xl font-bold text-white">{loadingRoutes ? "..." : `20+`}</p>
+                  <p className="text-xs text-white/50">PUJ Routes</p>
                 </div>
                 <div className="h-10 w-px bg-white/20" />
                 <div>
-                  <p className="text-3xl font-bold text-white">100+</p>
+                  <p className="text-3xl font-bold text-white">{`50+`}</p>
+                  <p className="text-xs text-white/50">Places Spots</p>
+                </div>
+                <div className="h-10 w-px bg-white/20" />
+                <div>
+                  <p className="text-3xl font-bold text-white">{`40+`}</p>
                   <p className="text-xs text-white/50">Food Spots</p>
-                </div>
-                <div className="h-10 w-px bg-white/20" />
-                <div>
-                  <p className="text-3xl font-bold text-white">20+</p>
-                  <p className="text-xs text-white/50">Events</p>
                 </div>
               </div>
             </div>

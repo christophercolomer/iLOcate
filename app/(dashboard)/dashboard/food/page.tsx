@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { Suspense, useEffect, useState } from "react"
 import Image from "next/image"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Search, Star, MapPin, ArrowRight, Heart } from "lucide-react"
@@ -51,9 +51,11 @@ function readLikedItems() {
 
 // Helper: assign placeholder images, ratings, and locations
 const getImage = (name: string, type: string) => {
-  if (type === "Food" || type === "Cafe") return "/images/food/iloilo-food.jpg"
-  if (type === "Heritage" || type === "Church") return "/images/places/miagao-church.jpg"
-  if (type === "Urban") return "/images/places/esplanade.jpg"
+  if (type === "Food") return "/images/food/Local Food/iloilo-food.jpg"
+  if (type === "Cafe") return "/images/food/Cafes/cafe.jpg"
+  if (type === "Church") return "/images/places/Churches/miagao-church.jpg"
+  if (type === "Museum") return "/images/places/Museums/ilomoca museum.webp"
+  if (type === "Heritage" || type === "Urban") return "/images/places/Attractions/esplanade.jpg"
   return "/images/icons/placeholder.jpg"
 }
 const getFoodImage = (imageUrl: string | undefined, name: string, type: string) => {
@@ -74,9 +76,20 @@ const getLocation = (name: string) => {
 
 const getFoodCategory = (name: string, type: string) => {
   const normalizedName = name.toLowerCase()
+
+  // Explicit overrides requested by product requirements.
+  if (normalizedName.includes("kalanph")) {
+    return "Restaurants"
+  }
+  if (normalizedName.includes("alicia") && normalizedName.includes("batchoy")) {
+    return "Local Food"
+  }
+  if (normalizedName.includes("netong") && normalizedName.includes("batchoy")) {
+    return "Local Food"
+  }
+
   const isCafe = type === "Cafe" || /cafe|coffee|coff|latt[eé]|book latté|café/.test(normalizedName)
   const isRestaurant = /restaurant|resto|grill|grill and|seafood|kitchen|house|diner|canteen|eatery|branch|batchoy|kansi|talabahan/.test(normalizedName)
-  const isStreetFood = /sari-sari|street|street food|pulutan|tinapay|kakanin|tempura|puso|barbecue|bihon|batchoy/i.test(normalizedName)
 
   if (type === "Cafe" || (type === "Food" && isCafe && !/restaurant|resto|grill|kitchen|house|branch/.test(normalizedName))) {
     return "Cafes"
@@ -84,10 +97,6 @@ const getFoodCategory = (name: string, type: string) => {
 
   if (type === "Food" && isRestaurant) {
     return "Restaurants"
-  }
-
-  if (type === "Food" && isStreetFood) {
-    return "Street Food"
   }
 
   return "Local Food"
@@ -104,9 +113,9 @@ const allFood = landmarks.filter((l) => l.type === "Food" || l.type === "Cafe").
   location: getLocation(l.name),
 }))
 
-const categories = ["All", "Local Food", "Cafes", "Restaurants", "Street Food"]
+const categories = ["All", "Local Food", "Cafes", "Restaurants"]
 
-export default function FoodPage() {
+function FoodPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [activeCategory, setActiveCategory] = useState("All")
@@ -138,7 +147,6 @@ export default function FoodPage() {
       cafes: "Cafes",
       restaurant: "Restaurants",
       restaurants: "Restaurants",
-      "street-food": "Street Food",
     }
 
     const resolvedCategory = categoryFromQuery[category]
@@ -297,7 +305,7 @@ export default function FoodPage() {
                   const target = showRouteModal?.name
                   if (!target) return
                   setShowRouteModal(null)
-                  router.push(`/dashboard/map?landmark=${toLandmarkSlug(target)}`)
+                  router.push(`/dashboard/map?landmark=${toLandmarkSlug(target)}&go=1`)
                 }}
               >
                 Go to this place
@@ -314,5 +322,13 @@ export default function FoodPage() {
         </div>
       )}
     </div>
+  )
+}
+
+export default function FoodPage() {
+  return (
+    <Suspense fallback={<div className="mx-auto max-w-[1400px] px-4 py-8 lg:px-6" />}>
+      <FoodPageContent />
+    </Suspense>
   )
 }
