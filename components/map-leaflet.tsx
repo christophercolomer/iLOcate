@@ -50,6 +50,7 @@ interface MapComponentProps {
   showLocateControl?: boolean
   requireClickToZoom?: boolean
   showAllRoutes?: boolean
+  showSelectedRouteBothDirections?: boolean
   decodedRoutes?: DecodedRoute[]
   directionsRoute?: DirectionsRoute | null
   originMarker?: [number, number] | null
@@ -82,6 +83,7 @@ export default function MapLeaflet({
   showLocateControl = true,
   requireClickToZoom = false,
   showAllRoutes = false,
+  showSelectedRouteBothDirections = false,
   decodedRoutes = [],
   directionsRoute = null,
   originMarker = null,
@@ -353,7 +355,10 @@ export default function MapLeaflet({
       routesToRender.forEach((decodedRoute) => {
         const isSelected = selectedRoute !== null && String(decodedRoute.id) === selectedRoute
 
-        const routeVariants = showAllRoutes
+        const shouldShowBothDirectionsForSelectedRoute =
+          isSelected && showSelectedRouteBothDirections && selectedRouteDirection == null
+
+        const routeVariants = showAllRoutes || shouldShowBothDirectionsForSelectedRoute
           ? [
               {
                 direction: "goingTo" as const,
