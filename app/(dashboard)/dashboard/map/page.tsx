@@ -120,7 +120,7 @@ function FullScreenMapPageContent() {
   const [routeMode, setRouteMode] = useState<"Palihog Bayad" | "Sa Lugar">("Palihog Bayad")
   const [showRoutes, setShowRoutes] = useState(false)
   const [selectedRoute, setSelectedRoute] = useState<string | null>(null)
-  const [showAllPujRoutes, setShowAllPujRoutes] = useState(false)
+  const [showAllPujRoutes, setShowAllPujRoutes] = useState(true)
   const [selectedRouteDirection, setSelectedRouteDirection] = useState<"goingTo" | "returning" | null>(null)
   const [showMapSidebar, setShowMapSidebar] = useState(true)
   const [selectedLandmarkSection, setSelectedLandmarkSection] = useState<string | null>(null)
@@ -139,7 +139,9 @@ function FullScreenMapPageContent() {
   const [pendingGoToLandmark, setPendingGoToLandmark] = useState<string | null>(null)
   const [isPinDropMode, setIsPinDropMode] = useState(false)
   const [pinnedCoords, setPinnedCoords] = useState<[number, number] | null>(null)
-  const routeItemRefs = useRef<Record<string, HTMLDivElement | null>>({})
+  const mobileRouteListRef = useRef<HTMLDivElement | null>(null)
+  const mobileRouteItemRefs = useRef<Record<string, HTMLDivElement | null>>({})
+  const desktopRouteItemRefs = useRef<Record<string, HTMLDivElement | null>>({})
   const { user } = useAuth()
 
   // Get user's current location on mount
@@ -543,22 +545,34 @@ function FullScreenMapPageContent() {
     setSelectedLandmarkSection(null)
     setFocusedLandmarkNames([])
     setSelectedRoute(null)
-    setShowAllPujRoutes(false)
+    setShowAllPujRoutes(true)
     setSelectedRouteDirection(null)
   }
 
-  // Handle route click - show direction choice
-  const handleRouteClick = (routeId: string | number) => {
+  // Handle route click from route list - allows toggle when tapping active item.
+  const handleRouteListClick = (routeId: string | number) => {
     const routeIdString = String(routeId)
-    setShowAllPujRoutes(false)
     if (selectedRoute === routeIdString) {
       // If clicking same route, clear selection
       setSelectedRoute(null)
+      setShowAllPujRoutes(true)
       setSelectedRouteDirection(null)
     } else {
       // Show direction choice for new route
+      setShowAllPujRoutes(false)
       setSelectedRoute(routeIdString)
       setSelectedRouteDirection(null) // User must choose direction
+    }
+  }
+
+  // Handle route click from map - always select and open sidebar for synced behavior.
+  const handleRouteMapSelect = (routeId: string | number) => {
+    const routeIdString = String(routeId)
+    setShowAllPujRoutes(false)
+    setShowMapSidebar(true)
+    if (selectedRoute !== routeIdString) {
+      setSelectedRoute(routeIdString)
+      setSelectedRouteDirection(null)
     }
   }
 
@@ -570,14 +584,34 @@ function FullScreenMapPageContent() {
   useEffect(() => {
     if (!selectedRoute) return
 
-    const selectedRouteButton = routeItemRefs.current[selectedRoute]
-    if (!selectedRouteButton) return
+    const isDesktopViewport = typeof window !== "undefined" && window.matchMedia("(min-width: 1024px)").matches
 
-    selectedRouteButton.scrollIntoView({
+    if (!isDesktopViewport) {
+      mobileRouteListRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      })
+    }
+
+    const selectedRouteButton = isDesktopViewport
+      ? desktopRouteItemRefs.current[selectedRoute]
+      : mobileRouteItemRefs.current[selectedRoute]
+
+    const fallbackVisibleButton =
+      mobileRouteItemRefs.current[selectedRoute]?.offsetParent !== null
+        ? mobileRouteItemRefs.current[selectedRoute]
+        : desktopRouteItemRefs.current[selectedRoute]?.offsetParent !== null
+          ? desktopRouteItemRefs.current[selectedRoute]
+          : null
+
+    const targetButton = selectedRouteButton ?? fallbackVisibleButton
+    if (!targetButton) return
+
+    targetButton.scrollIntoView({
       behavior: "smooth",
-      block: "nearest",
+      block: "start",
     })
-  }, [selectedRoute])
+  }, [selectedRoute, showMapSidebar])
 
   // Pin drop handlers
   const handlePinDropped = (coords: [number, number]) => {
@@ -600,7 +634,7 @@ function FullScreenMapPageContent() {
   return (
     <>
     <div className="flex h-[calc(100svh-64px)] flex-col overflow-hidden bg-background lg:hidden">
-      <div className="relative h-[42svh] min-h-[300px] w-full overflow-hidden border-b border-border bg-muted">
+      <div className="relative h-[27svh] min-h-[180px] w-full overflow-hidden border-b border-border bg-muted">
         <MapComponent
           center={MAP_CENTER}
           zoom={MAP_ZOOM}
@@ -625,12 +659,12 @@ function FullScreenMapPageContent() {
           destinationMarker={destinationCoords}
           pinDropMode={isPinDropMode}
           onPinDropped={handlePinDropped}
-          onRouteSelect={handleRouteClick}
+          onRouteSelect={handleRouteMapSelect}
         />
       </div>
 
-      <div className="flex-1 overflow-y-auto bg-background p-3 pb-6">
-        <div className="flex min-h-[42svh] flex-col rounded-2xl bg-secondary p-3">
+      <div className="flex flex-1 flex-col gap-3 overflow-y-auto bg-background p-3 pb-6">
+        <div ref={mobileRouteListRef} className="order-2 flex min-h-[42svh] flex-col rounded-2xl bg-secondary p-3">
           <div className="mb-3 flex items-center justify-between">
             <h3 className="text-sm font-semibold text-foreground">PUJ Routes</h3>
             <Bus className="h-4 w-4 text-primary" />
@@ -640,7 +674,7 @@ function FullScreenMapPageContent() {
               type="button"
               onClick={() => {
                 setSelectedRoute(null)
-                setShowAllPujRoutes(false)
+                setShowAllPujRoutes(true)
                 setSelectedRouteDirection(null)
               }}
               className="mb-2 w-full rounded-lg border border-primary/40 bg-primary/5 px-3 py-2 text-sm font-medium text-primary transition-colors hover:bg-primary/10"
@@ -648,7 +682,7 @@ function FullScreenMapPageContent() {
               Unselect current route
             </button>
           )}
-          <div className="min-h-0 flex-1 overflow-y-auto pr-1 [scrollbar-width:thin] [scrollbar-color:hsl(var(--primary)/0.45)_transparent] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-primary/45 hover:[&::-webkit-scrollbar-thumb]:bg-primary/65">
+          <div className="min-h-0 flex-1 pr-1 [scrollbar-width:thin] [scrollbar-color:hsl(var(--primary)/0.45)_transparent] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-primary/45 hover:[&::-webkit-scrollbar-thumb]:bg-primary/65">
             <div className="flex flex-col gap-2">
             {loadingRoutes ? (
               <p className="text-sm text-muted-foreground">Loading routes...</p>
@@ -680,19 +714,17 @@ function FullScreenMapPageContent() {
                   <div
                     key={`mobile-${route.id}`}
                     ref={(element) => {
-                      routeItemRefs.current[String(route.id)] = element
+                      mobileRouteItemRefs.current[String(route.id)] = element
                     }}
                     role="button"
                     tabIndex={0}
                     onClick={() => {
-                      handleRouteClick(route.id)
-                      setShowAllPujRoutes(false)
+                      handleRouteListClick(route.id)
                     }}
                     onKeyDown={(event) => {
                       if (event.key === "Enter" || event.key === " ") {
                         event.preventDefault()
-                        handleRouteClick(route.id)
-                        setShowAllPujRoutes(false)
+                        handleRouteListClick(route.id)
                       }
                     }}
                     className={`w-full rounded-xl border p-3 text-left transition-all ${
@@ -709,7 +741,7 @@ function FullScreenMapPageContent() {
                     {selectedRoute === String(route.id) && (
                       <div className="mt-3 border-t border-border pt-3">
                         <p className="mb-2 text-sm font-medium text-foreground">Select direction:</p>
-                        <div className="mb-3 grid grid-cols-1 gap-2">
+                        <div className="mb-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
                           <Button
                             onClick={(e) => {
                               e.stopPropagation()
@@ -741,6 +773,12 @@ function FullScreenMapPageContent() {
                             Returning
                           </Button>
                         </div>
+                        <p className="mb-2 text-sm font-medium text-muted-foreground">Stops ({route.stops.length}):</p>
+                        <div className="max-h-40 flex flex-col gap-1.5 overflow-y-auto pr-2">
+                          {route.stops.map((stop, idx) => (
+                            <span key={idx} className="text-xs text-foreground">{stop.address}</span>
+                          ))}
+                        </div>
                       </div>
                     )}
                   </div>
@@ -751,7 +789,7 @@ function FullScreenMapPageContent() {
           </div>
         </div>
 
-        <div className="mt-3 rounded-2xl bg-secondary p-3">
+        <div className="order-1 rounded-2xl bg-secondary p-3">
           <h3 className="mb-3 text-sm font-semibold text-foreground">Find a Route</h3>
           <div className="flex flex-col gap-3">
             <div className="relative">
@@ -831,7 +869,7 @@ function FullScreenMapPageContent() {
         </div>
 
         {/* Search Form */}
-        <div className="order-2 mt-3 flex-none rounded-2xl bg-secondary p-3 sm:mt-4 sm:p-4">
+        <div className="order-1 mt-3 flex-none rounded-2xl bg-secondary p-3 sm:mt-4 sm:p-4">
           <h3 className="mb-3 text-sm font-semibold text-foreground">Find a Route</h3>
           <div className="flex flex-col gap-3">
             <div className="relative">
@@ -978,7 +1016,7 @@ function FullScreenMapPageContent() {
         </div>
 
         {/* PUJ Routes */}
-        <div className="order-1 mt-3 flex min-h-[18rem] flex-none flex-col rounded-2xl bg-secondary p-3 sm:mt-4 sm:p-4 lg:min-h-[22rem]">
+        <div className="order-2 mt-3 flex min-h-[18rem] flex-none flex-col rounded-2xl bg-secondary p-3 sm:mt-4 sm:p-4 lg:min-h-[22rem]">
           <div className="mb-3 flex items-center justify-between">
             <h3 className="text-sm font-semibold text-foreground">PUJ Routes</h3>
             <Bus className="h-4 w-4 text-primary" />
@@ -988,7 +1026,7 @@ function FullScreenMapPageContent() {
               type="button"
               onClick={() => {
                 setSelectedRoute(null)
-                setShowAllPujRoutes(false)
+                setShowAllPujRoutes(true)
                 setSelectedRouteDirection(null)
               }}
               className="mb-2 w-full rounded-lg border border-primary/40 bg-primary/5 px-3 py-2 text-sm font-medium text-primary transition-colors hover:bg-primary/10"
@@ -996,7 +1034,7 @@ function FullScreenMapPageContent() {
               Unselect current route
             </button>
           )}
-          <div className="min-h-0 flex-1 overflow-y-auto pr-1 [scrollbar-width:thin] [scrollbar-color:hsl(var(--primary)/0.45)_transparent] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-primary/45 hover:[&::-webkit-scrollbar-thumb]:bg-primary/65">
+          <div className="min-h-0 flex-1 pr-1 [scrollbar-width:thin] [scrollbar-color:hsl(var(--primary)/0.45)_transparent] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-primary/45 hover:[&::-webkit-scrollbar-thumb]:bg-primary/65">
             <div className="flex flex-col gap-2">
             {loadingRoutes ? (
               <p className="text-sm text-muted-foreground">Loading routes...</p>
@@ -1028,19 +1066,17 @@ function FullScreenMapPageContent() {
                   <div
                     key={route.id}
                     ref={(element) => {
-                      routeItemRefs.current[String(route.id)] = element
+                      desktopRouteItemRefs.current[String(route.id)] = element
                     }}
                     role="button"
                     tabIndex={0}
                     onClick={() => {
-                      handleRouteClick(route.id)
-                      setShowAllPujRoutes(false)
+                      handleRouteListClick(route.id)
                     }}
                     onKeyDown={(event) => {
                       if (event.key === "Enter" || event.key === " ") {
                         event.preventDefault()
-                        handleRouteClick(route.id)
-                        setShowAllPujRoutes(false)
+                        handleRouteListClick(route.id)
                       }
                     }}
                     className={`w-full rounded-xl border p-3 text-left transition-all ${
@@ -1091,15 +1127,9 @@ function FullScreenMapPageContent() {
                         </div>
                         <p className="mb-2 text-sm font-medium text-muted-foreground">Stops ({route.stops.length}):</p>
                         <div className="max-h-40 flex flex-col gap-1.5 overflow-y-auto pr-2">
-                          {route.stops.slice(0, 10).map((stop, i) => (
-                            <div key={`${route.id}-${stop.id}`} className="flex items-center gap-2">
-                              <div className={`h-2 w-2 rounded-full flex-shrink-0 ${i === 0 ? "bg-primary" : i === Math.min(9, route.stops.length - 1) ? "bg-accent" : "bg-border"}`} />
-                              <span className="text-sm text-foreground truncate">{stop.address}</span>
-                            </div>
+                          {route.stops.map((stop, idx) => (
+                            <span key={idx} className="text-xs text-foreground">{stop.address}</span>
                           ))}
-                          {route.stops.length > 10 && (
-                            <p className="text-sm text-muted-foreground">+{route.stops.length - 10} more stops</p>
-                          )}
                         </div>
                       </div>
                     )}
@@ -1150,7 +1180,7 @@ function FullScreenMapPageContent() {
       )}
 
       {/* Map */}
-      <div className="order-2 relative h-[50svh] min-h-[320px] w-full flex-1 overflow-hidden border-b border-border bg-muted lg:order-2 lg:h-auto lg:min-h-0 lg:border-b-0">
+      <div className="order-2 relative h-[36svh] min-h-[220px] w-full flex-1 overflow-hidden border-b border-border bg-muted lg:order-2 lg:h-[60vh] lg:min-h-[340px] lg:border-b-0">
         <MapComponent
           center={MAP_CENTER}
           zoom={MAP_ZOOM}
@@ -1175,7 +1205,7 @@ function FullScreenMapPageContent() {
           destinationMarker={destinationCoords}
           pinDropMode={isPinDropMode}
           onPinDropped={handlePinDropped}
-          onRouteSelect={handleRouteClick}
+          onRouteSelect={handleRouteMapSelect}
         />
         {/* Pin drop mode overlay */}
         {isPinDropMode && (
