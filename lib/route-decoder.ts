@@ -1,3 +1,5 @@
+import bundledRoutesData from "@/public/data.json";
+
 const POLYLINE_PRECISION = 1_000_000;
 
 function decodeSingleValue(encoded: string, startIndex: number) {
@@ -86,43 +88,68 @@ export interface DecodedRoute {
   }>;
 }
 
-export async function loadAndDecodeRoutes(): Promise<DecodedRoute[]> {
-  try {
-    const response = await fetch('/data.json');
-    const data = await response.json();
+function isRoutesPayload(data: unknown): data is { ok: boolean; data: { routes: RouteData[] } } {
+  if (!data || typeof data !== "object") return false;
 
-    if (!data.ok || !data.data.routes) {
-      console.error('Invalid data format');
-      return [];
+  const payload = data as { ok?: unknown; data?: { routes?: unknown } };
+  return Boolean(payload.ok) && Array.isArray(payload.data?.routes);
+}
+
+function decodeRoute(route: RouteData): DecodedRoute | null {
+  try {
+    const goingToCoordinates = route.points.polylineGoingTo
+      ? decodePolyline(route.points.polylineGoingTo)
+      : [];
+
+    let returningCoordinates = route.points.polylineGoingBack
+      ? decodePolyline(route.points.polylineGoingBack)
+      : [];
+
+    if (returningCoordinates.length === 0 && goingToCoordinates.length > 0) {
+      returningCoordinates = [...goingToCoordinates].reverse();
     }
 
-    return data.data.routes.map((route: RouteData): DecodedRoute => {
-      const goingToCoordinates = route.points.polylineGoingTo
-        ? decodePolyline(route.points.polylineGoingTo)
-        : [];
-
-      let returningCoordinates = route.points.polylineGoingBack
-        ? decodePolyline(route.points.polylineGoingBack)
-        : [];
-
-      // If no returning polyline data, use reversed going to polyline
-      if (returningCoordinates.length === 0 && goingToCoordinates.length > 0) {
-        returningCoordinates = [...goingToCoordinates].reverse();
-      }
-
-      return {
-        id: route.id,
-        routeNumber: route.routeNumber,
-        routeName: route.routeName,
-        routeColor: route.routeColor,
-        vehicleTypeName: route.vehicleTypeName,
-        goingToCoordinates,
-        returningCoordinates,
-        stops: route.points.goingTo || [],
-      };
-    });
+    return {
+      id: route.id,
+      routeNumber: route.routeNumber,
+      routeName: route.routeName,
+      routeColor: route.routeColor,
+      vehicleTypeName: route.vehicleTypeName,
+      goingToCoordinates,
+      returningCoordinates,
+      stops: route.points.goingTo || [],
+    };
   } catch (error) {
-    console.error('Error loading routes:', error);
+    console.error("Error decoding route:", route.routeNumber, route.routeName, error);
+    return null;
+  }
+}
+
+function decodeRoutesPayload(data: unknown): DecodedRoute[] {
+  if (!isRoutesPayload(data)) {
+    console.error("Invalid route data format");
     return [];
   }
+
+  return data.data.routes
+    .map(decodeRoute)
+    .filter((route): route is DecodedRoute => route !== null);
+}
+
+export async function loadAndDecodeRoutes(): Promise<DecodedRoute[]> {
+  try {
+    const response = await fetch("/data.json", { cache: "no-store" });
+
+    if (response.ok) {
+      const data = await response.json();
+      const decodedRoutes = decodeRoutesPayload(data);
+      if (decodedRoutes.length > 0) return decodedRoutes;
+    } else {
+      console.error("Failed to fetch /data.json:", response.status, response.statusText);
+    }
+  } catch (error) {
+    console.error("Error fetching /data.json:", error);
+  }
+
+  return decodeRoutesPayload(bundledRoutesData);
 }

@@ -41,6 +41,7 @@ const categoryOrder = [
   "Malls",
   "Churches",
   "Museum",
+  "Beaches",
   "City Landmark & Attraction",
   "Local Food",
   "Cafes",
@@ -66,6 +67,7 @@ function categorizeLandmark(name: string, type: string): LandmarkCategory {
   if (mallKeywords.test(name)) return "Malls"
   if (type === "Church") return "Churches"
   if (type === "Museum") return "Museum"
+  if (type === "Beach") return "Beaches"
   if (type === "Cafe") return "Cafes"
   if (cityAttractionKeywords.test(name) || ["Urban", "Heritage", "Attraction", "Landmark", "Park"].includes(type)) {
     return "City Landmark & Attraction"
@@ -79,7 +81,7 @@ function categorizeLandmark(name: string, type: string): LandmarkCategory {
 const preferenceCategoryMap: Record<string, LandmarkCategory[]> = {
   "coffee-shops": ["Cafes"],
   restaurants: ["Restaurants", "Local Food"],
-  beaches: ["City Landmark & Attraction"],
+  beaches: ["Beaches"],
   heritage: ["Museum", "City Landmark & Attraction"],
   churches: ["Churches"],
   shopping: ["Malls"],
@@ -241,6 +243,7 @@ function FullScreenMapPageContent() {
       "Malls": [],
       "Churches": [],
       "Museum": [],
+      "Beaches": [],
       "City Landmark & Attraction": [],
       "Local Food": [],
       "Cafes": [],
@@ -819,7 +822,7 @@ function FullScreenMapPageContent() {
 
       {/* Sidebar */}
       {showMapSidebar && (
-      <div className="order-1 relative flex w-full flex-shrink-0 flex-col overflow-hidden border-b border-border bg-background p-3 sm:p-4 lg:order-1 lg:w-[380px] lg:border-b-0 lg:border-r">
+      <div className="order-1 relative flex min-h-0 w-full flex-shrink-0 flex-col overflow-y-auto border-b border-border bg-background p-3 sm:p-4 lg:order-1 lg:w-[380px] lg:border-b-0 lg:border-r">
         <div className="mb-3 flex items-center gap-3 sm:mb-4">
           <Link href="/dashboard" className="flex h-11 w-11 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground">
             <ArrowLeft className="h-5 w-5" />
@@ -828,7 +831,7 @@ function FullScreenMapPageContent() {
         </div>
 
         {/* Search Form */}
-        <div className="order-2 mt-3 rounded-2xl bg-secondary p-3 sm:mt-4 sm:p-4">
+        <div className="order-2 mt-3 flex-none rounded-2xl bg-secondary p-3 sm:mt-4 sm:p-4">
           <h3 className="mb-3 text-sm font-semibold text-foreground">Find a Route</h3>
           <div className="flex flex-col gap-3">
             <div className="relative">
@@ -975,7 +978,7 @@ function FullScreenMapPageContent() {
         </div>
 
         {/* PUJ Routes */}
-        <div className="order-1 mt-3 flex min-h-0 flex-1 flex-col rounded-2xl bg-secondary p-3 sm:mt-4 sm:p-4">
+        <div className="order-1 mt-3 flex min-h-[18rem] flex-none flex-col rounded-2xl bg-secondary p-3 sm:mt-4 sm:p-4 lg:min-h-[22rem]">
           <div className="mb-3 flex items-center justify-between">
             <h3 className="text-sm font-semibold text-foreground">PUJ Routes</h3>
             <Bus className="h-4 w-4 text-primary" />

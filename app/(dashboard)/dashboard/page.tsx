@@ -92,7 +92,7 @@ const preferenceToLandmarkTypes: Record<string, string[]> = {
   churches: ["Church"],
   museums: ["Museum"],
   "city-landmarks": ["Urban", "Heritage"],
-  beaches: [],
+  beaches: ["Beach"],
   malls: ["Mall"],
 }
 
