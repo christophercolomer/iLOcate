@@ -39,7 +39,7 @@ export function HowItWorks() {
           {steps.map((step) => (
             <div
               key={step.step}
-              className="group relative flex flex-col items-center rounded-2xl bg-card p-8 text-center shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
+              className="group relative flex flex-col items-center rounded-2xl bg-card p-6 text-center shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg sm:p-8"
             >
               {/* Step Badge */}
               <div className="absolute -top-4 left-1/2 flex h-8 w-8 -translate-x-1/2 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground">

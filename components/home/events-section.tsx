@@ -64,14 +64,14 @@ export function EventsSection() {
           <div className="hidden items-center gap-2 md:flex">
             <button
               onClick={() => scroll("left")}
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-border text-foreground transition-colors hover:bg-muted"
+              className="flex h-11 w-11 items-center justify-center rounded-full border border-border text-foreground transition-colors hover:bg-muted"
               aria-label="Scroll events left"
             >
               <ChevronLeft className="h-5 w-5" />
             </button>
             <button
               onClick={() => scroll("right")}
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-border text-foreground transition-colors hover:bg-muted"
+              className="flex h-11 w-11 items-center justify-center rounded-full border border-border text-foreground transition-colors hover:bg-muted"
               aria-label="Scroll events right"
             >
               <ChevronRight className="h-5 w-5" />
@@ -87,7 +87,7 @@ export function EventsSection() {
           {events.map((event) => (
             <div
               key={event.id}
-              className="group min-w-[300px] flex-shrink-0 overflow-hidden rounded-2xl bg-card shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg sm:min-w-[320px]"
+              className="group min-w-[280px] flex-shrink-0 overflow-hidden rounded-2xl bg-card shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg sm:min-w-[320px]"
             >
               <div className="relative aspect-[16/10] overflow-hidden">
                 <Image
@@ -101,7 +101,7 @@ export function EventsSection() {
                 <div className="absolute left-3 top-3 rounded-lg bg-primary px-3 py-1.5 shadow-md">
                   <div className="flex items-center gap-1.5">
                     <Calendar className="h-3.5 w-3.5 text-primary-foreground" />
-                    <span className="text-xs font-semibold text-primary-foreground">{event.date}</span>
+                    <span className="text-sm font-semibold text-primary-foreground">{event.date}</span>
                   </div>
                 </div>
               </div>

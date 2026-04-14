@@ -218,7 +218,7 @@ function PlaceCard({
             className="object-cover transition-transform duration-500 group-hover:scale-105"
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
           />
-          <div className="absolute left-2 top-2 rounded-full bg-black/55 px-2.5 py-0.5 text-[10px] font-semibold text-white backdrop-blur-sm">
+          <div className="absolute left-2 top-2 rounded-full bg-black/55 px-2.5 py-1 text-sm font-semibold text-white backdrop-blur-sm">
             {place.category}
           </div>
           <button
@@ -245,7 +245,7 @@ function PlaceCard({
           <div className="mt-1.5 flex items-center">
             <div className="flex items-center gap-1">
               <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-              <span className="text-xs text-muted-foreground">{place.rating}</span>
+              <span className="text-sm text-muted-foreground">{place.rating}</span>
             </div>
           </div>
         </div>
@@ -571,28 +571,28 @@ export default function DashboardPage() {
 
           <div className="pointer-events-none absolute left-4 right-4 top-4 z-[500] sm:left-auto sm:max-w-sm">
             <div className="rounded-2xl border border-white/35 bg-white/88 p-3.5 shadow-xl backdrop-blur-md">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-primary">City Navigator</p>
+              <p className="text-sm font-semibold uppercase tracking-[0.16em] text-primary">City Navigator</p>
               <h1 className="mt-1 text-lg font-bold leading-tight text-foreground sm:text-xl">Explore Iloilo with Live Route Context</h1>
-              <p className="mt-2 text-[13px] text-muted-foreground sm:text-sm">
+              <p className="mt-2 text-sm text-muted-foreground">
                 Preview key landmarks, food districts, and commute directions before opening the full interactive planner.
               </p>
               <div className="mt-2.5 flex flex-wrap gap-1.5">
-                <span className="rounded-full bg-primary/10 px-2 py-1 text-[11px] font-medium text-primary">{landmarks.length} spots mapped</span>
-                <span className="rounded-full bg-accent/20 px-2 py-1 text-[11px] font-medium text-foreground">{foodHotspots} food hotspots</span>
-                <span className="rounded-full bg-secondary px-2 py-1 text-[11px] font-medium text-foreground">{culturalSpots} cultural sites</span>
+                <span className="rounded-full bg-primary/10 px-2 py-1 text-sm font-medium text-primary">{landmarks.length} spots mapped</span>
+                <span className="rounded-full bg-accent/20 px-2 py-1 text-sm font-medium text-foreground">{foodHotspots} food hotspots</span>
+                <span className="rounded-full bg-secondary px-2 py-1 text-sm font-medium text-foreground">{culturalSpots} cultural sites</span>
               </div>
             </div>
           </div>
 
           <div className="absolute bottom-4 left-4 right-4 z-[500] flex flex-wrap items-center gap-2 sm:right-auto sm:max-w-xl">
             <Link href="/dashboard/map" className="inline-flex">
-              <Button size="sm" className="h-10 gap-2 rounded-xl bg-primary px-4 text-primary-foreground shadow-lg hover:bg-primary/90">
+              <Button size="sm" className="min-h-11 gap-2 rounded-xl bg-primary px-4 text-primary-foreground shadow-lg hover:bg-primary/90">
                 <Maximize2 className="h-4 w-4" />
                 Open Full Map
               </Button>
             </Link>
             <Link href="/dashboard/map" className="inline-flex">
-              <Button size="sm" variant="outline" className="h-10 gap-2 rounded-xl border-white/60 bg-white/90 px-4 text-foreground hover:bg-white">
+              <Button size="sm" variant="outline" className="min-h-11 gap-2 rounded-xl border-white/60 bg-white/90 px-4 text-foreground hover:bg-white">
                 <Compass className="h-4 w-4" />
                 What's near?
               </Button>
@@ -646,7 +646,7 @@ export default function DashboardPage() {
 
         {selectedRecommendation && (
           <div className="fixed inset-0 z-[3000] overflow-y-auto bg-black/60 p-4 backdrop-blur-sm sm:flex sm:items-center sm:justify-center" onClick={() => setSelectedRecommendation(null)}>
-            <div className="relative z-[3001] mx-auto mt-6 max-h-[calc(100vh-3rem)] w-full max-w-lg overflow-y-auto rounded-2xl bg-card p-6 shadow-2xl sm:mt-0" onClick={(event) => event.stopPropagation()}>
+            <div className="relative z-[3001] mx-auto mt-6 max-h-[calc(100vh-3rem)] w-full max-w-lg overflow-y-auto rounded-2xl bg-card p-4 shadow-2xl sm:mt-0 sm:p-6" onClick={(event) => event.stopPropagation()}>
               <div className="mb-4 flex items-center gap-3">
                 <div className="relative h-16 w-16 overflow-hidden rounded-xl">
                   <Image src={selectedRecommendation.image} alt={selectedRecommendation.name} fill className="object-cover" sizes="64px" />
@@ -679,7 +679,7 @@ export default function DashboardPage() {
               </div>
 
               <div className="mb-4 rounded-xl border border-border p-4">
-                <p className="mb-2 text-xs font-semibold text-muted-foreground">Suggested Route</p>
+                <p className="mb-2 text-sm font-semibold text-muted-foreground">Suggested Route</p>
                 <div className="flex items-center gap-2 text-sm text-foreground">
                   <div className="h-2 w-2 rounded-full bg-primary" />
                   <span>Your Location</span>
@@ -714,7 +714,7 @@ export default function DashboardPage() {
         {/* Category Grid */}
         <div className="mt-10">
           <h2 className="mb-4 text-xl font-bold text-foreground">Explore by Category</h2>
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {exploreCategories.map((category) => (
               <Link
                 key={category.name}
@@ -732,7 +732,7 @@ export default function DashboardPage() {
                 </div>
                 <div className="p-3">
                   <h3 className="text-sm font-semibold text-foreground">{category.name}</h3>
-                  <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{category.description}</p>
+                  <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{category.description}</p>
                 </div>
               </Link>
             ))}

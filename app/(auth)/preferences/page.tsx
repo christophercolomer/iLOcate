@@ -92,7 +92,7 @@ export default function PreferencesPage() {
             <button
               key={cat.id}
               onClick={() => toggleCategory(cat.id)}
-              className={`flex w-full items-center gap-3 rounded-xl border-2 px-4 py-2.5 text-left transition-all ${
+              className={`flex min-h-11 w-full items-center gap-3 rounded-xl border-2 px-4 py-3 text-left transition-all ${
                 isSelected ? "border-primary bg-primary/5" : "border-border bg-background hover:border-primary/40"
               }`}
             >
@@ -119,7 +119,7 @@ export default function PreferencesPage() {
           <Button
             onClick={handleContinue}
             disabled={loading}
-            className="h-10 rounded-xl bg-primary text-sm font-semibold text-primary-foreground hover:bg-primary/90 sm:flex-1"
+            className="min-h-11 rounded-xl bg-primary text-sm font-semibold text-primary-foreground hover:bg-primary/90 sm:flex-1"
           >
             {loading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Saving...</> : "Continue"}
           </Button>
@@ -127,13 +127,13 @@ export default function PreferencesPage() {
         <Button
           onClick={handleSkip}
           variant="outline"
-          className="h-10 rounded-xl border-2 border-border text-sm font-semibold text-foreground hover:bg-muted sm:flex-1"
+          className="min-h-11 rounded-xl border-2 border-border text-sm font-semibold text-foreground hover:bg-muted sm:flex-1"
         >
           Skip
         </Button>
       </div>
 
-      <p className="mt-2 text-center text-[11px] text-muted-foreground">
+      <p className="mt-2 text-center text-sm text-muted-foreground">
         You can always change your preferences later in your profile.
       </p>
     </div>

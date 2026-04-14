@@ -70,7 +70,7 @@ export function FeaturedPlaces() {
                 </p>
                 <div className="mt-4 flex items-center justify-between">
                   <span className="text-sm font-semibold text-primary">{place.price}</span>
-                  <span className="text-xs text-muted-foreground transition-colors group-hover:text-primary">
+                  <span className="text-sm text-muted-foreground transition-colors group-hover:text-primary">
                     View Details &rarr;
                   </span>
                 </div>

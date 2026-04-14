@@ -54,9 +54,9 @@ export default function TranslatorPage() {
         </p>
       </div>
 
-      <div className="rounded-2xl bg-card p-6 shadow-sm">
+      <div className="rounded-2xl bg-card p-4 shadow-sm sm:p-6">
         {/* Language Selector */}
-        <div className="mb-5 flex items-center gap-3">
+        <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center">
           <div className="flex-1 rounded-xl bg-secondary px-4 py-3">
             <label htmlFor="from-lang" className="sr-only">From language</label>
             <select
@@ -73,7 +73,7 @@ export default function TranslatorPage() {
 
           <button
             onClick={swapLanguages}
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+            className="flex h-11 w-11 shrink-0 items-center justify-center self-center rounded-full border border-border text-muted-foreground transition-colors hover:border-primary hover:text-primary"
             aria-label="Swap languages"
           >
             <ArrowRightLeft className="h-4 w-4" />
@@ -106,10 +106,10 @@ export default function TranslatorPage() {
             className="w-full resize-none rounded-xl border border-input bg-background p-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
           />
           <div className="absolute bottom-3 right-3 flex items-center gap-2">
-            <button className="text-muted-foreground hover:text-foreground" aria-label="Listen to input">
+              <button className="flex h-11 w-11 items-center justify-center text-muted-foreground hover:text-foreground" aria-label="Listen to input">
               <Volume2 className="h-4 w-4" />
             </button>
-            <span className="text-xs text-muted-foreground">
+            <span className="text-sm text-muted-foreground">
               {inputText.length}/{charLimit}
             </span>
           </div>
@@ -127,12 +127,12 @@ export default function TranslatorPage() {
         {/* Output */}
         <div className="relative rounded-xl border border-border bg-secondary p-4">
           <div className="mb-2 flex items-center justify-between">
-            <span className="text-xs font-semibold text-muted-foreground">Output</span>
+            <span className="text-sm font-semibold text-muted-foreground">Output</span>
             <div className="flex items-center gap-2">
-              <button onClick={copyOutput} className="text-muted-foreground hover:text-foreground" aria-label="Copy translation">
+              <button onClick={copyOutput} className="flex h-11 w-11 items-center justify-center text-muted-foreground hover:text-foreground" aria-label="Copy translation">
                 <Copy className="h-4 w-4" />
               </button>
-              <button className="text-muted-foreground hover:text-foreground" aria-label="Listen to translation">
+              <button className="flex h-11 w-11 items-center justify-center text-muted-foreground hover:text-foreground" aria-label="Listen to translation">
                 <Volume2 className="h-4 w-4" />
               </button>
             </div>
@@ -145,7 +145,7 @@ export default function TranslatorPage() {
         {/* Premium upsell */}
         <div className="mt-4 flex items-center gap-2 rounded-xl border border-accent/30 bg-accent/5 px-4 py-3">
           <Crown className="h-4 w-4 text-accent" />
-          <p className="text-xs text-muted-foreground">
+          <p className="text-sm text-muted-foreground">
             <Link href="/premium" className="font-medium text-accent hover:underline">
               Upgrade to Premium
             </Link>

@@ -288,7 +288,7 @@ export default function ProfilePage() {
               <Button
                 type="button"
                 variant="outline"
-                className="h-10 rounded-xl border-border/70 bg-background/60 px-4"
+                className="min-h-11 rounded-xl border-border/70 bg-background/60 px-4"
               >
                 <Pencil className="h-4 w-4" />
                 Edit Profile
@@ -326,14 +326,14 @@ export default function ProfilePage() {
                         key={category.id}
                         type="button"
                         onClick={() => togglePreference(category.id)}
-                        className={`flex items-center gap-4 rounded-xl border px-4 py-3 text-left transition-colors ${
+                        className={`flex min-h-11 items-center gap-4 rounded-xl border px-4 py-3 text-left transition-colors ${
                           isSelected
                             ? "border-primary bg-primary/10 text-foreground"
                             : "border-border/70 bg-background/50 text-muted-foreground hover:border-primary/40 hover:text-foreground"
                         }`}
                       >
                         <div
-                          className={`flex h-10 w-10 items-center justify-center rounded-lg ${
+                          className={`flex h-11 w-11 items-center justify-center rounded-lg ${
                             isSelected ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
                           }`}
                         >
@@ -430,7 +430,7 @@ export default function ProfilePage() {
                         {item.name}
                       </h3>
 
-                      <div className="flex items-center justify-between text-xs text-muted-foreground">
+                      <div className="flex items-center justify-between text-sm text-muted-foreground">
                         <span>{item.label || "Saved favorite"}</span>
                         {typeof item.rating === "number" ? (
                           <span className="flex items-center gap-1">
@@ -445,7 +445,7 @@ export default function ProfilePage() {
                           type="button"
                           variant="ghost"
                           size="sm"
-                          className="h-7 rounded-lg px-2 text-xs text-muted-foreground hover:text-foreground"
+                          className="min-h-11 rounded-lg px-3 text-sm text-muted-foreground hover:text-foreground"
                           onClick={(event) => {
                             event.stopPropagation()
                             handleUnlike(item.id)
@@ -510,7 +510,7 @@ export default function ProfilePage() {
               </div>
 
               <div className="mb-4 rounded-xl border border-border p-4">
-                <p className="mb-2 text-xs font-semibold text-muted-foreground">Suggested Route</p>
+                <p className="mb-2 text-sm font-semibold text-muted-foreground">Suggested Route</p>
                 <div className="flex items-center gap-2 text-sm text-foreground">
                   <div className="h-2 w-2 rounded-full bg-primary" />
                   <span>Your Location</span>

@@ -33,7 +33,7 @@ export function SearchFilters({
           className="w-full rounded-xl border border-input bg-card py-3 pl-11 pr-12 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
         />
         <button
-          className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          className="absolute right-2 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           aria-label="Toggle filters"
         >
           <SlidersHorizontal className="h-4 w-4" />
@@ -48,7 +48,7 @@ export function SearchFilters({
             variant={activeCategory === category ? "default" : "outline"}
             size="sm"
             onClick={() => onCategoryChange(category)}
-            className={`rounded-xl text-xs ${
+            className={`rounded-xl text-sm ${
               activeCategory === category
                 ? "bg-primary text-primary-foreground hover:bg-primary/90"
                 : "border-border text-muted-foreground hover:border-primary hover:text-primary"

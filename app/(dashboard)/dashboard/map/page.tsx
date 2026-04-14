@@ -137,7 +137,7 @@ function FullScreenMapPageContent() {
   const [pendingGoToLandmark, setPendingGoToLandmark] = useState<string | null>(null)
   const [isPinDropMode, setIsPinDropMode] = useState(false)
   const [pinnedCoords, setPinnedCoords] = useState<[number, number] | null>(null)
-  const routeItemRefs = useRef<Record<string, HTMLButtonElement | null>>({})
+  const routeItemRefs = useRef<Record<string, HTMLDivElement | null>>({})
   const { user } = useAuth()
 
   // Get user's current location on mount
@@ -596,7 +596,7 @@ function FullScreenMapPageContent() {
 
   return (
     <>
-    <div className="min-h-[calc(100svh-64px)] overflow-y-auto bg-background lg:hidden">
+    <div className="flex h-[calc(100svh-64px)] flex-col overflow-hidden bg-background lg:hidden">
       <div className="relative h-[42svh] min-h-[300px] w-full overflow-hidden border-b border-border bg-muted">
         <MapComponent
           center={MAP_CENTER}
@@ -626,8 +626,8 @@ function FullScreenMapPageContent() {
         />
       </div>
 
-      <div className="space-y-3 bg-background p-3 pb-6">
-        <div className="rounded-2xl bg-secondary p-3">
+      <div className="flex-1 overflow-y-auto bg-background p-3 pb-6">
+        <div className="flex min-h-[42svh] flex-col rounded-2xl bg-secondary p-3">
           <div className="mb-3 flex items-center justify-between">
             <h3 className="text-sm font-semibold text-foreground">PUJ Routes</h3>
             <Bus className="h-4 w-4 text-primary" />
@@ -640,16 +640,17 @@ function FullScreenMapPageContent() {
                 setShowAllPujRoutes(false)
                 setSelectedRouteDirection(null)
               }}
-              className="mb-2 w-full rounded-lg border border-primary/40 bg-primary/5 px-3 py-2 text-xs font-medium text-primary transition-colors hover:bg-primary/10"
+              className="mb-2 w-full rounded-lg border border-primary/40 bg-primary/5 px-3 py-2 text-sm font-medium text-primary transition-colors hover:bg-primary/10"
             >
               Unselect current route
             </button>
           )}
-          <div className="flex flex-col gap-2">
+          <div className="min-h-0 flex-1 overflow-y-auto pr-1 [scrollbar-width:thin] [scrollbar-color:hsl(var(--primary)/0.45)_transparent] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-primary/45 hover:[&::-webkit-scrollbar-thumb]:bg-primary/65">
+            <div className="flex flex-col gap-2">
             {loadingRoutes ? (
-              <p className="text-xs text-muted-foreground">Loading routes...</p>
+              <p className="text-sm text-muted-foreground">Loading routes...</p>
             ) : routes.length === 0 ? (
-              <p className="text-xs text-muted-foreground">No routes available</p>
+              <p className="text-sm text-muted-foreground">No routes available</p>
             ) : (
               <>
                 <button
@@ -666,22 +667,30 @@ function FullScreenMapPageContent() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-foreground">Show All Routes</p>
-                      <p className="text-xs text-muted-foreground">Display every PUJ route on the map</p>
+                      <p className="text-sm text-muted-foreground">Display every PUJ route on the map</p>
                     </div>
                     <ChevronRight className={`h-4 w-4 text-muted-foreground transition-transform ${showAllPujRoutes ? "rotate-90" : ""}`} />
                   </div>
                 </button>
 
                 {routes.map((route) => (
-                  <button
-                    type="button"
+                  <div
                     key={`mobile-${route.id}`}
                     ref={(element) => {
                       routeItemRefs.current[String(route.id)] = element
                     }}
+                    role="button"
+                    tabIndex={0}
                     onClick={() => {
                       handleRouteClick(route.id)
                       setShowAllPujRoutes(false)
+                    }}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault()
+                        handleRouteClick(route.id)
+                        setShowAllPujRoutes(false)
+                      }
                     }}
                     className={`w-full rounded-xl border p-3 text-left transition-all ${
                       selectedRoute === String(route.id) ? "border-primary bg-primary/5" : "border-border bg-background hover:border-primary/40"
@@ -690,13 +699,13 @@ function FullScreenMapPageContent() {
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-sm font-medium text-foreground">{route.routeNumber} - {route.routeName}</p>
-                        <p className="text-xs text-muted-foreground">{route.vehicleTypeName}</p>
+                        <p className="text-sm text-muted-foreground">{route.vehicleTypeName}</p>
                       </div>
                       <ChevronRight className={`h-4 w-4 text-muted-foreground transition-transform ${selectedRoute === String(route.id) ? "rotate-90" : ""}`} />
                     </div>
                     {selectedRoute === String(route.id) && (
                       <div className="mt-3 border-t border-border pt-3">
-                        <p className="mb-2 text-xs font-medium text-foreground">Select direction:</p>
+                        <p className="mb-2 text-sm font-medium text-foreground">Select direction:</p>
                         <div className="mb-3 grid grid-cols-1 gap-2">
                           <Button
                             onClick={(e) => {
@@ -704,7 +713,7 @@ function FullScreenMapPageContent() {
                               handleDirectionSelect("goingTo")
                             }}
                             variant={selectedRouteDirection === "goingTo" ? "default" : "outline"}
-                            className={`h-9 rounded-lg text-xs font-medium ${
+                            className={`min-h-11 rounded-lg text-sm font-medium ${
                               selectedRouteDirection === "goingTo"
                                 ? "bg-primary text-primary-foreground"
                                 : "border-border hover:bg-primary/10 hover:text-primary"
@@ -719,7 +728,7 @@ function FullScreenMapPageContent() {
                               handleDirectionSelect("returning")
                             }}
                             variant={selectedRouteDirection === "returning" ? "default" : "outline"}
-                            className={`h-9 rounded-lg text-xs font-medium ${
+                            className={`min-h-11 rounded-lg text-sm font-medium ${
                               selectedRouteDirection === "returning"
                                 ? "bg-primary text-primary-foreground"
                                 : "border-border hover:bg-primary/10 hover:text-primary"
@@ -731,14 +740,15 @@ function FullScreenMapPageContent() {
                         </div>
                       </div>
                     )}
-                  </button>
+                  </div>
                 ))}
               </>
             )}
+            </div>
           </div>
         </div>
 
-        <div className="rounded-2xl bg-secondary p-3">
+        <div className="mt-3 rounded-2xl bg-secondary p-3">
           <h3 className="mb-3 text-sm font-semibold text-foreground">Find a Route</h3>
           <div className="flex flex-col gap-3">
             <div className="relative">
@@ -757,7 +767,7 @@ function FullScreenMapPageContent() {
               />
             </div>
             <div className="flex justify-center">
-              <button onClick={swapLocations} className="rounded-full border border-border p-1.5 text-muted-foreground hover:border-primary hover:text-primary" aria-label="Swap locations">
+              <button onClick={swapLocations} className="flex h-11 w-11 items-center justify-center rounded-full border border-border text-muted-foreground hover:border-primary hover:text-primary" aria-label="Swap locations">
                 <ArrowRightLeft className="h-4 w-4" />
               </button>
             </div>
@@ -770,7 +780,7 @@ function FullScreenMapPageContent() {
                 onFocus={() => setActiveSuggestionField("to")}
                 onBlur={() => setTimeout(() => setActiveSuggestionField(null), 120)}
                 placeholder="To"
-                className="w-full rounded-xl border border-input bg-background py-2.5 pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                className="min-h-11 w-full rounded-xl border border-input bg-background py-2.5 pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
               />
             </div>
             <Button
@@ -792,7 +802,7 @@ function FullScreenMapPageContent() {
           size="sm"
           variant="secondary"
           onClick={() => setShowMapSidebar((prev) => !prev)}
-          className="h-9 rounded-lg px-3 text-xs"
+          className="min-h-11 rounded-lg px-3 text-sm"
         >
           {showMapSidebar ? "Hide Routes" : "Show Routes"}
         </Button>
@@ -801,7 +811,7 @@ function FullScreenMapPageContent() {
           size="sm"
           variant="secondary"
           onClick={() => setShowLandmarksPanel((prev) => !prev)}
-          className="h-9 rounded-lg px-3 text-xs"
+          className="min-h-11 rounded-lg px-3 text-sm"
         >
           {showLandmarksPanel ? "Hide Landmarks" : "Show Landmarks"}
         </Button>
@@ -809,9 +819,9 @@ function FullScreenMapPageContent() {
 
       {/* Sidebar */}
       {showMapSidebar && (
-      <div className="order-2 relative flex w-full flex-shrink-0 flex-col overflow-y-auto border-b border-border bg-background p-3 sm:p-4 lg:order-1 lg:w-[380px] lg:border-b-0 lg:border-r">
+      <div className="order-1 relative flex w-full flex-shrink-0 flex-col overflow-hidden border-b border-border bg-background p-3 sm:p-4 lg:order-1 lg:w-[380px] lg:border-b-0 lg:border-r">
         <div className="mb-3 flex items-center gap-3 sm:mb-4">
-          <Link href="/dashboard" className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground">
+          <Link href="/dashboard" className="flex h-11 w-11 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground">
             <ArrowLeft className="h-5 w-5" />
           </Link>
           <h2 className="text-lg font-bold text-foreground">Interactive Map</h2>
@@ -831,7 +841,7 @@ function FullScreenMapPageContent() {
                 onBlur={() => setTimeout(() => setActiveSuggestionField(null), 120)}
                 placeholder={locationLoading ? "Getting your location…" : "From"}
                 disabled={locationLoading}
-                className={`w-full rounded-xl border border-input bg-background py-2.5 pl-10 pr-9 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-60 ${
+                className={`min-h-11 w-full rounded-xl border border-input bg-background py-2.5 pl-10 pr-10 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-60 ${
                   from === CURRENT_LOCATION_LABEL ? "text-primary font-medium" : ""
                 }`}
               />
@@ -845,10 +855,10 @@ function FullScreenMapPageContent() {
                         e.preventDefault()
                         applySuggestion("from", suggestion.label)
                       }}
-                      className="flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-left hover:bg-muted"
+                      className="flex min-h-11 w-full items-center justify-between rounded-lg px-2.5 py-2 text-left hover:bg-muted"
                     >
                       <span className="truncate text-sm text-foreground">{suggestion.label}</span>
-                      <span className="ml-2 flex-shrink-0 text-[11px] text-muted-foreground">{suggestion.subtitle}</span>
+                      <span className="ml-2 flex-shrink-0 text-sm text-muted-foreground">{suggestion.subtitle}</span>
                     </button>
                   ))}
                 </div>
@@ -863,7 +873,7 @@ function FullScreenMapPageContent() {
                   type="button"
                   onClick={() => setFrom(CURRENT_LOCATION_LABEL)}
                   title="Use my current location"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors"
+                  className="absolute right-2 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center text-muted-foreground transition-colors hover:text-primary"
                 >
                   <Locate className="h-4 w-4" />
                 </button>
@@ -874,10 +884,10 @@ function FullScreenMapPageContent() {
               ) : null}
             </div>
             {locationError && from === "" && (
-              <p className="-mt-1 text-xs text-destructive">{locationError} Enter a location manually.</p>
+              <p className="-mt-1 text-sm text-destructive">{locationError} Enter a location manually.</p>
             )}
             <div className="flex justify-center">
-              <button onClick={swapLocations} className="rounded-full border border-border p-1.5 text-muted-foreground hover:border-primary hover:text-primary" aria-label="Swap locations">
+              <button onClick={swapLocations} className="flex h-11 w-11 items-center justify-center rounded-full border border-border text-muted-foreground hover:border-primary hover:text-primary" aria-label="Swap locations">
                 <ArrowRightLeft className="h-4 w-4" />
               </button>
             </div>
@@ -895,7 +905,7 @@ function FullScreenMapPageContent() {
                 onFocus={() => setActiveSuggestionField("to")}
                 onBlur={() => setTimeout(() => setActiveSuggestionField(null), 120)}
                 placeholder="To"
-                className="w-full rounded-xl border border-input bg-background py-2.5 pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                className="min-h-11 w-full rounded-xl border border-input bg-background py-2.5 pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
               />
               {activeSuggestionField === "to" && toSuggestions.length > 0 && (
                 <div className="absolute left-0 right-0 top-[calc(100%+6px)] z-30 max-h-56 overflow-y-auto rounded-xl border border-border bg-card p-1 shadow-lg">
@@ -907,10 +917,10 @@ function FullScreenMapPageContent() {
                         e.preventDefault()
                         applySuggestion("to", suggestion.label)
                       }}
-                      className="flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-left hover:bg-muted"
+                      className="flex min-h-11 w-full items-center justify-between rounded-lg px-2.5 py-2 text-left hover:bg-muted"
                     >
                       <span className="truncate text-sm text-foreground">{suggestion.label}</span>
-                      <span className="ml-2 flex-shrink-0 text-[11px] text-muted-foreground">{suggestion.subtitle}</span>
+                      <span className="ml-2 flex-shrink-0 text-sm text-muted-foreground">{suggestion.subtitle}</span>
                     </button>
                   ))}
                 </div>
@@ -922,7 +932,7 @@ function FullScreenMapPageContent() {
                 setIsPinDropMode(true)
                 setPinnedCoords(null)
               }}
-              className={`flex items-center gap-1.5 self-start rounded-lg px-2 py-1 text-xs font-medium transition-colors ${
+              className={`flex min-h-11 items-center gap-1.5 self-start rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
                 isPinDropMode
                   ? "bg-primary/10 text-primary"
                   : "text-muted-foreground hover:bg-muted hover:text-primary"
@@ -949,7 +959,7 @@ function FullScreenMapPageContent() {
               )}
             </Button>
             {directionsError && (
-              <p className="mt-2 text-xs text-destructive">{directionsError}</p>
+              <p className="mt-2 text-sm text-destructive">{directionsError}</p>
             )}
             {(directionsRoute || directionsError) && (
               <Button 
@@ -965,7 +975,7 @@ function FullScreenMapPageContent() {
         </div>
 
         {/* PUJ Routes */}
-        <div className="order-1 mt-3 rounded-2xl bg-secondary p-3 sm:mt-4 sm:p-4">
+        <div className="order-1 mt-3 flex min-h-0 flex-1 flex-col rounded-2xl bg-secondary p-3 sm:mt-4 sm:p-4">
           <div className="mb-3 flex items-center justify-between">
             <h3 className="text-sm font-semibold text-foreground">PUJ Routes</h3>
             <Bus className="h-4 w-4 text-primary" />
@@ -978,16 +988,17 @@ function FullScreenMapPageContent() {
                 setShowAllPujRoutes(false)
                 setSelectedRouteDirection(null)
               }}
-              className="mb-2 w-full rounded-lg border border-primary/40 bg-primary/5 px-3 py-2 text-xs font-medium text-primary transition-colors hover:bg-primary/10"
+              className="mb-2 w-full rounded-lg border border-primary/40 bg-primary/5 px-3 py-2 text-sm font-medium text-primary transition-colors hover:bg-primary/10"
             >
               Unselect current route
             </button>
           )}
-          <div className="flex flex-col gap-2">
+          <div className="min-h-0 flex-1 overflow-y-auto pr-1 [scrollbar-width:thin] [scrollbar-color:hsl(var(--primary)/0.45)_transparent] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-primary/45 hover:[&::-webkit-scrollbar-thumb]:bg-primary/65">
+            <div className="flex flex-col gap-2">
             {loadingRoutes ? (
-              <p className="text-xs text-muted-foreground">Loading routes...</p>
+              <p className="text-sm text-muted-foreground">Loading routes...</p>
             ) : routes.length === 0 ? (
-              <p className="text-xs text-muted-foreground">No routes available</p>
+              <p className="text-sm text-muted-foreground">No routes available</p>
             ) : (
               <>
                 <button
@@ -1004,22 +1015,30 @@ function FullScreenMapPageContent() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-foreground">Show All Routes</p>
-                      <p className="text-xs text-muted-foreground">Display every PUJ route on the map</p>
+                      <p className="text-sm text-muted-foreground">Display every PUJ route on the map</p>
                     </div>
                     <ChevronRight className={`h-4 w-4 text-muted-foreground transition-transform ${showAllPujRoutes ? "rotate-90" : ""}`} />
                   </div>
                 </button>
 
                 {routes.map((route) => (
-                  <button
-                    type="button"
+                  <div
                     key={route.id}
                     ref={(element) => {
                       routeItemRefs.current[String(route.id)] = element
                     }}
+                    role="button"
+                    tabIndex={0}
                     onClick={() => {
                       handleRouteClick(route.id)
                       setShowAllPujRoutes(false)
+                    }}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault()
+                        handleRouteClick(route.id)
+                        setShowAllPujRoutes(false)
+                      }
                     }}
                     className={`w-full rounded-xl border p-3 text-left transition-all ${
                       selectedRoute === String(route.id) ? "border-primary bg-primary/5" : "border-border bg-background hover:border-primary/40"
@@ -1028,13 +1047,13 @@ function FullScreenMapPageContent() {
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-sm font-medium text-foreground">{route.routeNumber} - {route.routeName}</p>
-                        <p className="text-xs text-muted-foreground">{route.vehicleTypeName}</p>
+                        <p className="text-sm text-muted-foreground">{route.vehicleTypeName}</p>
                       </div>
                       <ChevronRight className={`h-4 w-4 text-muted-foreground transition-transform ${selectedRoute === String(route.id) ? "rotate-90" : ""}`} />
                     </div>
                     {selectedRoute === String(route.id) && (
                       <div className="mt-3 border-t border-border pt-3">
-                        <p className="mb-2 text-xs font-medium text-foreground">Select direction:</p>
+                        <p className="mb-2 text-sm font-medium text-foreground">Select direction:</p>
                         <div className="mb-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
                           <Button
                             onClick={(e) => {
@@ -1042,7 +1061,7 @@ function FullScreenMapPageContent() {
                               handleDirectionSelect("goingTo")
                             }}
                             variant={selectedRouteDirection === "goingTo" ? "default" : "outline"}
-                            className={`h-9 rounded-lg text-xs font-medium ${
+                            className={`min-h-11 rounded-lg text-sm font-medium ${
                               selectedRouteDirection === "goingTo"
                                 ? "bg-primary text-primary-foreground"
                                 : "border-border hover:bg-primary/10 hover:text-primary"
@@ -1057,7 +1076,7 @@ function FullScreenMapPageContent() {
                               handleDirectionSelect("returning")
                             }}
                             variant={selectedRouteDirection === "returning" ? "default" : "outline"}
-                            className={`h-9 rounded-lg text-xs font-medium ${
+                            className={`min-h-11 rounded-lg text-sm font-medium ${
                               selectedRouteDirection === "returning"
                                 ? "bg-primary text-primary-foreground"
                                 : "border-border hover:bg-primary/10 hover:text-primary"
@@ -1067,24 +1086,25 @@ function FullScreenMapPageContent() {
                             Returning
                           </Button>
                         </div>
-                        <p className="mb-2 text-xs font-medium text-muted-foreground">Stops ({route.stops.length}):</p>
+                        <p className="mb-2 text-sm font-medium text-muted-foreground">Stops ({route.stops.length}):</p>
                         <div className="max-h-40 flex flex-col gap-1.5 overflow-y-auto pr-2">
                           {route.stops.slice(0, 10).map((stop, i) => (
                             <div key={`${route.id}-${stop.id}`} className="flex items-center gap-2">
                               <div className={`h-2 w-2 rounded-full flex-shrink-0 ${i === 0 ? "bg-primary" : i === Math.min(9, route.stops.length - 1) ? "bg-accent" : "bg-border"}`} />
-                              <span className="text-xs text-foreground truncate">{stop.address}</span>
+                              <span className="text-sm text-foreground truncate">{stop.address}</span>
                             </div>
                           ))}
                           {route.stops.length > 10 && (
-                            <p className="text-xs text-muted-foreground">+{route.stops.length - 10} more stops</p>
+                            <p className="text-sm text-muted-foreground">+{route.stops.length - 10} more stops</p>
                           )}
                         </div>
                       </div>
                     )}
-                  </button>
+                  </div>
                 ))}
               </>
             )}
+            </div>
           </div>
         </div>
 
@@ -1093,7 +1113,7 @@ function FullScreenMapPageContent() {
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
             <Button
               onClick={() => setRouteMode("Palihog Bayad")}
-              className={`h-10 rounded-xl text-sm font-semibold ${
+              className={`min-h-11 rounded-xl text-sm font-semibold ${
                 routeMode === "Palihog Bayad"
                   ? "bg-primary text-primary-foreground hover:bg-primary/90"
                   : "border border-primary bg-background text-primary hover:bg-primary/5"
@@ -1103,7 +1123,7 @@ function FullScreenMapPageContent() {
             </Button>
             <Button
               onClick={() => setRouteMode("Sa Lugar")}
-              className={`h-10 rounded-xl text-sm font-semibold ${
+              className={`min-h-11 rounded-xl text-sm font-semibold ${
                 routeMode === "Sa Lugar"
                   ? "bg-primary text-primary-foreground hover:bg-primary/90"
                   : "border border-primary bg-background text-primary hover:bg-primary/5"
@@ -1118,7 +1138,7 @@ function FullScreenMapPageContent() {
           <div className="flex items-center justify-between gap-3">
             <div>
               <h3 className="text-sm font-semibold text-foreground">Landmarks Panel</h3>
-              <p className="text-xs text-muted-foreground">Use the side arrow tabs to collapse or expand panels.</p>
+              <p className="text-sm text-muted-foreground">Use the side arrow tabs to collapse or expand panels.</p>
             </div>
           </div>
         </div>
@@ -1127,7 +1147,7 @@ function FullScreenMapPageContent() {
       )}
 
       {/* Map */}
-      <div className="order-1 relative h-[56svh] min-h-[360px] w-full flex-1 overflow-hidden border-b border-border bg-muted lg:order-2 lg:h-auto lg:min-h-0 lg:border-b-0">
+      <div className="order-2 relative h-[50svh] min-h-[320px] w-full flex-1 overflow-hidden border-b border-border bg-muted lg:order-2 lg:h-auto lg:min-h-0 lg:border-b-0">
         <MapComponent
           center={MAP_CENTER}
           zoom={MAP_ZOOM}
@@ -1156,7 +1176,7 @@ function FullScreenMapPageContent() {
         />
         {/* Pin drop mode overlay */}
         {isPinDropMode && (
-          <div className="absolute left-1/2 top-4 z-[2200] flex -translate-x-1/2 items-center gap-3 rounded-xl bg-card/95 px-4 py-3 shadow-lg backdrop-blur-sm">
+          <div className="absolute left-1/2 top-4 z-[2200] flex w-[min(92vw,560px)] -translate-x-1/2 flex-col gap-3 rounded-xl bg-card/95 px-4 py-3 shadow-lg backdrop-blur-sm sm:flex-row sm:items-center">
             <Crosshair className="h-4 w-4 flex-shrink-0 animate-pulse text-primary" />
             <p className="text-sm font-medium text-foreground">
               {pinnedCoords ? "Drag the pin to adjust" : "Click anywhere to set your destination"}
@@ -1167,7 +1187,7 @@ function FullScreenMapPageContent() {
                   size="sm"
                   onClick={handlePinDone}
                   disabled={directionsLoading}
-                  className="h-7 rounded-lg bg-primary px-3 text-xs font-semibold text-primary-foreground hover:bg-primary/90"
+                  className="min-h-11 rounded-lg bg-primary px-3 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
                 >
                   {directionsLoading ? "Finding..." : "Done"}
                 </Button>
@@ -1175,7 +1195,7 @@ function FullScreenMapPageContent() {
                   size="sm"
                   variant="outline"
                   onClick={handlePinCancel}
-                  className="h-7 rounded-lg px-3 text-xs"
+                  className="min-h-11 rounded-lg px-3 text-sm"
                 >
                   Cancel
                 </Button>
@@ -1184,7 +1204,7 @@ function FullScreenMapPageContent() {
               <button
                 type="button"
                 onClick={handlePinCancel}
-                className="rounded-lg p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+                className="flex h-11 w-11 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground"
                 aria-label="Cancel pin drop"
               >
                 <X className="h-4 w-4" />
@@ -1196,7 +1216,7 @@ function FullScreenMapPageContent() {
           type="button"
           onClick={() => setShowMapSidebar((prev) => !prev)}
           aria-label={showMapSidebar ? "Collapse interactive map sidebar" : "Expand interactive map sidebar"}
-          className="absolute left-0 top-1/2 z-[700] hidden h-12 w-7 -translate-y-1/2 items-center justify-center rounded-r-md border border-l-0 border-border bg-background text-muted-foreground shadow-sm transition-colors hover:border-primary hover:bg-primary hover:text-primary-foreground lg:flex"
+          className="absolute left-0 top-1/2 z-[700] hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-r-md border border-l-0 border-border bg-background text-muted-foreground shadow-sm transition-colors hover:border-primary hover:bg-primary hover:text-primary-foreground lg:flex"
         >
           {showMapSidebar ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
         </button>
@@ -1204,18 +1224,18 @@ function FullScreenMapPageContent() {
           type="button"
           onClick={() => setShowLandmarksPanel((prev) => !prev)}
           aria-label={showLandmarksPanel ? "Collapse landmarks panel" : "Expand landmarks panel"}
-          className="absolute right-0 top-1/2 z-[700] hidden h-12 w-7 -translate-y-1/2 items-center justify-center rounded-l-md border border-r-0 border-border bg-background text-muted-foreground shadow-sm transition-colors hover:border-primary hover:bg-primary hover:text-primary-foreground lg:flex"
+          className="absolute right-0 top-1/2 z-[700] hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-l-md border border-r-0 border-border bg-background text-muted-foreground shadow-sm transition-colors hover:border-primary hover:bg-primary hover:text-primary-foreground lg:flex"
         >
           {showLandmarksPanel ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
         </button>
         {showRoutes && directionsRoute && (
-          <div className="absolute bottom-4 right-4 z-[2200] max-w-sm rounded-xl bg-card/95 p-4 shadow-lg backdrop-blur-sm">
+          <div className="absolute bottom-4 left-4 right-4 z-[2200] rounded-xl bg-card/95 p-4 shadow-lg backdrop-blur-sm sm:left-auto sm:max-w-sm">
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-start gap-3">
                 <Navigation className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" />
                 <div>
                   <p className="text-sm font-medium text-foreground">Directions</p>
-                  <div className="mt-1 flex items-center gap-3 text-xs text-muted-foreground">
+                  <div className="mt-1 flex items-center gap-3 text-sm text-muted-foreground">
                     <span>{formatDistance(directionsRoute.distance)}</span>
                     <span>|</span>
                     <span>{formatDuration(directionsRoute.duration)}</span>
@@ -1224,7 +1244,7 @@ function FullScreenMapPageContent() {
               </div>
               <button
                 onClick={handleExitRoute}
-                className="rounded-lg p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+                className="flex h-11 w-11 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground"
                 aria-label="Exit route"
               >
                 <ArrowLeft className="h-4 w-4" />
@@ -1232,19 +1252,19 @@ function FullScreenMapPageContent() {
             </div>
             {directionsRoute.steps.length > 0 && (
               <div className="mt-3 max-h-40 overflow-y-auto border-t border-border pt-3">
-                <p className="mb-2 text-xs font-medium text-muted-foreground">Turn-by-turn directions:</p>
+                <p className="mb-2 text-sm font-medium text-muted-foreground">Turn-by-turn directions:</p>
                 <div className="flex flex-col gap-2">
                   {directionsRoute.steps.slice(0, 8).map((step, i) => (
                     <div key={i} className="flex items-start gap-2">
                       <div className={`mt-1.5 h-2 w-2 flex-shrink-0 rounded-full ${i === 0 ? "bg-green-500" : i === Math.min(7, directionsRoute.steps.length - 1) ? "bg-red-500" : "bg-border"}`} />
                       <div className="flex-1">
-                        <p className="text-xs text-foreground">{step.instruction}</p>
-                        <p className="text-[10px] text-muted-foreground">{formatDistance(step.distance)}</p>
+                        <p className="text-sm text-foreground">{step.instruction}</p>
+                        <p className="text-sm text-muted-foreground">{formatDistance(step.distance)}</p>
                       </div>
                     </div>
                   ))}
                   {directionsRoute.steps.length > 8 && (
-                    <p className="text-xs text-muted-foreground">+{directionsRoute.steps.length - 8} more steps</p>
+                    <p className="text-sm text-muted-foreground">+{directionsRoute.steps.length - 8} more steps</p>
                   )}
                 </div>
               </div>
@@ -1266,16 +1286,16 @@ function FullScreenMapPageContent() {
               </div>
               <div className="min-w-0">
                 <p className="truncate text-sm font-semibold text-foreground">{selectedLandmark.name}</p>
-                <p className="text-xs text-muted-foreground">Explore this destination</p>
+                <p className="text-sm text-muted-foreground">Explore this destination</p>
               </div>
             </div>
 
             <div className="mb-3 rounded-xl bg-secondary p-3">
               <div className="mb-2 flex items-center gap-2">
                 <MapPin className="h-3.5 w-3.5 text-primary" />
-                <span className="text-xs font-medium text-foreground">Route Details</span>
+                <span className="text-sm font-medium text-foreground">Route Details</span>
               </div>
-              <div className="space-y-1.5 text-xs text-muted-foreground">
+              <div className="space-y-1.5 text-sm text-muted-foreground">
                 <div className="flex justify-between gap-3">
                   <span>From: Your Location</span>
                   <span className="truncate">To: {selectedLandmark.name}</span>
@@ -1287,9 +1307,9 @@ function FullScreenMapPageContent() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
               <Button
-                className="h-9 rounded-lg bg-primary px-3 text-xs font-semibold text-primary-foreground hover:bg-primary/90"
+                className="min-h-11 rounded-lg bg-primary px-3 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
                 onClick={() => void handleGoToLandmark(selectedLandmark.name)}
                 disabled={directionsLoading}
               >
@@ -1297,7 +1317,7 @@ function FullScreenMapPageContent() {
               </Button>
               <Button
                 variant="outline"
-                className="h-9 rounded-lg border-border px-3 text-xs text-muted-foreground hover:text-foreground"
+                className="min-h-11 rounded-lg border-border px-3 text-sm text-muted-foreground hover:text-foreground"
                 onClick={handleExitRoute}
               >
                 Cancel
@@ -1314,9 +1334,9 @@ function FullScreenMapPageContent() {
           </div>
           {selectedLandmarkName && (
             <div className="mb-3 rounded-xl border border-border bg-secondary p-3">
-              <p className="truncate text-xs text-muted-foreground">Selected: {selectedLandmarkName}</p>
+              <p className="truncate text-sm text-muted-foreground">Selected: {selectedLandmarkName}</p>
               <Button
-                className="mt-2 h-9 w-full rounded-lg bg-primary text-xs font-semibold text-primary-foreground hover:bg-primary/90"
+                className="mt-2 min-h-11 w-full rounded-lg bg-primary text-sm font-semibold text-primary-foreground hover:bg-primary/90"
                 onClick={() => void handleGoToLandmark(selectedLandmarkName)}
                 disabled={directionsLoading}
               >
@@ -1334,9 +1354,9 @@ function FullScreenMapPageContent() {
               }`}
             >
               <div className="flex items-center justify-between">
-                <p className="text-xs font-semibold uppercase tracking-wide text-primary">All Places & Food</p>
+                <p className="text-sm font-semibold uppercase tracking-wide text-primary">All Places & Food</p>
                 <div className="flex items-center gap-2">
-                  <span className="text-[11px] text-muted-foreground">{allPlacesAndFood.length}</span>
+                  <span className="text-sm text-muted-foreground">{allPlacesAndFood.length}</span>
                   <ChevronRight
                     className={`h-4 w-4 text-muted-foreground transition-transform ${selectedLandmarkSection === "All Places & Food" ? "rotate-90" : ""}`}
                   />
@@ -1362,7 +1382,7 @@ function FullScreenMapPageContent() {
                           <MapPin className="h-3.5 w-3.5 text-primary" />
                           <span className="text-sm text-foreground">{lm.name}</span>
                         </div>
-                        <span className="text-xs text-muted-foreground">{lm.type}</span>
+                        <span className="text-sm text-muted-foreground">{lm.type}</span>
                       </div>
                     ))}
                   </div>
@@ -1379,9 +1399,9 @@ function FullScreenMapPageContent() {
               }`}
             >
               <div className="flex items-center justify-between">
-                <p className="text-xs font-semibold uppercase tracking-wide text-primary">Based on your Preferences</p>
+                <p className="text-sm font-semibold uppercase tracking-wide text-primary">Based on your Preferences</p>
                 <div className="flex items-center gap-2">
-                  <span className="text-[11px] text-muted-foreground">{preferredLandmarks.length}</span>
+                  <span className="text-sm text-muted-foreground">{preferredLandmarks.length}</span>
                   <ChevronRight
                     className={`h-4 w-4 text-muted-foreground transition-transform ${selectedLandmarkSection === "Based on your Preferences" ? "rotate-90" : ""}`}
                   />
@@ -1408,12 +1428,12 @@ function FullScreenMapPageContent() {
                             <MapPin className="h-3.5 w-3.5 text-primary" />
                             <span className="text-sm text-foreground">{lm.name}</span>
                           </div>
-                          <span className="text-xs text-muted-foreground">{categorizeLandmark(lm.name, lm.type)}</span>
+                          <span className="text-sm text-muted-foreground">{categorizeLandmark(lm.name, lm.type)}</span>
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <p className="px-2 py-1.5 text-xs text-muted-foreground">Set your preferences to get personalized landmark suggestions.</p>
+                    <p className="px-2 py-1.5 text-sm text-muted-foreground">Set your preferences to get personalized landmark suggestions.</p>
                   )}
                 </div>
               )}
@@ -1430,9 +1450,9 @@ function FullScreenMapPageContent() {
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{category}</p>
+                  <p className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">{category}</p>
                   <div className="flex items-center gap-2">
-                    <span className="text-[11px] text-muted-foreground">{categorizedLandmarks[category].length}</span>
+                    <span className="text-sm text-muted-foreground">{categorizedLandmarks[category].length}</span>
                     <ChevronRight
                       className={`h-4 w-4 text-muted-foreground transition-transform ${selectedLandmarkSection === category ? "rotate-90" : ""}`}
                     />
@@ -1459,12 +1479,12 @@ function FullScreenMapPageContent() {
                               <MapPin className="h-3.5 w-3.5 text-primary" />
                               <span className="text-sm text-foreground">{lm.name}</span>
                             </div>
-                            <span className="text-xs text-muted-foreground">{lm.type}</span>
+                            <span className="text-sm text-muted-foreground">{lm.type}</span>
                           </div>
                         ))}
                       </div>
                     ) : (
-                      <p className="px-2 py-1.5 text-xs text-muted-foreground">No landmarks available yet.</p>
+                      <p className="px-2 py-1.5 text-sm text-muted-foreground">No landmarks available yet.</p>
                     )}
                   </div>
                 )}

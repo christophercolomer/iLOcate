@@ -4,7 +4,7 @@ import { useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { usePathname, useRouter } from "next/navigation"
-import { MapPin, Home, Languages, CalendarDays, BookmarkCheck, Map, Utensils, Building2, LogOut, User } from "lucide-react"
+import { MapPin, Home, Languages, CalendarDays, BookmarkCheck, Map, Utensils, Building2, LogOut, User, Menu, X } from "lucide-react"
 import { signOut } from "firebase/auth"
 import { auth } from "@/lib/firebase"
 import { useAuth } from "@/lib/auth-context"
@@ -60,7 +60,7 @@ function UserMenu() {
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
-          className="h-9 w-9 cursor-pointer rounded-full p-0 hover:bg-muted focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+          className="h-11 w-11 cursor-pointer rounded-full p-0 hover:bg-muted focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
         >
           <div className="flex h-full w-full items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
             {getUserInitial()}
@@ -70,7 +70,7 @@ function UserMenu() {
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuLabel className="flex flex-col gap-1">
           <div className="text-sm font-medium">{user?.displayName || "User"}</div>
-          <div className="text-xs text-muted-foreground">{user?.email}</div>
+          <div className="text-sm text-muted-foreground">{user?.email}</div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
@@ -99,12 +99,13 @@ export default function DashboardLayout({
   children: React.ReactNode
 }) {
   const pathname = usePathname()
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   return (
     <div className="flex min-h-screen flex-col bg-secondary">
       <header className="sticky top-0 z-[100] border-b border-border bg-background/95 backdrop-blur-md">
-        <div className="mx-auto flex h-16 max-w-[1400px] items-center justify-between px-4 lg:px-6">
-          <Link href="/dashboard" className="flex items-center gap-0">
+        <div className="mx-auto flex min-h-16 max-w-[1400px] items-center justify-between gap-3 px-4 py-3 lg:px-6">
+          <Link href="/dashboard" className="flex min-w-0 items-center gap-0">
             <Image
                         src="/logo black line.svg"
                         alt="iLOcate logo"
@@ -112,7 +113,7 @@ export default function DashboardLayout({
                         height={80}
                         className="object-contain"
             />
-            <span className="text-lg font-bold text-foreground">
+            <span className="truncate text-base font-bold text-foreground sm:text-lg">
               iLO<span className="text-primary">cate</span>
             </span>
           </Link>
@@ -125,7 +126,7 @@ export default function DashboardLayout({
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                  className={`flex min-h-11 items-center gap-1.5 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
                     isActive
                       ? "bg-primary/10 text-primary"
                       : "text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -138,13 +139,21 @@ export default function DashboardLayout({
             })}
           </nav>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <button
+              type="button"
+              className="flex h-11 w-11 items-center justify-center rounded-xl text-foreground transition-colors hover:bg-muted md:hidden"
+              onClick={() => setIsMobileMenuOpen((prev) => !prev)}
+              aria-label={isMobileMenuOpen ? "Close dashboard menu" : "Open dashboard menu"}
+            >
+              {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </button>
             <UserMenu />
           </div>
         </div>
 
-        {/* Mobile nav */}
-        <div className="flex items-center gap-1 overflow-x-auto border-t border-border px-4 py-2 md:hidden">
+        <div className="border-t border-border px-4 py-2 md:hidden">
+          <div className="flex items-center gap-1 overflow-x-auto">
           {dashNavLinks.map((link) => {
             const isActive = pathname === link.href
             const Icon = link.icon
@@ -152,7 +161,7 @@ export default function DashboardLayout({
               <Link
                 key={link.href}
                 href={link.href}
-                className={`flex shrink-0 flex-col items-center gap-0.5 rounded-lg px-3 py-1.5 text-[10px] font-medium transition-colors ${
+                className={`flex min-h-11 shrink-0 flex-col items-center justify-center gap-0.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
                   isActive
                     ? "bg-primary/10 text-primary"
                     : "text-muted-foreground"
@@ -163,10 +172,37 @@ export default function DashboardLayout({
               </Link>
             )
           })}
+          </div>
         </div>
       </header>
 
-      <main className="flex-1">{children}</main>
+      {isMobileMenuOpen && (
+        <div className="fixed inset-0 top-16 z-[95] bg-black/40 backdrop-blur-sm md:hidden" onClick={() => setIsMobileMenuOpen(false)}>
+          <div className="ml-auto flex h-full w-[min(88vw,320px)] flex-col border-l border-border bg-background p-4 shadow-2xl" onClick={(event) => event.stopPropagation()}>
+            <nav className="flex flex-col gap-2" aria-label="Dashboard mobile drawer">
+              {dashNavLinks.map((link) => {
+                const isActive = pathname === link.href
+                const Icon = link.icon
+                return (
+                  <Link
+                    key={`drawer-${link.href}`}
+                    href={link.href}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={`flex min-h-11 items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-colors ${
+                      isActive ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    }`}
+                  >
+                    <Icon className="h-4 w-4" />
+                    {link.label}
+                  </Link>
+                )
+              })}
+            </nav>
+          </div>
+        </div>
+      )}
+
+      <main className="flex-1 pb-20 md:pb-0">{children}</main>
     </div>
   )
 }

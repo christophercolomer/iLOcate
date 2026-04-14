@@ -31,28 +31,28 @@ export function Footer() {
           <div className="flex flex-col gap-3">
             <h4 className="text-sm font-semibold text-foreground">Explore</h4>
             <nav className="flex flex-col gap-2" aria-label="Explore links">
-              <Link href="/#how-it-works" className="text-sm text-muted-foreground transition-colors hover:text-primary">How it Works</Link>
-              <Link href="/#faqs" className="text-sm text-muted-foreground transition-colors hover:text-primary">FAQs</Link>
-              <Link href="/premium" className="text-sm text-muted-foreground transition-colors hover:text-primary">Premium</Link>
+              <Link href="/#how-it-works" className="inline-flex min-h-11 items-center py-2 text-sm text-muted-foreground transition-colors hover:text-primary">How it Works</Link>
+              <Link href="/#faqs" className="inline-flex min-h-11 items-center py-2 text-sm text-muted-foreground transition-colors hover:text-primary">FAQs</Link>
+              <Link href="/premium" className="inline-flex min-h-11 items-center py-2 text-sm text-muted-foreground transition-colors hover:text-primary">Premium</Link>
             </nav>
           </div>
 
           <div className="flex flex-col gap-3">
             <h4 className="text-sm font-semibold text-foreground">Company</h4>
             <nav className="flex flex-col gap-2" aria-label="Company links">
-              <button type="button" onClick={() => setAboutOpen(true)} className="text-left text-sm text-muted-foreground transition-colors hover:text-primary">About Us</button>
-              <Link href="#" className="text-sm text-muted-foreground transition-colors hover:text-primary">Contact</Link>
-              <Link href="#" className="text-sm text-muted-foreground transition-colors hover:text-primary">Privacy Policy</Link>
-              <Link href="#" className="text-sm text-muted-foreground transition-colors hover:text-primary">Terms of Service</Link>
+              <button type="button" onClick={() => setAboutOpen(true)} className="min-h-11 py-2 text-left text-sm text-muted-foreground transition-colors hover:text-primary">About Us</button>
+              <Link href="#" className="inline-flex min-h-11 items-center py-2 text-sm text-muted-foreground transition-colors hover:text-primary">Contact</Link>
+              <Link href="#" className="inline-flex min-h-11 items-center py-2 text-sm text-muted-foreground transition-colors hover:text-primary">Privacy Policy</Link>
+              <Link href="#" className="inline-flex min-h-11 items-center py-2 text-sm text-muted-foreground transition-colors hover:text-primary">Terms of Service</Link>
             </nav>
           </div>
 
           <div className="flex flex-col gap-3">
             <h4 className="text-sm font-semibold text-foreground">Connect</h4>
             <nav className="flex flex-col gap-2" aria-label="Social links">
-              <a href="#" className="text-sm text-muted-foreground transition-colors hover:text-primary">Facebook</a>
-              <a href="#" className="text-sm text-muted-foreground transition-colors hover:text-primary">Instagram</a>
-              <a href="#" className="text-sm text-muted-foreground transition-colors hover:text-primary">Twitter</a>
+              <a href="#" className="inline-flex min-h-11 items-center py-2 text-sm text-muted-foreground transition-colors hover:text-primary">Facebook</a>
+              <a href="#" className="inline-flex min-h-11 items-center py-2 text-sm text-muted-foreground transition-colors hover:text-primary">Instagram</a>
+              <a href="#" className="inline-flex min-h-11 items-center py-2 text-sm text-muted-foreground transition-colors hover:text-primary">Twitter</a>
             </nav>
           </div>
         </div>

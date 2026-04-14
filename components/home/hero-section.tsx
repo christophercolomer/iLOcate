@@ -72,14 +72,14 @@ function DestinationCard({
       />
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
       <button
-        className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm transition-colors hover:bg-white/40"
+        className="absolute right-3 top-3 flex h-11 w-11 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm transition-colors hover:bg-white/40"
         aria-label={`Bookmark ${name}`}
       >
         <Bookmark className="h-4 w-4 text-white" />
       </button>
       <div className="absolute bottom-0 left-0 right-0 p-4">
         <h3 className="text-sm font-semibold text-white md:text-base">{name}</h3>
-        <p className="mt-0.5 text-xs text-white/70">{location}</p>
+        <p className="mt-0.5 text-sm text-white/70">{location}</p>
         <div className="mt-2 flex items-center gap-1">
           {Array.from({ length: 5 }).map((_, i) => (
             <Star
@@ -87,7 +87,7 @@ function DestinationCard({
               className={`h-3 w-3 ${i < Math.floor(rating) ? "fill-amber-400 text-amber-400" : "fill-white/30 text-white/30"}`}
             />
           ))}
-          <span className="ml-1 text-xs text-white/70">{rating}</span>
+          <span className="ml-1 text-sm text-white/70">{rating}</span>
         </div>
       </div>
     </Link>
@@ -285,29 +285,29 @@ export function HeroSection() {
             <div className="flex max-w-lg flex-1 flex-col rounded-[28px] border border-white/15 bg-white/[0.06] p-4 shadow-[0_8px_30px_rgba(0,0,0,0.28)] backdrop-blur-sm sm:p-5 md:p-7">
               <Link
                 href="/dashboard"
-                className="mb-4 inline-flex w-fit items-center gap-0 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 backdrop-blur-sm transition-colors hover:bg-white/15"
+                className="mb-4 inline-flex min-h-11 w-fit items-center gap-0 rounded-full border border-white/20 bg-white/10 px-4 py-2 backdrop-blur-sm transition-colors hover:bg-white/15"
               >
                 <Image
-                  src="/ilocate No BG.svg"
+                  src="/Ilocate No BG.svg"
                   alt="iLOcate logo"
                   width={50}
                   height={50}
                   className="h-6 w-6 object-contain"
                 />
-                <span className="text-xs font-medium text-white/90">Navigation Tool for Iloilo</span>
+                <span className="text-sm font-medium text-white/90">Navigation Tool for Iloilo</span>
               </Link>
 
               {/* Main Heading - Emphasize iLOcate */}
               <div className="space-y-1.5">
-                <h1 className="text-5xl font-bold leading-[0.95] tracking-tight text-white sm:text-7xl md:text-8xl">
+                <h1 className="text-4xl font-bold leading-[0.95] tracking-tight text-white sm:text-6xl md:text-8xl">
                   <span className="block bg-primary bg-clip-text text-transparent">
                     iLOcate
                   </span>
                 </h1>
-                <h2 className="text-2xl font-semibold text-white/90 sm:text-4xl">
+                <h2 className="text-xl font-semibold text-white/90 sm:text-3xl md:text-4xl">
                   Explore Iloilo Like a Local
                 </h2>
-                <p className="mt-2 inline-flex max-w-full rounded-full border border-primary/60 bg-primary/20 px-3 py-2 text-[11px] font-semibold leading-tight tracking-wide text-primary backdrop-blur-sm sm:w-fit sm:px-4 sm:text-sm md:text-base">
+                <p className="mt-2 inline-flex max-w-full rounded-full border border-primary/60 bg-primary/20 px-3 py-2 text-sm font-semibold leading-tight tracking-wide text-primary backdrop-blur-sm sm:w-fit sm:px-4 md:text-base">
                   Find your way. Feel the Love. Your gentle guide in Iloilo
                 </p>
               </div>
@@ -320,7 +320,7 @@ export function HeroSection() {
                 <button
                   type="button"
                   onClick={() => setShowMapModal(true)}
-                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 text-base font-semibold text-primary-foreground transition-all hover:bg-primary/90 hover:shadow-lg"
+                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition-all hover:bg-primary/90 hover:shadow-lg md:text-base"
                 >
                   <Map className="h-5 w-5" />
                   View Routes
@@ -343,20 +343,20 @@ export function HeroSection() {
                 </Link>
               </p>
 
-              <div className="mt-8 grid grid-cols-3 gap-3 sm:flex sm:items-center sm:gap-8">
+              <div className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4 md:flex md:items-center md:gap-8">
                 <div>
                   <p className="text-2xl font-bold text-white sm:text-3xl">{loadingRoutes ? "..." : `20+`}</p>
-                  <p className="text-xs text-white/50">PUJ Routes</p>
+                  <p className="text-sm text-white/50">PUJ Routes</p>
                 </div>
                 <div className="hidden h-10 w-px bg-white/20 sm:block" />
                 <div>
                   <p className="text-2xl font-bold text-white sm:text-3xl">{`50+`}</p>
-                  <p className="text-xs text-white/50">Places Spots</p>
+                  <p className="text-sm text-white/50">Places Spots</p>
                 </div>
                 <div className="hidden h-10 w-px bg-white/20 sm:block" />
                 <div>
                   <p className="text-2xl font-bold text-white sm:text-3xl">{`40+`}</p>
-                  <p className="text-xs text-white/50">Food Spots</p>
+                  <p className="text-sm text-white/50">Food Spots</p>
                 </div>
               </div>
             </div>
@@ -459,7 +459,7 @@ export function HeroSection() {
                     Click a route to view it on the map
                   </p>
                   {!loadingRoutes && pujRoutes.length > 0 && (
-                    <p className="mt-1 text-xs text-muted-foreground">Showing {pujRoutes.length} routes</p>
+                    <p className="mt-1 text-sm text-muted-foreground">Showing {pujRoutes.length} routes</p>
                   )}
                 </div>
 

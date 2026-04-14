@@ -14,7 +14,6 @@ const plans = [
       { text: "Browse all places & food spots", included: true },
       { text: "View the interactive map", included: true },
       { text: "Itinerary Planner (3 trials)", included: true },
-      { text: "Offline Route Map", included: false },
       { text: "Ad-free experience", included: false },
       { text: "Translator (3 Translations)", included: true },
     ],
@@ -30,7 +29,6 @@ const plans = [
       { text: "Browse all places & food spots", included: true },
       { text: "View the interactive map", included: true },
       { text: "Itinerary Planner", included: true },
-      { text: "Offline Route Map", included: true },
       { text: "Ad-free experience", included: true },
       { text: "Translator", included: true },
     ],
@@ -49,10 +47,10 @@ export default function PremiumPage() {
             <Crown className="h-4 w-4" />
             Premium Plans
           </div>
-          <h1 className="text-balance text-3xl font-bold tracking-tight text-foreground lg:text-5xl">
+          <h1 className="text-balance text-3xl font-bold tracking-tight text-foreground md:text-4xl lg:text-5xl">
             Unlock the Full Iloilo Experience
           </h1>
-          <p className="mt-4 text-pretty text-lg leading-relaxed text-muted-foreground">
+          <p className="mt-4 text-pretty text-sm leading-relaxed text-muted-foreground md:text-base lg:text-lg">
             Choose the plan that fits your exploration style. Upgrade anytime to access exclusive features and premium content.
           </p>
         </div>
@@ -70,7 +68,7 @@ export default function PremiumPage() {
             >
               {plan.popular && (
                 <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-1 text-xs font-semibold text-primary-foreground">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-1 text-sm font-semibold text-primary-foreground">
                     <Sparkles className="h-3 w-3" />
                     Most Popular
                   </span>
@@ -115,7 +113,7 @@ export default function PremiumPage() {
 
                 <Link href="/signup">
                   <Button
-                    className={`w-full rounded-xl h-11 ${
+                    className={`min-h-11 w-full rounded-xl ${
                       plan.popular
                         ? "bg-primary text-primary-foreground hover:bg-primary/90"
                         : "bg-secondary text-foreground hover:bg-secondary/80 border border-border"

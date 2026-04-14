@@ -46,7 +46,7 @@ export default function AuthLayout({
 
       {/* Right: Form */}
       <div className="flex w-full min-h-0 flex-col lg:w-1/2">
-        <div className="flex items-center px-6 py-4 lg:hidden">
+        <div className="flex items-center px-4 py-4 sm:px-6 lg:hidden">
           <Link href="/" className="flex items-center gap-2">
             <MapPin className="h-6 w-6 text-primary" />
             <span className="text-lg font-bold text-foreground">
@@ -54,7 +54,7 @@ export default function AuthLayout({
             </span>
           </Link>
         </div>
-        <main className="flex min-h-0 flex-1 items-start justify-center overflow-y-auto px-6 py-6 lg:items-center lg:py-10">
+        <main className="flex min-h-0 flex-1 items-start justify-center overflow-y-auto px-4 py-6 sm:px-6 lg:items-center lg:py-10">
           {children}
         </main>
       </div>

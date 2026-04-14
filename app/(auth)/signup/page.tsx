@@ -155,7 +155,7 @@ export default function SignupPage() {
   return (
     <div className="w-full max-w-md pb-4">
       <div className="mb-4">
-        <Link href="/" className="text-sm text-primary hover:underline">
+        <Link href="/" className="inline-flex min-h-11 items-center text-sm text-primary hover:underline">
           ← Back to home
         </Link>
       </div>
@@ -187,7 +187,7 @@ export default function SignupPage() {
               disabled={loading}
             />
           </div>
-          {errors.fullName && <p className="text-xs text-destructive">{errors.fullName}</p>}
+          {errors.fullName && <p className="text-sm text-destructive">{errors.fullName}</p>}
         </div>
 
         <div className="space-y-2">
@@ -204,7 +204,7 @@ export default function SignupPage() {
               disabled={loading}
             />
           </div>
-          {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
+          {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
         </div>
 
         <div className="space-y-2">
@@ -223,21 +223,21 @@ export default function SignupPage() {
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              className="absolute right-2 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center text-muted-foreground hover:text-foreground"
               aria-label={showPassword ? "Hide password" : "Show password"}
             >
               {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
           </div>
           {errors.password
-            ? <p className="text-xs text-destructive">{errors.password}</p>
-            : <p className="text-xs text-muted-foreground">Must be at least 8 characters</p>
+            ? <p className="text-sm text-destructive">{errors.password}</p>
+            : <p className="text-sm text-muted-foreground">Must be at least 8 characters</p>
           }
         </div>
 
         <Button
           type="submit"
-          className="h-11 w-full rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
+          className="min-h-11 w-full rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
           disabled={loading}
         >
           {loading ? (
@@ -254,14 +254,14 @@ export default function SignupPage() {
           <div className="absolute inset-0 flex items-center">
             <span className="w-full border-t border-border" />
           </div>
-          <span className="relative bg-background px-3 text-xs text-muted-foreground">or sign up with</span>
+          <span className="relative bg-background px-3 text-sm text-muted-foreground">or sign up with</span>
         </div>
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <Button
             type="button"
             variant="outline"
-            className="h-11 rounded-xl border-border text-foreground"
+            className="min-h-11 rounded-xl border-border text-foreground"
             onClick={handleGoogleSignup}
             disabled={!!socialLoading || loading}
           >
@@ -280,7 +280,7 @@ export default function SignupPage() {
           <Button
             type="button"
             variant="outline"
-            className="h-11 rounded-xl border-border text-foreground"
+            className="min-h-11 rounded-xl border-border text-foreground"
             onClick={handleFacebookSignup}
             disabled={!!socialLoading || loading}
           >
