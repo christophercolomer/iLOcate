@@ -78,10 +78,10 @@ export default function SavedRoutesPage() {
                   </div>
                 </div>
 
-                <p className="mb-4 text-xs text-muted-foreground">{route.savedAgo}</p>
+                <p className="mb-4 text-sm text-muted-foreground">{route.savedAgo}</p>
 
                 {/* Actions */}
-                <div className="flex items-center gap-3">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                   <Button
                     variant="outline"
                     size="sm"
@@ -105,24 +105,24 @@ export default function SavedRoutesPage() {
                 {/* Expanded Activity */}
                 {selectedRoute === route.id && (
                   <div className="mt-4 rounded-xl border border-border bg-secondary p-4">
-                    <p className="mb-2 text-xs font-semibold text-muted-foreground">Route Stops</p>
+                    <p className="mb-2 text-sm font-semibold text-muted-foreground">Route Stops</p>
                     <div className="flex flex-col gap-2">
                       <div className="flex items-center gap-2">
                         <div className="h-2.5 w-2.5 rounded-full bg-primary" />
                         <span className="text-sm text-foreground">{route.from}</span>
-                        <span className="text-xs text-muted-foreground">(Start)</span>
+                        <span className="text-sm text-muted-foreground">(Start)</span>
                       </div>
                       <div className="ml-1 h-6 w-px border-l-2 border-dashed border-border" />
                       <div className="flex items-center gap-2">
                         <div className="h-2.5 w-2.5 rounded-full bg-muted-foreground" />
                         <span className="text-sm text-foreground">Tagbak Terminal</span>
-                        <span className="text-xs text-muted-foreground">(Transfer)</span>
+                        <span className="text-sm text-muted-foreground">(Transfer)</span>
                       </div>
                       <div className="ml-1 h-6 w-px border-l-2 border-dashed border-border" />
                       <div className="flex items-center gap-2">
                         <div className="h-2.5 w-2.5 rounded-full bg-accent" />
                         <span className="text-sm text-foreground">{route.to}</span>
-                        <span className="text-xs text-muted-foreground">(End)</span>
+                        <span className="text-sm text-muted-foreground">(End)</span>
                       </div>
                     </div>
                   </div>

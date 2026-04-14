@@ -34,7 +34,7 @@ export function ListingCard({
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
         />
         {category && (
-          <div className="absolute right-3 top-3 rounded-lg bg-card/90 px-2.5 py-1 text-xs font-medium text-foreground backdrop-blur-sm">
+          <div className="absolute right-3 top-3 rounded-lg bg-card/90 px-2.5 py-1 text-sm font-medium text-foreground backdrop-blur-sm">
             {category}
           </div>
         )}
@@ -56,7 +56,7 @@ export function ListingCard({
         </p>
         <div className="mt-4 flex items-center justify-between border-t border-border pt-3">
           <span className="text-sm font-semibold text-primary">{price}</span>
-          <span className="text-xs text-muted-foreground transition-colors group-hover:text-primary">
+          <span className="text-sm text-muted-foreground transition-colors group-hover:text-primary">
             View Details &rarr;
           </span>
         </div>

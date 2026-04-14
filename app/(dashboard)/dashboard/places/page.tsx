@@ -248,7 +248,7 @@ function PlacesPageContent() {
           <button
             key={cat}
             onClick={() => setActiveCategory(cat)}
-            className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+            className={`min-h-11 rounded-full px-4 py-2.5 text-sm font-medium transition-colors ${
               activeCategory === cat
                 ? "bg-primary text-primary-foreground"
                 : "bg-card text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -260,7 +260,7 @@ function PlacesPageContent() {
       </div>
 
       {/* Grid */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {filtered.map((place) => (
           <article
             key={place.id}
@@ -277,11 +277,11 @@ function PlacesPageContent() {
           >
             <div className="relative h-44 w-full overflow-hidden">
               <Image src={place.image} alt={place.name} fill className="object-cover transition-transform duration-500 group-hover:scale-105" sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw" />
-              <div className="absolute left-2 top-2 rounded-full bg-primary/90 px-2.5 py-0.5 text-[10px] font-semibold text-primary-foreground">{place.category}</div>
+              <div className="absolute left-2 top-2 rounded-full bg-primary/90 px-2.5 py-1 text-sm font-semibold text-primary-foreground">{place.category}</div>
               <button
                 type="button"
                 onClick={(event) => toggleLike(place, event)}
-                className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-black/45 text-white backdrop-blur-sm transition-colors hover:bg-black/65"
+                className="absolute right-2 top-2 flex h-11 w-11 items-center justify-center rounded-full bg-black/45 text-white backdrop-blur-sm transition-colors hover:bg-black/65"
                 aria-label={likedIds.has(place.likeId) ? `Unlike ${place.name}` : `Like ${place.name}`}
               >
                 <Heart className={`h-4 w-4 ${likedIds.has(place.likeId) ? "fill-red-500 text-red-500" : "text-white"}`} />
@@ -292,11 +292,11 @@ function PlacesPageContent() {
               <div className="mt-1 flex items-center justify-between">
                 <div className="flex items-center gap-1">
                   <MapPin className="h-3 w-3 text-muted-foreground" />
-                  <span className="text-xs text-muted-foreground">{place.location}</span>
+                  <span className="text-sm text-muted-foreground">{place.location}</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                  <span className="text-xs text-muted-foreground">{place.rating}</span>
+                  <span className="text-sm text-muted-foreground">{place.rating}</span>
                 </div>
               </div>
             </div>
@@ -306,8 +306,8 @@ function PlacesPageContent() {
 
       {/* Route Explorer Modal */}
       {showRouteModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm" onClick={() => setShowRouteModal(null)}>
-          <div className="w-full max-w-lg rounded-2xl bg-card p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 p-4 backdrop-blur-sm sm:flex sm:items-center sm:justify-center" onClick={() => setShowRouteModal(null)}>
+          <div className="w-full max-w-lg rounded-2xl bg-card p-4 shadow-2xl sm:p-6" onClick={(e) => e.stopPropagation()}>
             <div className="mb-4 flex items-center gap-3">
               <div className="relative h-16 w-16 overflow-hidden rounded-xl">
                 <Image src={showRouteModal.image} alt={showRouteModal.name} fill className="object-cover" sizes="64px" />
@@ -329,7 +329,7 @@ function PlacesPageContent() {
               </div>
             </div>
             <div className="mb-4 rounded-xl border border-border p-4">
-              <p className="mb-2 text-xs font-semibold text-muted-foreground">Suggested Route</p>
+              <p className="mb-2 text-sm font-semibold text-muted-foreground">Suggested Route</p>
               <div className="flex items-center gap-2 text-sm text-foreground">
                 <div className="h-2 w-2 rounded-full bg-primary" />
                 <span>Your Location</span>
@@ -339,7 +339,7 @@ function PlacesPageContent() {
                 <span>{showRouteModal.name}</span>
               </div>
             </div>
-            <div className="mt-4 grid grid-cols-2 gap-3">
+            <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
               <Button
                 className="h-11 rounded-xl bg-primary text-sm font-semibold text-primary-foreground hover:bg-primary/90"
                 onClick={() => {
