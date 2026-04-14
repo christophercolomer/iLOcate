@@ -546,6 +546,7 @@ function FullScreenMapPageContent() {
   // Handle route click - show direction choice
   const handleRouteClick = (routeId: string | number) => {
     const routeIdString = String(routeId)
+    setShowAllPujRoutes(false)
     if (selectedRoute === routeIdString) {
       // If clicking same route, clear selection
       setSelectedRoute(null)
@@ -916,7 +917,6 @@ function FullScreenMapPageContent() {
           selectedRoute={selectedRoute}
           showAllRoutes={showAllPujRoutes}
           selectedRouteDirection={selectedRouteDirection}
-          showAllRoutes={showAllPujRoutes}
           selectedLandmarkName={selectedLandmarkName}
           focusedLandmarkNames={focusedLandmarkNames}
           decodedRoutes={routes}
@@ -925,6 +925,7 @@ function FullScreenMapPageContent() {
           destinationMarker={destinationCoords}
           pinDropMode={isPinDropMode}
           onPinDropped={handlePinDropped}
+          onRouteSelect={handleRouteClick}
         />
         {/* Pin drop mode overlay */}
         {isPinDropMode && (
